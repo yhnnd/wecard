@@ -1,0 +1,42 @@
+body {
+  background-color: #f5f5f5;
+}
+
+.container {
+  background-color: white;
+  border-radius: 5px;
+  border: 1px solid #e5e5e5;
+}
+
+input[type="text"] {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+input[type="password"] {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+input {
+  max-width: 350px;
+}
+
+/* COLOR ANIMATED */
+
+.text-color-animated {
+  background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
+  /* -webkit- 不能去掉, 否则整个背景都会被上色 */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: hue 10s infinite linear;
+}
+
+@keyframes hue {
+  from {
+    -webkit-filter: hue-rotate(0deg);
+  }
+  to {
+    -webkit-filter: hue-rotate(-360deg);
+  }
+}

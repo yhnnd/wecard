@@ -1,0 +1,138 @@
+<div class="mb-1 {{comment.children && comment.children.length ? 'border pt-1 pl-1' : ''}}">
+
+    <div class="message-content-wrapper d-flex justify-content-begin align-items-center">
+        <div class="d-flex justify-content-begin align-items-center {{comment.status === 'exist'? '' : 'half-hidden'}}">
+            <!-- 1 他的头像 -->
+            <div class="avatar-wrapper d-inline-block mr-1">
+                <img src="{{comment.user.avatarUrl}}" alt="" class="user-avatar-xs rounded-circle border" data-toggle="tooltip" title="{{comment.user.nickname}}">
+            </div>
+            <!-- 2 评论气泡 -->
+            <div class="bg-white img-thumbnail message-bubble px-2" ng-if="comment.text" style="line-height: 1.25;max-width: 90%;">
+                <!-- 删除评论按钮 -->
+                <div style="position:relative" ng-show="user && comment.user.id === user.id && comment.status === 'exist'">
+                    <small style="position:absolute;top: -.55rem;right: -.7rem;">
+                        <i class="fa fa-times-circle text-muted" ng-click="deleteComment(current_card.id,comment.id)"></i>
+                    </small>
+                </div>
+                <!-- 评论内容 -->
+                <small class="{{comment.status === 'exist'? 'text-dark' : 'text-muted'}}">
+                    {{comment.text}}
+                </small>
+            </div>
+            <!-- 3 评论的其他信息 -->
+            <div class="d-inline-block" style="height: 26px;position: relative;" ng-if="comment.status === 'exist'">
+                <div class="d-inline-block bg-white" style="position: absolute;top: 0;left: 4px;width: 210px;">
+                    <!-- 回复评论 -->
+                    <div class="d-inline-block ml-2" data-toggle="tooltip" title="回复评论">
+                        <i class="fa fa-comment" style="color:lightskyblue;"
+                           ng-click="comment.isReplyInputShown = true;">
+                        </i>
+                    </div>
+                    <!-- 点赞评论 -->
+                    <div class="d-inline-block ml-1">
+                        <i class="fa fa-thumbs-up text-primary" data-toggle="tooltip" title="赞" style="opacity: .8;" ng-click="likeComment(comment)">
+                        </i>
+                        <small class="text-muted" data-toggle="tooltip" title="获赞数">
+                            {{comment.commentHot}}
+                        </small>
+                    </div>
+                    <!-- 评论时间 -->
+                    <div class="d-inline-block ml-1">
+                        <small class="text-muted" data-toggle="tooltip" title="评论时间">
+                            {{comment.createdTime}}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 该评论的所有回复（二级评论） -->
+    <div class="w-100 px-3 {{comment.children && comment.children.length ? 'pt-2' : ''}}">
+        <!-- 二级评论 -->
+        <div class="mb-1" ng-repeat="reply in comment.children track by $index">
+            <div class="message-content-wrapper">
+                <div class="d-flex justify-content-begin align-items-center {{reply.status === 'exist'? '' : 'half-hidden'}}">
+                    <!-- 1 他的头像 -->
+                    <div class="avatar-wrapper d-inline-block mr-1">
+                        <img src="{{reply.user.avatarUrl}}" alt="" class="user-avatar-xs rounded-circle border">
+                    </div>
+                    <!-- 2 二级评论气泡 -->
+                    <div class="bg-white img-thumbnail message-bubble px-2" ng-if="comment.text" style="line-height: 1.25;max-width: 90%;">
+                        <!-- 删除二级评论按钮 -->
+                        <div style="position:relative" ng-show="user && reply.user.id === user.id && reply.status === 'exist'">
+                            <small style="position:absolute;top: -.55rem;right: -.7rem;">
+                                <i class="fa fa-times-circle text-muted" ng-click="deleteComment(current_card.id,reply.id)"></i>
+                            </small>
+                        </div>
+                        <!-- 二级评论内容 -->
+                        <small class="{{reply.status === 'exist'? 'text-dark' : 'text-muted'}}">
+                            {{reply.text}}
+                        </small>
+                    </div>
+                    <!-- 3 二级评论的更多信息 -->
+                    <div class="d-inline-block" style="height: 26px;position: relative;" ng-if="reply.status === 'exist'">
+                        <div class="d-inline-block" style="position: absolute;top: 0;left: 4px;width: 210px;">
+                            <!-- 点赞二级评论 -->
+                            <div class="d-inline-block ml-1">
+                                <i class="fa fa-thumbs-up text-primary" data-toggle="tooltip" title="赞" style="opacity: .8;" ng-click="likeComment(reply)">
+                                </i>
+                                <small class="text-muted" data-toggle="tooltip" title="获赞数">
+                                    {{reply.commentHot}}
+                                </small>
+                            </div>
+                            <!-- 二级评论的提交时间 -->
+                            <div class="d-inline-block ml-1">
+                                <small class="text-muted" data-toggle="tooltip" title="评论时间">
+                                    {{reply.createdTime}}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 回复评论输入框 reply comment input area -->
+        <!-- 此组件的用户体验不好, 将被评论专用的模态窗替换 -->
+        <div class="reply-comment-input-area py-3"
+             id="comment-{{comment.id}}"
+             ng-if="comment.status === 'exist' && comment.isReplyInputShown == true">
+            <div style="position: relative;">
+                <i class="fa fa-times-circle fa-2x"
+                   style="position: absolute;top: -0.5rem;right: -0.5rem;opacity: .5;z-index: 1100;"
+                   ng-click="comment.isReplyInputShown = false;">
+                </i>
+            </div>
+            <!-- 如果用户已经登录 -->
+            <div ng-show="user">
+                <!-- 回复评论输入框 -->
+                <textarea class="form-control form-control-sm border-radius-0"
+                          rows="3"
+                          data-parent-id="{{comment.id}}"></textarea>
+                <!-- 回复按钮 -->
+                <div class="mt-2 d-flex justify-content-end">
+                    <button class="btn btn-primary border-radius-0"
+                            onclick="replyComment($(this).parent().prev())"
+                            title="回复评论"
+                            ng-show="user">
+                        <div class="mx-2">回复</div>
+                    </button>
+                </div>
+            </div>
+            <!-- 如果用户没有登录 -->
+            <div ng-show="!user">
+                <div class="alert alert-warning border-radius-0 mb-0">
+                    <div>您尚未登录</div>
+                    <div class="mt-2 d-flex justify-content-end">
+                        <button class="btn btn-sm btn-outline-secondary border-radius-0 px-4"
+                                onclick="login('../index.html');">
+                            登录
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 回复评论输入框 reply comment input area END -->
+    </div>
+    <!-- 该评论的所有回复（二级评论）END -->
+</div>

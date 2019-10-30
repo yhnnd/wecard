@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.UserDao">
+
+    <!--............................................登录返回......................................................-->
+    <resultMap id="loginUserMap" type="User" autoMapping="false">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="phone" property="phone"/>
+        <result column="nickname" property="nickname"/>
+        <result column="gender" property="gender"/>
+        <result column="city" property="city"/>
+        <result column="grade" property="grade"/>
+        <result column="signature" property="signature"/>
+        <result column="avatarUrl" property="avatarUrl"/>
+        <result column="styleImgUrl" property="styleImgUrl"/>
+        <result column="fansNum" property="fansNum"/>
+        <result column="followNum" property="followNum"/>
+        <result column="cardsNum" property="cardsNum"/>
+        <result column="userCreateTime" property="userCreateTime"/>
+        <result column="lastLoginTime" property="lastLoginTime"/>
+    </resultMap>
+
+    <select id="loginGetUser" parameterType="string" resultMap="loginUserMap">
+        SELECT * FROM users WHERE users.id = #{id} AND users.status = 'exist'
+    </select>
+
+    <!--.......................................向群里发送消息时找到所有群成员Id.............................................-->
+
+    <select id="findRoomMembers" parameterType="string" resultType="User">
+        SELECT users.id
+        FROM users
+        INNER JOIN room_members ON room_members.userId = users.id
+        INNER JOIN rooms ON room_members.roomId = rooms.id
+        WHERE rooms.id = #{roomId} AND users.status = 'exist' AND rooms.status = 'exist'
+    </select>
+
+    <!--................................................登录和注册........................................................-->
+    <!--登录验证-->
+    <select id="verifyPassword" resultType="string">
+        SELECT id FROM users WHERE password = #{password} AND (username = #{verifyName} OR phone = #{verifyName}) AND users.status = 'exist'
+    </select>
+
+    <!--验证是否存在用户-->
+    <select id="verifyUserExistByUsername" parameterType="string" resultType="User">
+        SELECT id, username FROM users WHERE username = #{username} AND users.status = 'exist'
+    </select>
+
+    <select id="verifyUserExistByPhone" parameterType="string" resultType="User">
+        SELECT id, username FROM users WHERE phone = #{phone} AND users.status = 'exist'
+    </select>
+
+    <select id="verifyUserExistById" parameterType="string" resultType="User">
+        SELECT id, username FROM users WHERE id = #{id} AND users.status = 'exist'
+    </select>
+
+    <!--登录前的数据初始化-->
+    <select id="sp_affairs_before_login" parameterType="string" statementType="CALLABLE">
+        CALL sp_affairs_before_login(#{id})
+    </select>
+
+    <!--注册用户-->
+    <insert id="registerUser" parameterType="User">
+        INSERT INTO users(id, username, password, phone, nickname, city)
+        VALUES (#{id}, #{username}, #{password}, #{phone}, #{nickname}, #{city})
+    </insert>
+
+    <!--qq注册新用户-->
+    <insert id="newQQUser" parameterType="User">
+        INSERT INTO users(id, username, password, phone, nickname, gender, city, avatarUrl)
+        VALUES (#{id}, #{username}, #{password}, #{phone}, #{nickname}, #{gender}, #{city}, #{avatarUrl})
+    </insert>
+
+    <!--验证用户名是否已经被注册-->
+    <select id="checkUserName" parameterType="string" resultType="string">
+        SELECT id FROM users WHERE username = #{username} AND users.status = 'exist'
+    </select>
+
+    <!--验证电话号码是否已经被注册-->
+    <select id="checkPhoneNumber" parameterType="string" resultType="string">
+        SELECT id FROM users WHERE phone = #{phoneNumber} AND users.status = 'exist'
+    </select>
+
+    <!--忘记密码第一步，找到账号-->
+    <select id="findPhoneByAccount" parameterType="string" resultType="User">
+        SELECT id, username, phone FROM users WHERE (username = #{account} OR phone = #{account}) AND users.status = 'exist'
+    </select>
+
+    <!--设置密码-->
+    <update id="alterPassword">
+        UPDATE users SET password = #{password} WHERE id = #{id}
+    </update>
+
+    <update id="setLogoutTime" parameterType="string">
+        UPDATE users SET logoutTime = now() WHERE id = #{id}
+    </update>
+
+    <!--.................................................个人设置........................................................-->
+    <!--设置头像-->
+    <update id="setAvatar">
+        UPDATE users SET avatarUrl = #{avatarUrl} WHERE id = #{id}
+    </update>
+
+    <!--设置个性图-->
+    <update id="setStyleImg">
+        UPDATE users SET styleImgUrl = #{styleImgUrl} WHERE id = #{id}
+    </update>
+
+    <!--设置昵称-->
+    <update id="setNickname">
+        UPDATE users SET nickname = #{nickname} WHERE id = #{id}
+    </update>
+
+    <!--设置个性签名-->
+    <update id="setSignature">
+        UPDATE users SET signature = #{signature} WHERE id = #{id}
+    </update>
+
+    <!--设置性别-->
+    <update id="setGender">
+        UPDATE users SET gender = #{gender} WHERE id = #{id}
+    </update>
+
+    <!--设置城市-->
+    <update id="setCity">
+        UPDATE users SET city = #{city} WHERE id = #{id}
+    </update>
+
+    <!--.................................................个人账户设置........................................................-->
+    <!--改绑手机-->
+    <update id="alterPhone">
+        UPDATE users SET phone = #{phone} WHERE id = #{id}
+    </update>
+
+    <!--注销用户-->
+    <update id="deleteUser" parameterType="string">
+        UPDATE users SET status = "inexistent" WHERE id = #{id}
+    </update>
+
+    <!--..................................................查看某人信息...................................................-->
+    <select id="lookUser" parameterType="string" resultMap="lookUserMap">
+        SELECT * FROM users WHERE (username = #{username} OR phone = #{username}) AND status = 'exist'
+    </select>
+
+    <resultMap id="lookUserMap" type="User" autoMapping="false">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="nickname" property="nickname"/>
+        <result column="gender" property="gender"/>
+        <result column="city" property="city"/>
+        <result column="grade" property="grade"/>
+        <result column="signature" property="signature"/>
+        <result column="avatarUrl" property="avatarUrl"/>
+        <result column="styleImgUrl" property="styleImgUrl"/>
+        <result column="fansNum" property="fansNum"/>
+        <result column="followNum" property="followNum"/>
+        <result column="cardsNum" property="cardsNum"/>
+        <result column="userCreateTime" property="userCreateTime"/>
+    </resultMap>
+
+    <!--查看用户等级-->
+    <select id="findUserGrade" parameterType="string" resultType="int">
+        SELECT grade FROM users WHERE id = #{id}
+    </select>
+
+    <!--模糊搜索用户-->
+    <select id="findUsersByUsername" resultMap="findUsersByUsernameMap">
+        SELECT * FROM users WHERE
+        username LIKE concat('%', #{username}, '%')
+        OR nickname LIKE concat('%', #{username}, '%')
+        OR phone = #{username}
+        ORDER BY fansNum
+        LIMIT #{offset},#{limit}
+    </select>
+    <resultMap id="findUsersByUsernameMap" type="User" autoMapping="false">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="nickname" property="nickname"/>
+        <result column="gender" property="gender"/>
+        <result column="city" property="city"/>
+        <result column="grade" property="grade"/>
+        <result column="avatarUrl" property="avatarUrl"/>
+        <result column="styleImgUrl" property="styleImgUrl"/>
+    </resultMap>
+
+    <!--查询原始头像-->
+    <select id="findAvatarById" parameterType="string" resultType="string">
+        SELECT avatarUrl FROM users WHERE id = #{userId}
+    </select>
+
+    <!--查询原始头像-->
+    <select id="findStyleImgById" parameterType="string" resultType="string">
+        SELECT styleImgUrl FROM users WHERE id = #{userId}
+    </select>
+
+    <select id="findSimpleUser" parameterType="string" resultType="User">
+        select id, username, nickname, avatarUrl, gender, city from users where id = #{userId}
+    </select>
+
+</mapper>

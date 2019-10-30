@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.GroupDao">
+
+    <!--查询单个chatItem，带User-->
+    <select id="findById" parameterType="string" resultMap="findByIdMap">
+        SELECT *, groups.id gid, users.id uid, groups.userId guid
+        FROM groups
+        LEFT JOIN friend_items ON groups.id = friend_items.groupId
+        LEFT JOIN users ON users.id = friend_items.friendId
+        WHERE groups.id = #{id}
+    </select>
+    <resultMap id="findByIdMap" type="Group" autoMapping="false">
+        <id column="gid" property="id"/>
+        <result column="groupCreateTime" property="groupCreateTime"/>
+        <result column="groupName" property="groupName"/>
+        <result column="friendNum" property="friendNum"/>
+        <association property="user" javaType="User" autoMapping="false">
+            <id column="guid" property="id"/>
+        </association>
+        <collection property="friends" ofType="Friend" autoMapping="false">
+            <id column="uid" property="id"/>
+            <result column="remark" property="remark"/>
+            <result column="username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="city" property="city"/>
+            <result column="gender" property="gender"/>
+            <result column="grade" property="grade"/>
+            <result column="avatarUrl" property="avatarUrl"/>
+            <result column="styleImgUrl" property="styleImgUrl"/>
+            <result column="fansNum" property="fansNum"/>
+            <result column="followNum" property="followNum"/>
+            <result column="cardsNum" property="cardsNum"/>
+        </collection>
+    </resultMap>
+
+    <!--..................................................登录刷新返回...................................................-->
+    <select id="findByUserId" parameterType="string" resultMap="findByUserIdMap">
+        SELECT *, groups.id gid, users.id uid
+        FROM groups
+        LEFT JOIN friend_items ON groups.id = friend_items.groupId
+        LEFT JOIN users ON users.id = friend_items.friendId
+        WHERE groups.userId = #{userId}
+    </select>
+
+    <resultMap id="findByUserIdMap" type="Group" autoMapping="false">
+        <id column="gid" property="id"/>
+        <result column="groupCreateTime" property="groupCreateTime"/>
+        <result column="groupName" property="groupName"/>
+        <result column="friendNum" property="friendNum"/>
+        <collection property="friends" ofType="Friend" autoMapping="false">
+            <id column="uid" property="id"/>
+            <result column="remark" property="remark"/>
+            <result column="username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="city" property="city"/>
+            <result column="gender" property="gender"/>
+            <result column="grade" property="grade"/>
+            <result column="avatarUrl" property="avatarUrl"/>
+            <result column="styleImgUrl" property="styleImgUrl"/>
+            <result column="fansNum" property="fansNum"/>
+            <result column="followNum" property="followNum"/>
+            <result column="cardsNum" property="cardsNum"/>
+        </collection>
+    </resultMap>
+
+
+    <!--.....................................................其他...................................................-->
+    <select id="verifyGroupNameExist" resultType="string">
+        SELECT id FROM groups WHERE userId = #{userId} AND groupName = #{groupName}
+    </select>
+
+    <select id="verifyGroupExist" resultType="Group">
+        SELECT * FROM groups WHERE userId = #{userId} AND id = #{id}
+    </select>
+
+    <!--查找同一个group好友数量-->
+    <select id="findGroupFriendNum" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM friend_items WHERE groupId = #{groupId}
+    </select>
+
+    <insert id="insertGroup">
+        INSERT INTO groups (id, groupName, userId) VALUES (#{id}, #{groupName}, #{userId})
+    </insert>
+
+    <delete id="delete" parameterType="string">
+        DELETE FROM groups WHERE id = #{id}
+    </delete>
+
+    <!--修改分组名称-->
+    <update id="setGroupName">
+        UPDATE groups SET groupName = #{groupName} WHERE id = #{id}
+    </update>
+</mapper>

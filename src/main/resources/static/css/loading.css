@@ -1,0 +1,115 @@
+/* loading.js */
+
+.loading-foreground .wrapper {
+    display: block;
+    width: 100vw;
+    min-width: 100vw;
+    max-width: 100vw;
+    text-align: center;
+}
+
+.loading-foreground .wrapper.loading-spinner-wrapper {
+    margin-bottom: 20px;
+}
+
+.loading-foreground .wrapper.loading-tasks-wrapper {
+    position: relative;
+}
+
+.loading-foreground .wrapper.loading-tasks-wrapper .loading-task-length-indicator {
+    color: white;
+}
+
+.loading-foreground .wrapper.loading-tasks-wrapper > .wrapper.loading-task-list {
+    background: rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 2rem;
+    left: 0;
+}
+
+.loading-foreground .wrapper.loading-tasks-wrapper > .wrapper.loading-task-list > .task-name{
+    max-width: 100%;
+    position: relative;
+}
+
+/* task loading id */
+.loading-foreground  .wrapper.loading-task-list > .task-name  .task-loading-id {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: red;
+    width: 300px;
+    text-align: right;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* task loading id DONE */
+.loading-foreground  .wrapper.loading-task-list > .task-name.done  .task-loading-id {
+    color: forestgreen;
+    opacity: .8;
+}
+
+.loading-foreground  .wrapper.loading-task-list > .task-name.done  .task-loading-id::before {
+    content: "done";
+    display: block;
+    background: forestgreen;
+    color: white;
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 0 .5rem;
+    text-align: left;
+}
+
+
+/* task loading id TIMEOUT */
+.loading-foreground  .wrapper.loading-task-list > .task-name.timeout  .task-loading-id {
+    color: crimson;
+    opacity: .8;
+}
+
+.loading-foreground  .wrapper.loading-task-list > .task-name.timeout  .task-loading-id::before {
+    content: "TIMEOUT";
+    display: block;
+    background: crimson;
+    color: white;
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 0 .5rem;
+    text-align: left;
+}
+
+
+/* 自动生成的 task name */
+.loading-foreground  .wrapper.loading-task-list > .task-name  .auto-gen-task-name {
+    color: yellow;
+}
+
+
+.loading-foreground  .wrapper.loading-task-list > .task-name  .auto-gen-task-name > .scope{
+    color: blueviolet;
+}
+
+.loading-foreground  .wrapper.loading-task-list > .task-name  .auto-gen-task-name > .dot{
+    color: white;
+    text-shadow: 0 0 5px black;
+}
+
+/* 自动生成的 task name DONE */
+.loading-foreground  .wrapper.loading-task-list > .task-name.done  .auto-gen-task-name {
+    color: greenyellow;
+    opacity: .8;
+}
+
+/* 开发者显式传递的 task name */
+.loading-foreground  .wrapper.loading-task-list > .task-name  .dev-spec-task-name {
+    color: yellow;
+}
+
+/* 开发者显式传递的 task name DONE */
+.loading-foreground  .wrapper.loading-task-list > .task-name.done  .dev-spec-task-name {
+    color: greenyellow;
+    opacity: .8;
+}

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.ChatItemDao">
+
+    <sql id="findMajorSql">
+        SELECT *, chat_items.id cid, users.id fid, rooms.id rid, messages.id mid, requests.id rqid,
+                  system_notifications.id sid, system_notifications.createTime sysct,
+                  chat_items.type ctype, messages.type mtype, requests.type rqtype,
+                  messages.userId muidi, requests.roomId rroid
+        FROM chat_items
+        LEFT JOIN messages ON messages.id = chat_items.messageId
+        LEFT JOIN requests ON requests.id = chat_items.requestId
+        LEFT JOIN friend_items ON friend_items.friendId = chat_items.friendId AND friend_items.userId = chat_items.userId
+        LEFT JOIN users ON users.id = chat_items.friendId
+        LEFT JOIN rooms ON rooms.id = chat_items.roomId
+        LEFT JOIN system_notifications ON system_notifications.id = systemNotificationId
+    </sql>
+
+    <select id="findById" parameterType="string" resultMap="findByIdMap">
+        <include refid="findMajorSql"/>
+        WHERE chat_items.id = #{id}
+    </select>
+
+    <resultMap id="findByIdMap" type="ChatItem" autoMapping="false">
+        <id column="cid" property="id"/>
+        <result column="ctype" property="type"/>
+        <result column="unreadNum" property="unreadNum"/>
+        <association property="message" javaType="Message" autoMapping="false">
+            <id column="mid" property="id"/>
+            <result column="text" property="text"/>
+            <result column="mtype" property="type"/>
+            <association property="user" column="muid" select="findUser"/>
+        </association>
+        <association property="request" javaType="Request" autoMapping="false">
+            <id column="rqid" property="id"/>
+            <result column="rqtype" property="type"/>
+            <association property="requester" column="requesterId" select="findUser"/>
+            <association property="receiver" column="receiverId" select="findUser"/>
+            <association property="replier" column="replierId" select="findUser"/>
+            <association property="room" column="rroid" select="findRoom"/>
+        </association>
+        <association property="user" javaType="User" autoMapping="false">
+            <id column="userId" property="id"/>
+        </association>
+        <association property="friend" javaType="Friend" autoMapping="true">
+            <id column="fid" property="id"/>
+        </association>
+        <association property="room" javaType="Room" autoMapping="false">
+            <id column="rid" property="id"/>
+            <result column="roomName" property="roomName"/>
+            <result column="roomImgUrl" property="roomImgUrl"/>
+        </association>
+        <association property="systemNotification" javaType="SystemNotification" autoMapping="false">
+            <id column="sid" property="id"/>
+            <result column="systemMsg" property="systemMsg"/>
+            <result column="sysct" property="createTime"/>
+        </association>
+    </resultMap>
+
+    <!--...........................................登录返回所有的聊天栏................................................-->
+    <select id="findByUserId" parameterType="string" resultMap="findByUserIdMap">
+        <include refid="findMajorSql"/>
+        WHERE chat_items.userId = #{userId} AND chat_items.visible = 1
+        ORDER BY chat_items.updateTime DESC
+    </select>
+
+    <resultMap id="findByUserIdMap" type="ChatItem" autoMapping="false">
+        <id column="cid" property="id"/>
+        <result column="ctype" property="type"/>
+        <result column="unreadNum" property="unreadNum"/>
+        <association property="message" javaType="Message" autoMapping="false">
+            <id column="mid" property="id"/>
+            <result column="text" property="text"/>
+            <result column="mtype" property="type"/>
+            <association property="user" column="muid" select="findUser"/>
+        </association>
+        <association property="request" javaType="Request" autoMapping="false">
+            <id column="rqid" property="id"/>
+            <result column="rqtype" property="type"/>
+            <association property="requester" column="requesterId" select="findUser"/>
+            <association property="receiver" column="receiverId" select="findUser"/>
+            <association property="replier" column="replierId" select="findUser"/>
+            <association property="room" column="rroid" select="findRoom"/>
+        </association>
+        <association property="friend" javaType="Friend" autoMapping="false">
+            <id column="fid" property="id"/>
+            <result column="remark" property="remark"/>
+            <result column="username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="city" property="city"/>
+            <result column="grade" property="grade"/>
+            <result column="avatarUrl" property="avatarUrl"/>
+        </association>
+        <association property="room" javaType="Room" autoMapping="false">
+            <id column="rid" property="id"/>
+            <result column="roomName" property="roomName"/>
+            <result column="roomImgUrl" property="roomImgUrl"/>
+        </association>
+        <association property="systemNotification" javaType="SystemNotification" autoMapping="false">
+            <id column="sid" property="id"/>
+            <result column="systemMsg" property="systemMsg"/>
+            <result column="sysct" property="createTime"/>
+        </association>
+    </resultMap>
+
+    <select id="findUser" parameterType="string" resultType="User">
+        SELECT id, username, nickname FROM users WHERE id = #{userId}
+    </select>
+
+    <select id="findRoom" parameterType="string" resultType="Room">
+        SELECT id, roomName FROM rooms WHERE id = #{roomId}
+    </select>
+
+    <!--返回好友所有的chatItems-->
+    <select id="findAllUserChatItems" parameterType="string" resultMap="findAllMap">
+        SELECT *, chat_items.id cid, users.id fid, rooms.id rid
+        FROM chat_items
+        LEFT JOIN friend_items ON friend_items.friendId = chat_items.friendId AND friend_items.userId = chat_items.userId
+        LEFT JOIN users ON users.id = chat_items.friendId
+        LEFT JOIN rooms ON rooms.id = chat_items.roomId
+        WHERE chat_items.userId = #{userId}
+    </select>
+    <resultMap id="findAllMap" type="chatItem" autoMapping="false">
+        <id column="cid" property="id"/>
+        <result column="type" property="type"/>
+        <result column="unreadNum" property="unreadNum"/>
+        <association property="friend" javaType="Friend" autoMapping="true">
+            <id column="fid" property="id"/>
+        </association>
+        <association property="room" javaType="Room" autoMapping="false">
+            <id column="rid" property="id"/>
+            <result column="roomName" property="roomName"/>
+            <result column="roomImgUrl" property="roomImgUrl"/>
+        </association>
+    </resultMap>
+
+    <!--验证chatLocation-->
+    <select id="verifyChatItem" parameterType="string" resultMap="verifyChatItemMap">
+        SELECT * FROM chat_items WHERE id = #{id}
+    </select>
+
+    <resultMap id="verifyChatItemMap" type="ChatItem" autoMapping="true">
+        <association property="friend" javaType="Friend" autoMapping="false">
+            <id column="friendId" property="id"/>
+        </association>
+        <association property="user" javaType="User" autoMapping="false">
+            <id column="userId" property="id"/>
+        </association>
+        <association property="room" javaType="Room" autoMapping="false">
+            <id column="roomId" property="id"/>
+        </association>
+    </resultMap>
+
+    <!--通过房间id或者朋友id找到某个用户对应的chatItem-->
+    <select id="findByObjectId" resultType="ChatItem">
+        SELECT * FROM chat_items WHERE userId = #{userId} AND (friendId = #{objectId} OR roomId = #{objectId})
+    </select>
+
+    <select id="findInformByUserId" resultType="ChatItem">
+        SELECT * FROM chat_items WHERE userId = #{userId} AND type = 'inform'
+    </select>
+
+    <select id="findSystemByUserId" resultType="ChatItem">
+        SELECT * FROM chat_items WHERE userId = #{userId} AND type = 'system'
+    </select>
+
+    <!--.........................................更新时间并且更新信息id.......................................-->
+    <update id="updateTimeAndMsgId" parameterType="ChatItem">
+        UPDATE chat_items SET updateTime = NOW(), messageId = #{messageId}, visible = 1 WHERE id = #{id}
+    </update>
+    <update id="updateTimeAndRequestId" parameterType="ChatItem">
+        UPDATE chat_items SET updateTime = NOW(), requestId = #{requestId}, visible = 1 WHERE id = #{id}
+    </update>
+    <update id="updateTimeAndSysNotId" parameterType="ChatItem">
+        UPDATE chat_items SET updateTime = NOW(), systemNotificationId = #{systemNotificationId}, visible = 1 WHERE id = #{id}
+    </update>
+
+    <update id="setVisible">
+        UPDATE chat_items SET visible = #{value} WHERE id = #{id}
+    </update>
+
+    <!--.........................................插入相关chatItem.......................................-->
+    <insert id="insertFriendChatItem" parameterType="ChatItem">
+        INSERT INTO chat_items (id, type, friendId, userId)
+        VALUES (#{id}, 'friend', #{friendId}, #{userId})
+    </insert>
+
+    <insert id="insertRoomChatItem" parameterType="ChatItem">
+        INSERT INTO chat_items (id, type, roomId, userId)
+        VALUES (#{id}, 'room', #{roomId}, #{userId})
+    </insert>
+
+    <insert id="insertSystemChatItem" parameterType="ChatItem">
+        INSERT INTO chat_items (id, type, userId)
+        VALUES (#{id}, 'system', #{userId})
+    </insert>
+
+    <insert id="insertInformChatItem" parameterType="ChatItem">
+        INSERT INTO chat_items (id, type, userId)
+        VALUES (#{id}, 'inform', #{userId})
+    </insert>
+
+    <!--删除好友双方的chatItems-->
+    <delete id="deleteFriendChatItems">
+        DELETE FROM chat_items
+        WHERE (userId = #{userId} AND friendId = #{friendId})
+        OR (userId = #{friendId} AND friendId = #{userId})
+    </delete>
+
+</mapper>

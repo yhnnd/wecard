@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>微卡 Sign In</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/animate.min.css">
+    <link rel="stylesheet" href="../css/login.css">
+    <script src="../js/vendor/jquery.min.js"></script>
+    <script src="../js/vendor/angular.min.js"></script>
+    <script src="../js/vendor/param.js"></script>
+    <script>
+        function displayVersion() {
+            setTimeout(function () {
+                var versionField = document.getElementById("app-version-number");
+                if (versionField && window.appVersion) {
+                    let versionText = "";
+                    if (window.appVersion["version"]) {
+                        versionText = window.appVersion["version"];
+                        if (window.appVersion["short-version"] && window.appVersion["build-version"]) {
+                            versionText += " (" + window.appVersion["short-version"] + " build " + window.appVersion["build-version"] + ")";
+                        }
+                    }
+                    versionField.innerText = versionText;
+                }
+            }, 0);
+        }
+    </script>
+    <script src="../js/_web_config.js" onload="displayVersion();"></script>
+    <script src="../js/_login.js"></script>
+</head>
+
+<body onload="checkIsLoggedIn();">
+    <div class="fixed-bottom w-100 text-left text-lg-center pl-2 pl-lg-0 pb-1">
+        <small class="text-muted">微卡版本号: <span id="app-version-number"></span></small>
+    </div>
+    <div class="py-5" id="module-login">
+        <div class="row animated fadeIn mt-4">
+            <div class="col-12 col-md-8 col-lg-6 mx-auto">
+                <div class="alert alert-danger mb-3 error-message-wrapper" style="visibility: hidden;">
+                    <i class="fa fa-times mx-1" onclick="$(this).parent().css('visibility', 'hidden')"></i>
+                    <span class="error-message">无法连接服务器</span>
+                    <small class='error-status ml-2'></small>
+                    <small class='error-text-status ml-1'></small>
+                </div>
+                <div class="container px-4 px-md-5 py-5 d-flex justify-content-center">
+                    <div ng-controller="SignInController" onselectstart="return false;">
+                        <h1 class='display-4 mb-4' onselectstart="return false;">
+                                <span class="d-inline-block cursor-pointer" style="font-size:0;" onclick="window.location.href = 'index.html'">
+                                    <span class="text-color-animated" style="font-size: 4rem;">微卡</span>
+                                    <!--<span class="text-color-animated" style="font-size: 4rem;">W</span>-->
+                                    <!--<span class="text-muted" style="font-size: 3rem;position:relative;left:-3px;">eCard</span>-->
+                                </span>
+                            <small class="d-inline-block text-muted font-weight-light pl-1 pr-4">登录</small>
+                        </h1>
+                        <input class="form-control w-100 w-lg-50 mx-auto" type="text" id="login-username" size="30" placeholder="User Name or Telephone Number"
+                               ng-required="true">
+                        <input class="form-control w-100 w-lg-50 mx-auto" type="password" id="login-password" size="30" placeholder="password" ng-required="true">
+                        <div class="mt-3 mb-4">
+                            <button class="btn btn-primary px-4" onclick="loginSubmit()">
+                                登录
+                            </button>
+                            <button class="btn btn-primary" onclick="qqLogin()">
+                                <i class="fa fa-qq"></i>
+                            </button>
+                            <a class="btn btn-outline-primary" href="signup.html">注册账户</a>
+                            <a class="btn" href="forgot-password.html">忘记密码？</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.FollowDao">
+
+    <!--关注某人-->
+    <insert id="follow">
+        INSERT INTO follow (id, followingId, userId) VALUES (#{id}, #{followingId}, #{userId})
+    </insert>
+
+    <!--取消关注某人-->
+    <delete id="unFollow" parameterType="string">
+        DELETE FROM follow WHERE id = #{followId}
+    </delete>
+
+    <!--验证是否已经关注-->
+    <select id="verifyHasFollowed" resultType="string">
+        SELECT id FROM follow WHERE userId = #{userId} AND followingId = #{followingId}
+    </select>
+
+    <!--查找自己关注的人-->
+    <select id="findFollowing" parameterType="string" resultMap="followMap">
+        SELECT following.id fid, following.username fun, following.nickname fnk, following.gender fgen, following.city fct
+                ,following.fansNum fannm, following.followNum fownm, following.cardsNum cnm,following.avatarUrl fava
+                , following.styleImgUrl fsty, following.signature fsign
+        FROM users following
+        INNER JOIN follow ON following.id = follow.followingId
+        INNER JOIN users fans ON follow.userId = fans.id
+        WHERE fans.id = #{userId} AND fans.status = 'exist' AND following.status = 'exist'
+    </select>
+
+    <resultMap id="followMap" type="user" autoMapping="false">
+        <id column="fid" property="id"/>
+        <result column="fun" property="username"/>
+        <result column="fnk" property="nickname"/>
+        <result column="fgen" property="gender"/>
+        <result column="fct" property="city"/>
+        <result column="fava" property="avatarUrl"/>
+        <result column="fsty" property="styleImgUrl"/>
+        <result column="fannm" property="fansNum"/>
+        <result column="fownm" property="followNum"/>
+        <result column="cnm" property="cardsNum"/>
+        <result column="fsign" property="signature"/>
+    </resultMap>
+
+    <!--查找关注自己的人-->
+    <select id="findFans" parameterType="string" resultMap="followMap">
+        SELECT fans.id fid, fans.username fun, fans.nickname fnk, fans.gender fgen, fans.city fct
+                ,fans.fansNum fannm, fans.followNum fownm, fans.cardsNum cnm,fans.avatarUrl fava
+                , fans.styleImgUrl fsty
+        FROM users fans
+        INNER JOIN follow ON fans.id = follow.userId
+        INNER JOIN users following ON follow.followingId = following.id
+        WHERE following.id = #{userId} AND fans.status = 'exist' AND following.status = 'exist'
+    </select>
+
+</mapper>

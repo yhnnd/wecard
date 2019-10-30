@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.LogDao">
+    <insert id="insert" parameterType="Log">
+        INSERT INTO logs(id, description, address, operatorId)
+        VALUES (#{id}, #{description}, #{address}, #{operator.id})
+    </insert>
+</mapper>

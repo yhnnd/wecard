@@ -1,0 +1,75 @@
+<!-- 卡片统计信息 -->
+<div class="border-top">
+    <!-- 卡片 ID -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>卡片 ID:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>{{current_card.id}}</small>
+        </div>
+    </div>
+    <!-- 卡片类型 -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>卡片类型:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>{{current_card.type}}</small>
+        </div>
+    </div>
+    <!-- 正文字数 -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>正文字数:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>{{current_card.text.length}}</small>
+        </div>
+    </div>
+    <!-- 正文行数 -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>正文行数:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>{{current_card.contentLines.length}}</small>
+        </div>
+    </div>
+    <!-- 卡片热度 -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>热度:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>{{current_card.cardHot}}</small>
+        </div>
+    </div>
+    <!-- 评论数量 -->
+    <div class="row" ng-if="current_card.commentNum && current_card.comments && current_card.comments.length">
+        <div class="col-6 text-right">
+            <small>评论量:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>{{current_card.commentNum}}</small>
+        </div>
+    </div>
+    <!-- 转发数量 -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>转发量:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>{{current_card.shareNum}}</small>
+        </div>
+    </div>
+    <!-- 作者 ID -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>作者:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>{{current_card.user.username}}</small>
+        </div>
+    </div>
+</div>

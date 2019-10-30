@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.impte.wecard.dao.CardImageDao">
+
+  <sql id="cardImageQuery">
+    select
+      img.id, img.url, img.remark
+    from card_imgs img
+  </sql>
+
+  <resultMap id="basicCardImgMap" type="cardImage" autoMapping="false">
+    <id column="id" property="id"/>
+    <result column="url" property="url"/>
+    <result column="remark" property="remark"/>
+  </resultMap>
+
+  <select id="findById" parameterType="string" resultMap="basicCardImgMap">
+    <include refid="cardImageQuery"/>
+    where img.id=#{id}
+  </select>
+
+  <select id="findByCardId" parameterType="string" resultMap="basicCardImgMap">
+    <include refid="cardImageQuery"/>
+    LEFT JOIN cards ON cards.id=img.`cardId`
+    WHERE img.cardId=#{cardId}
+  </select>
+
+  <insert id="insert" parameterType="cardImage">
+    INSERT INTO card_imgs(id, url, remark, cardId)
+      VALUES (#{id}, #{url}, #{remark}, #{card.id})
+  </insert>
+
+  <insert id="insertList" parameterType="list">
+    INSERT INTO card_imgs(id, url, remark, cardId) VALUES
+    <foreach collection="cardImages" item="image" separator=",">
+      (#{image.id}, #{image.url}, #{image.remark}, #{image.card.id})
+    </foreach>
+  </insert>
+
+  <update id="updateCardImgRemark" parameterType="string">
+    update card_imgs
+      set remark=#{newRemark}
+    where id = #{id}
+  </update>
+
+  <!--删除通过图片URL设为空实现-->
+  <update id="delete" parameterType="cardImage">
+    update card_imgs
+      set url = ''
+    where id=#{id}
+  </update>
+
+  <delete id="delCardImage" parameterType="string">
+    DELETE FROM card_imgs
+      WHERE cardId=#{cardId}
+  </delete>
+
+</mapper>

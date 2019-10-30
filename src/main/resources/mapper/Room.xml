@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.RoomDao">
+
+    <!--通过用户id找到某个用户的所有群-->
+    <select id="findUserRooms" parameterType="string" resultMap="findUserRoomsMap">
+        SELECT *, rooms.id rid, owner.id oid, owner.username oun, owner.nickname onk,
+                  owner.avatarUrl oat, owner.gender ogd, owner.city oct, owner.grade ord, owner.styleImgUrl osi
+        FROM rooms
+        INNER JOIN users owner ON owner.id = rooms.ownerId
+        INNER JOIN room_members ON room_members.roomId = rooms.id
+        INNER JOIN users ON users.id = room_members.userId AND users.status = 'exist'
+        WHERE users.id = #{userId} AND rooms.status = 'exist'
+    </select>
+
+    <resultMap id="findUserRoomsMap" type="Room" autoMapping="true">
+        <id column="rid" property="id"/>
+        <association property="owner" javaType="User" autoMapping="false">
+            <id column="oid" property="id"/>
+            <result column="oun" property="username"/>
+            <result column="onk" property="nickname"/>
+            <result column="oat" property="avatarUrl"/>
+            <result column="ogd" property="gender"/>
+            <result column="oct" property="city"/>
+            <result column="ord" property="grade"/>
+            <result column="osi" property="styleImgUrl"/>
+        </association>
+    </resultMap>
+
+    <!--验证群是否存在-->
+    <select id="verifyRoomExist" parameterType="string" resultType="Room">
+        SELECT id, roomName FROM rooms WHERE id = #{id} AND status = 'exist'
+    </select>
+
+    <!--搜索房间-->
+    <select id="findRooms" resultMap="findRoomsMap">
+        SELECT *, rooms.id rid, users.id uid
+        FROM rooms
+        INNER JOIN users ON users.id = rooms.ownerId
+        WHERE
+        roomName LIKE concat('%', #{roomName}, '%')
+        OR users.username = #{roomName}
+        OR rooms.id = #{roomName}
+        ORDER BY membersNum
+        LIMIT #{offset},#{limit}
+    </select>
+    <resultMap id="findRoomsMap" type="Room" autoMapping="true">
+        <id column="rid" property="id"/>
+        <association property="owner" javaType="User" autoMapping="false">
+            <id column="uid" property="id"/>
+            <result column="username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="avatarUrl" property="avatarUrl"/>
+            <result column="gender" property="gender"/>
+            <result column="city" property="city"/>
+            <result column="grade" property="grade"/>
+            <result column="styleImgUrl" property="styleImgUrl"/>
+        </association>
+    </resultMap>
+
+    <!--创建群-->
+    <insert id="insertRoom">
+        INSERT INTO rooms (id, roomName, ownerId) VALUES (#{id}, #{roomName}, #{ownerId})
+    </insert>
+
+    <select id="findById" parameterType="string" resultMap="findRoomsMap">
+        SELECT *, rooms.id rid, users.id uid
+        FROM rooms
+        INNER JOIN users ON users.id = rooms.ownerId
+        WHERE rooms.id = #{id}
+    </select>
+
+    <update id="updateStatusNotExist" parameterType="string">
+        UPDATE rooms SET status = 'notExist' WHERE id = #{id}
+    </update>
+
+    <!--设置群名称-->
+    <update id="setRoomName">
+        UPDATE rooms SET roomName = #{roomName} WHERE id = #{id}
+    </update>
+
+    <select id="findSimpleRoom" parameterType="string" resultMap="findSimpleRoomMap">
+        select rooms.id rmId, roomName, roomImgUrl, ownerId, roomCreateTime,
+        avatarUrl, nickname, username, gender, city
+        from rooms
+        left join users on users.id = ownerId and users.status = 'exist'
+        where rooms.id = #{roomId} and rooms.status = 'exist'
+    </select>
+    <resultMap id="findSimpleRoomMap" type="Room" autoMapping="true">
+        <id property="id" column="rmId"/>
+        <association property="owner" javaType="User" autoMapping="true">
+            <id property="id" column="ownerId"/>
+        </association>
+    </resultMap>
+</mapper>

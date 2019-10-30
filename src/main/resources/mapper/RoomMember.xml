@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.RoomMemberDao">
+    <!--验证某人是否是群成员-->
+    <select id="verifyRoomMember" resultType="RoomMember">
+        SELECT * FROM room_members WHERE userId = #{userId} AND roomId = #{roomId}
+    </select>
+
+    <!--验证某人是否是群管理员-->
+    <select id="verifyRoomAdmin" resultType="RoomMember">
+        SELECT * FROM room_members WHERE userId = #{userId} AND roomId = #{roomId} AND role IN ('owner', 'admin')
+    </select>
+
+    <!--验证某人是否是群管理员-->
+    <select id="verifyRoomOwner" resultType="RoomMember">
+        SELECT * FROM room_members WHERE userId = #{userId} AND roomId = #{roomId} AND role = 'owner'
+    </select>
+
+    <!--通过群id找到某个群的所有管理员，包括群主-->
+    <select id="findAdminIdsByRoomId" parameterType="string" resultType="string">
+        SELECT userId FROM room_members WHERE roomId = #{roomId} AND role IN ('owner', 'admin')
+    </select>
+
+    <!--查找某个人所创建的房间数量-->
+    <select id="findOwnerRoomsNum" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM room_members
+        INNER JOIN rooms ON rooms.id = room_members.roomId AND rooms.status = 'exist'
+        WHERE room_members.userId = #{userId} AND room_members.role = 'owner'
+    </select>
+
+    <!--查看群成员-->
+    <select id="findRoomMembers" parameterType="string" resultMap="findRoomMembersMap">
+        SELECT *, users.id uid FROM room_members
+        INNER JOIN rooms ON rooms.id = room_members.roomId AND rooms.status = 'exist'
+        INNER JOIN users ON users.id = room_members.userId AND users.status = 'exist'
+        WHERE room_members.roomId = #{roomId}
+    </select>
+    <resultMap id="findRoomMembersMap" type="RoomMember" autoMapping="true">
+        <id column="uid" property="id"/>
+    </resultMap>
+
+    <!--插入群成员-->
+    <insert id="insertRoomMember" parameterType="RoomMember">
+        INSERT INTO room_members (id, role, roomRemark, roomId, userId)
+        VALUES (#{id}, #{role}, #{roomRemark}, #{roomId}, #{userId})
+    </insert>
+    
+    <!--设置管理员-->
+    <update id="setRoomAdmin" parameterType="string">
+        UPDATE room_members SET role = 'admin' WHERE id = #{id}
+    </update>
+
+    <update id="disableAdmin" parameterType="string">
+        UPDATE room_members SET role = 'member' WHERE id = #{id}
+    </update>
+
+    <!--删除群成员-->
+    <delete id="deleteByRoomIdAndUserId" parameterType="string">
+        DELETE FROM room_members WHERE roomId = #{roomId} AND userId = #{userId}
+    </delete>
+
+    <!--删除群所有成员-->
+    <delete id="deleteAllMembersByRoomId" parameterType="string">
+        DELETE FROM room_members WHERE roomId = #{roomId}
+    </delete>
+
+    <!--设置群备注-->
+    <update id="setRoomRemark">
+        UPDATE room_members SET roomRemark = #{remark} WHERE id = #{id}
+    </update>
+</mapper>

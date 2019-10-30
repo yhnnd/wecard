@@ -1,0 +1,31 @@
+server:
+  servlet:
+    session:
+      timeout: 86400s
+spring:
+  profiles:
+    active: local
+  servlet:
+    multipart:
+      max-request-size: 1000MB
+      max-file-size: 1000MB
+  thymeleaf:
+    prefix: classpath:/static/
+    suffix: .html
+    mode: HTML5
+    encoding: UTF-8
+    cache: false
+  resources.static-locations: classpath:/static
+  mvc:
+    static-path-pattern: /static/**
+
+mybatis:
+  type-aliases-package: com.impte.wecard.domain.po
+  mapper-locations: classpath:mapper/*.xml
+
+wecard:
+  shortMessage:
+    register: "【徐通】你的微卡注册验证码为%s，请于3分钟内填写，如非本人操作，请忽略本短信。"
+    alterPhone: "【徐通】亲爱的%s你好，你正在修改微卡账户绑定手机，验证码是%s，请于3分钟内填写，如非本人操作，请忽略本短信。"
+    deleteUser: "【徐通】亲爱的%s你好，你的注销账户验证码是%s，请于3分钟内填写，如非本人操作请忽略本短信。"
+    forgetPwd: "【徐通】亲爱的%s你好，你正在%s找回微卡密码，验证码为%s，请于3分钟内填写，如非本人操作，请忽略本短信。"

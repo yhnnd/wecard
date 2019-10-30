@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.CommentDao">
+
+  <resultMap id="userMap" type="user" autoMapping="false">
+    <id column="userId" property="id"/>
+    <result column="username" property="username"/>
+    <result column="avatarUrl" property="avatarUrl"/>
+    <result column="nickname" property="nickname"/>
+  </resultMap>
+
+  <!--包含当前评论和子评论-->
+  <resultMap id="commentMap" type="comment" autoMapping="false">
+    <id column="comId" property="id"/>
+    <result column="comText" property="text"/>
+    <result column="comTime" property="createdTime"/>
+    <result column="comHot" property="commentHot"/>
+    <result column="comStatus" property="status"/>
+    <association property="card" javaType="card">
+      <id column="cardId" property="id"/>
+    </association>
+    <association property="user" resultMap="userMap"/>
+    <collection property="children" column="comId" ofType="comment" select="getChildByParentId"/>
+  </resultMap>
+
+  <!--仅包含当前评论-->
+  <resultMap id="basicCommentMap" type="Comment" autoMapping="false">
+    <id column="comId" property="id"/>
+    <result column="comText" property="text"/>
+    <result column="comTime" property="createdTime"/>
+    <result column="comHot" property="commentHot"/>
+    <result column="comStatus" property="status"/>
+    <association property="card" javaType="card">
+      <id column="cardId" property="id"/>
+    </association>
+    <association property="user" resultMap="userMap"/>
+  </resultMap>
+
+  <!--回复用户的评论-->
+  <resultMap id="cmntToUserMap" type="comment" autoMapping="false">
+    <id column="comId" property="id"/>
+    <result column="comText" property="text"/>
+    <result column="comTime" property="createdTime"/>
+    <result column="comStatus" property="status"/>
+    <association property="card" javaType="card" autoMapping="false">
+      <id column="cardId" property="id"/>
+      <result column="cardTitle" property="title"/>
+    </association>
+    <association property="user" resultMap="userMap" autoMapping="false"/>
+  </resultMap>
+
+  <sql id="commentQuery">
+    SELECT
+      com.id comId, com.text comText, com.`createdTime` comTime,
+      com.`commentHot` comHot, com.`status` comStatus,
+      cards.`id` cardId,
+      u.id userId, u.`username`, u.`avatarUrl`, u.nickname
+    FROM comments com
+      INNER JOIN cards ON cards.id=com.`cardId`
+      INNER JOIN users u ON u.`id`=com.`userId` and u.status='exist'
+  </sql>
+
+  <select id="findByCardId" parameterType="map" resultMap="commentMap">
+    <include refid="commentQuery"/>
+    WHERE com.cardId = #{cardId} and com.parentId is null
+    ORDER BY
+    <choose>
+      <when test='sortKey=="popular"'>com.commentHot</when>
+      <when test='sortKey=="time"'>com.createdTime</when>
+      <otherwise>com.createdTime</otherwise>
+    </choose>
+    DESC
+    LIMIT #{offet}, #{limit}
+  </select>
+
+  <select id="getChildByParentId" parameterType="string" resultMap="basicCommentMap">
+    <include refid="commentQuery"/>
+    WHERE com.parentId=#{parentId}
+    ORDER BY com.createdTime
+  </select>
+
+  <select id="findLv1ByCardId" parameterType="map" resultMap="basicCommentMap">
+    <include refid="commentQuery"/>
+    WHERE cards.`id`=#{cardId}
+      AND com.`parentId` IS NULL
+    ORDER BY
+      <choose>
+        <when test='sortKey=="popular"'>com.commentHot</when>
+        <when test='sortKey=="time"'>com.createdTime</when>
+        <otherwise>com.createdTime</otherwise>
+      </choose>
+    DESC
+    LIMIT #{offset}, #{limit}
+  </select>
+
+  <select id="findLv2" parameterType="map" resultMap="basicCommentMap">
+    <include refid="commentQuery"/>
+    WHERE com.`parentId`=#{commentId}
+    ORDER BY com.createdTime DESC
+    LIMIT #{offset}, #{limit}
+  </select>
+
+  <insert id="insertLikeComment" parameterType="map">
+    INSERT INTO like_comment(id, commentId, userId)
+      VALUES(#{id}, #{commentId}, #{userId})
+  </insert>
+
+  <delete id="deleteLikeComment" parameterType="map">
+    DELETE FROM like_comment
+      WHERE commentId=#{commentId} AND userId=#{userId}
+  </delete>
+
+  <insert id="insert" parameterType="comment">
+    insert into comments (id, text, createdTime,cardId, userId, parentId)
+      values (#{id}, #{text}, #{createdTime}, #{card.id}, #{user.id}, #{parent.id});
+  </insert>
+
+  <update id="delete" parameterType="comment">
+    update comments
+      set status='delete',text='该评论已被删除'
+    where id=#{id}
+  </update>
+
+  <update id="deleteAllLv2" parameterType="string">
+    update comments
+      set status='delete',text='该评论已被删除'
+    where parentId=#{commentId}
+  </update>
+
+  <update id="deleteByCardId" parameterType="string">
+    update comments
+      set status='delete',text='该评论已被删除'
+    where cardId=#{cardId}
+  </update>
+
+  <select id="findByIdAndUserId" parameterType="map" resultType="comment">
+    SELECT id FROM comments
+      WHERE id=#{id} AND userId=#{userId}
+  </select>
+
+  <select id="countLikeByIdAndUserId" parameterType="map" resultType="int" >
+    SELECT count(*) FROM like_comment
+    WHERE commentId=#{commentId} AND userId=#{userId}
+  </select>
+
+  <select id="findStatusById" parameterType="string" resultType="string">
+    SELECT status FROM comments WHERE id=#{commentId}
+  </select>
+
+  <select id="findByUserId" parameterType="map" resultMap="basicCommentMap">
+    <include refid="commentQuery"/>
+    where com.userId=#{userId} and com.status='exist'
+    order by com.createdTime DESC
+    limit #{offset},#{limit}
+  </select>
+
+  <select id="findToUserByUserId" parameterType="map" resultMap="cmntToUserMap">
+    SELECT * FROM (
+      SELECT
+        com.`id` comId, com.`text` comText, com.`createdTime` comTime,
+        u.`id` userId, u.`username`, u.`nickname`, u.`avatarUrl`,
+        c.`id` cardId, c.`title` cardTitle
+      FROM comments com
+        INNER JOIN comments parent ON parent.`id`=com.`parentId` and parent.status='exist'
+        INNER JOIN users u ON u.`id`=com.`userId` and u.status='exist'
+        INNER JOIN cards c ON c.id = com.`cardId` and c.status='exist'
+      WHERE parent.`userId`=#{userId} and com.status='exist'
+      UNION ALL
+      SELECT
+        com.`id` comId, com.`text` comText, com.`createdTime` comTime,
+        u.`id` userId, u.`username`, u.`nickname`, u.`avatarUrl`,
+        c.`id` cardId, c.`title` cardTitle
+      FROM comments com
+        INNER JOIN cards c ON c.id = com.`cardId` and c.status='exist'
+        INNER JOIN users u ON u.id=c.userId and u.status='exist'
+      WHERE u.id=#{userId} and com.status='exist'
+    ) temp GROUP BY comId
+    ORDER BY comTime DESC
+    limit #{offset}, #{limit}
+  </select>
+
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.impte.wecard.dao.VoiceDao">
+
+  <sql id="voiceQuery">
+    SELECT
+      v.id, v.url, v.name, v.createdTime
+    from voices v
+  </sql>
+
+  <select id="findByCardId" parameterType="string" resultType="voice">
+    <include refid="voiceQuery"/>
+    left join cards on cards.voiceId = v.id
+    where v.id = #{cardId}
+  </select>
+
+  <select id="findById" parameterType="string" resultType="voice">
+    <include refid="voiceQuery"/>
+    where v.id = #{id}
+  </select>
+
+  <insert id="insert" parameterType="voice" >
+    insert into voices (id, url, name)
+      values (#{id}, #{url}, #{name});
+  </insert>
+
+  <update id="updateVoiceName" parameterType="map">
+    update voices
+    set name = #{newName}
+    where id=#{id}
+  </update>
+
+  <!--删除通过音频URL设为空实现-->
+  <update id="delete" parameterType="voice">
+    update voices
+    set url = ''
+    where id=#{id}
+  </update>
+
+</mapper>

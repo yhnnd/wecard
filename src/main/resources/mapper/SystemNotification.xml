@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.SystemNotificationDao">
+    <select id="findByReceiver" resultMap="findByReceiverMap">
+        SELECT * FROM system_notifications
+        INNER JOIN sys_noti_receivers ON systemNotificationId = system_notifications.id
+        WHERE receiverId = #{receiverId} OR receiverId = 'all'
+        ORDER BY createTime DESC LIMIT #{offset},#{limit}
+    </select>
+    <resultMap id="findByReceiverMap" type="SystemNotification" autoMapping="false">
+        <id column="id" property="id"/>
+        <result column="systemMsg" property="systemMsg"/>
+        <result column="createTime" property="createTime"/>
+    </resultMap>
+
+    <insert id="insertNotification" parameterType="SystemNotification">
+        INSERT INTO system_notifications (id, systemMsg)
+        VALUES (#{id}, #{systemMsg})
+    </insert>
+
+    <insert id="insertReceiver">
+        INSERT INTO sys_noti_receivers (id, systemNotificationId, receiverId)
+        VALUES (#{id}, #{systemNotificationId}, #{receiverId})
+    </insert>
+</mapper>

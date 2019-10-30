@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.impte.wecard.dao.TopicDao">
+
+  <sql id="topicQuery">
+    SELECT
+      t.id, t.name, t.createdTime,
+      u.id userId, u.`avatarUrl`, u.`username`
+    FROM topics t
+      LEFT JOIN users u ON u.`id`=t.`creatorId`
+  </sql>
+
+  <resultMap id="basicUser" type="user">
+    <id column="userId" property="id"/>
+    <result column="avatarUrl" property="avatarUrl"/>
+    <result column="username" property="username"/>
+  </resultMap>
+
+  <resultMap id="basicTopic" type="topic">
+    <id column="id" property="id"/>
+    <result column="name" property="name"/>
+    <result column="createdTime" property="createdTime"/>
+    <association property="creator" resultMap="basicUser"/>
+  </resultMap>
+
+  <select id="findById" parameterType="string" resultMap="basicTopic">
+    <include refid="topicQuery"/>
+    where t.id = #{id}
+  </select>
+
+  <select id="findByCreatorId" parameterType="string" resultMap="basicTopic">
+    <include refid="topicQuery"/>
+    where u.id = #{creatorId}
+  </select>
+
+  <select id="findByIdAndCreatorId" parameterType="map" resultMap="basicTopic">
+    <include refid="topicQuery"/>
+    where t.id = #{id} and u.id = #{creatorId}
+  </select>
+  
+  <select id="findByName" parameterType="string" resultMap="basicTopic">
+    SELECT id, name FROM topics
+    WHERE name LIKE '%${value}%'
+  </select>
+
+  <insert id="insert" parameterType="topic">
+    INSERT INTO topics (id, name, creatorId)
+    VALUES (#{id}, #{name}, #{creator.id})
+  </insert>
+
+  <delete id="delete" parameterType="topic">
+    DELETE FROM topics WHERE id=#{id}
+  </delete>
+
+  <resultMap id="tmpTopicMap" type="topic" autoMapping="false">
+    <id property="id" column="id"/>
+    <association property="creator" javaType="user">
+      <id property="id" column="creatorId"/>
+    </association>
+  </resultMap>
+  <select id="findByFullName" parameterType="string" resultMap="tmpTopicMap">
+    SELECT id,creatorId FROM topics
+    WHERE name=#{name}
+  </select>
+
+</mapper>

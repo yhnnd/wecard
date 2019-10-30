@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.FriendDao">
+    <select id="findFriendsRoomId" resultType="string">
+        SELECT friends_rooms.id FROM friends_rooms
+        INNER JOIN friend_items ON friends_rooms.friendItemOneId = friend_items.id OR friends_rooms.friendItemTwoId = friend_items.id
+        WHERE friend_items.userId = #{userId} AND friend_items.friendId = #{friendId}
+    </select>
+
+    <select id="findFriend" resultMap="findFriendMessageMap">
+        SELECT * , friend.id fid
+        FROM friend_items
+        INNER JOIN users friend ON friend.id = friend_items.friendId
+        WHERE friend_items.userId = #{userId} AND friend_items.friendId = #{friendId}
+    </select>
+    <resultMap id="findFriendMessageMap" type="Friend" autoMapping="true">
+        <id column="fid" property="id"/>
+        <association property="group" javaType="Group" autoMapping="false">
+            <id column="groupId" property="id"/>
+        </association>
+    </resultMap>
+
+    <insert id="insertFriendItem">
+        INSERT INTO friend_items (id, remark, groupId, friendId, userId)
+        VALUES (#{id}, #{remark}, #{groupId}, #{friendId}, #{userId})
+    </insert>
+
+    <insert id="insertFriendRoom">
+        INSERT INTO friends_rooms (id, friendItemOneId, friendItemTwoId) VALUES (#{id}, #{friendItemOneId}, #{friendItemTwoId})
+    </insert>
+
+    <!--删除好友时删除好友房间，好友房间的触发器自动删除friendItems-->
+    <delete id="deleteFriendRoom" parameterType="string">
+        DELETE FROM friends_rooms WHERE id = #{friendRoomId}
+    </delete>
+
+    <!--设置好友备注-->
+    <update id="setFriendRemark">
+        UPDATE friend_items SET remark = #{remark} WHERE userId = #{userId} AND friendId = #{friendId}
+    </update>
+
+    <!--修改好友分组，即更新friendItem中的groupId-->
+    <update id="updateGroupId">
+        UPDATE friend_items SET groupId = #{groupId} WHERE userId = #{userId} AND friendId = #{friendId}
+    </update>
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.impte.wecard.dao.VideoDao">
+
+  <sql id="videoQuery">
+    select
+      v.id, v.url, v.imgUrl, v.name, v.createdTime
+    from videos v
+  </sql>
+
+  <select id="findByCardId" parameterType="string" resultType="video">
+    <include refid="videoQuery"/>
+    LEFT JOIN cards ON cards.`videoId`=v.`id`
+    WHERE cards.`id`=#{cardId}
+  </select>
+
+  <select id="findById" parameterType="string" resultType="video">
+    <include refid="videoQuery"/>
+    where v.id=#{id}
+  </select>
+
+  <insert id="insert" parameterType="video">
+    insert into videos(id, url, imgUrl, name)
+            values(#{id}, #{url}, #{imgUrl}, #{name})
+  </insert>
+
+  <update id="updateVideoName" parameterType="map">
+    update videos
+      set name = #{newName}
+    where id=#{id}
+  </update>
+
+  <!--删除通过视频URL设为空实现-->
+  <update id="delete" parameterType="video">
+    update videos
+      set url = ''
+    where id=#{id}
+  </update>
+  
+</mapper>

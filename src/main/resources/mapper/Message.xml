@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.MessageDao">
+
+    <sql id="findFriendMsgSql">
+        SELECT *, users.id uid, messages.id mid
+        , videos.id vidid, voices.id voiid
+        , videos.url vurl, voices.url voirl, videos.imgUrl vidimg
+        , videos.name vin, voices.name von
+        , videos.createdTime vidct, voices.createdTime voict
+        FROM messages
+        INNER JOIN users ON users.id = messages.userId
+        LEFT JOIN videos ON videos.id = videoId
+        LEFT JOIN voices ON voices.id = voiceId
+    </sql>
+
+    <!--..........................................找到好友房间下面的所有消息...........................................-->
+    <select id="findMessagesByFriendRoomId" resultMap="findFriendMsgMap">
+        <include refid="findFriendMsgSql"/>
+        LEFT JOIN remove_msgs ON messages.id = remove_msgs.messageId AND remove_msgs.userId = #{userId}
+        WHERE messages.friendRoomId = #{friendRoomId} AND remove_msgs.id IS NULL
+        ORDER BY messageCreateTime DESC LIMIT #{offset},#{limit}
+    </select>
+
+    <select id="findFriendMsgItem" parameterType="string" resultMap="findFriendMsgMap">
+        <include refid="findFriendMsgSql"/>
+        LEFT JOIN remove_msgs ON messages.id = remove_msgs.messageId AND remove_msgs.userId = #{userId}
+        WHERE messages.id = #{id} AND remove_msgs.id IS NULL
+    </select>
+
+    <resultMap id="findFriendMsgMap" type="Message" autoMapping="true">
+        <id column="mid" property="id"/>
+        <association property="user" javaType="User" autoMapping="false">
+            <id column="uid" property="id"/>
+            <result column="username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="avatarUrl" property="avatarUrl"/>
+        </association>
+        <association property="video" javaType="Video" autoMapping="false">
+            <id column="vidid" property="id"/>
+            <result column="vurl" property="url"/>
+            <result column="vin" property="name"/>
+            <result column="vidct" property="createdTime"/>
+            <result column="vidimg" property="imgUrl"/>
+        </association>
+        <association property="voice" javaType="Voice" autoMapping="false">
+            <id column="voiid" property="id"/>
+            <result column="voirl" property="url"/>
+            <result column="von" property="name"/>
+            <result column="voict" property="createdTime"/>
+        </association>
+    </resultMap>
+
+    <!--..........................................找到好友房间下面的所有消息...........................................-->
+    <sql id="findRoomMsgSql">
+        SELECT *, users.id uid, messages.id mid
+        , videos.id vidid, voices.id voiid
+        , videos.url vurl, voices.url voirl, videos.imgUrl vidimg
+        , videos.name vin, voices.name von
+        , videos.createdTime vidct, voices.createdTime voict
+        , room_members.roomRemark romrk
+        FROM messages
+        INNER JOIN users ON users.id = messages.userId
+        LEFT JOIN room_members ON room_members.userId = users.id AND room_members.roomId = messages.roomId
+        LEFT JOIN videos ON videos.id = videoId
+        LEFT JOIN voices ON voices.id = voiceId
+    </sql>
+
+    <select id="findMessagesByRoomId" resultMap="findRoomMsgMap">
+        <include refid="findRoomMsgSql"/>
+        LEFT JOIN remove_msgs ON messages.id = remove_msgs.messageId AND remove_msgs.userId = #{userId}
+        WHERE messages.roomId = #{roomId} AND remove_msgs.id IS NULL
+        ORDER BY messageCreateTime DESC LIMIT #{offset},#{limit}
+    </select>
+
+    <select id="findRoomMsgItem" parameterType="string" resultMap="findRoomMsgMap">
+        <include refid="findRoomMsgSql"/>
+        LEFT JOIN remove_msgs ON messages.id = remove_msgs.messageId AND remove_msgs.userId = #{userId}
+        WHERE messages.id = #{id} AND remove_msgs.id IS NULL
+    </select>
+
+    <resultMap id="findRoomMsgMap" type="Message" autoMapping="true">
+        <id column="mid" property="id"/>
+        <association property="roomMember" javaType="roomMember" autoMapping="false">
+            <id column="uid" property="id"/>
+            <result column="username" property="username"/>
+            <result column="nickname" property="nickname"/>
+            <result column="avatarUrl" property="avatarUrl"/>
+            <result column="romrk" property="roomRemark"/>
+        </association>
+        <association property="video" javaType="Video" autoMapping="false">
+            <id column="vidid" property="id"/>
+            <result column="vurl" property="url"/>
+            <result column="vin" property="name"/>
+            <result column="vidct" property="createdTime"/>
+            <result column="vidimg" property="imgUrl"/>
+        </association>
+        <association property="voice" javaType="Voice" autoMapping="false">
+            <id column="voiid" property="id"/>
+            <result column="voirl" property="url"/>
+            <result column="von" property="name"/>
+            <result column="voict" property="createdTime"/>
+        </association>
+    </resultMap>
+
+    <!--验证朋友消息的浏览权限-->
+    <select id="verifyFriendMsgBelong" resultType="Message">
+        SELECT * FROM messages
+        INNER JOIN friends_rooms ON friends_rooms.id = friendRoomId
+        INNER JOIN friend_items itemOne ON itemOne.id = friendItemOneId
+        INNER JOIN friend_items itemTwo ON itemTwo.id = friendItemTwoId
+        WHERE messages.id = #{id}
+        AND (itemOne.userId = #{userId} OR itemTwo.userId = #{userId})
+    </select>
+
+    <!--验证群消息的浏览权限-->
+    <select id="verifyRoomMsgBelong" resultType="Message">
+        SELECT * FROM messages
+        INNER JOIN room_members ON messages.roomId = room_members.roomId
+        WHERE messages.id = #{id} AND room_members.userId = #{userId}
+    </select>
+
+    <select id="verifyMsgBelong" resultType="Message">
+        SELECT * FROM messages WHERE messages.id = #{id} AND userId = #{userId}
+    </select>
+
+    <!--验证消息是否已经被删除-->
+    <select id="findRemovedMessage" resultType="string">
+        SELECT id FROM remove_msgs WHERE userId = #{userId} AND messageId = #{messageId}
+    </select>
+
+    <!--验证消息是否已经被撤回-->
+    <select id="findRecall" parameterType="string" resultType="int">
+        SELECT recall FROM messages WHERE id = #{id}
+    </select>
+    
+    <!--返回消息类型-->
+    <select id="verifyTypeFriend" parameterType="string" resultType="string">
+        SELECT friendRoomId FROM messages WHERE id = #{id}
+    </select>
+    <select id="verifyTypeRoom" parameterType="string" resultType="string">
+        SELECT roomId FROM messages WHERE id = #{id}
+    </select>
+
+    <!--撤回消息-->
+    <update id="setRecall" parameterType="string">
+        UPDATE messages SET text = NULL , imgUrl = NULL , videoId = NULL, voiceId = NULL, recall = 1, recallTime = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertFriendBasicMsg">
+        INSERT INTO messages (id, text, imgUrl, type, userId, friendRoomId)
+        VALUES (#{id}, #{text}, #{imgUrl}, #{type}, #{userId}, #{friendRoomId})
+    </insert>
+
+    <insert id="insertRoomBasicMsg">
+        INSERT INTO messages (id, text, imgUrl, type, userId, roomId)
+        VALUES (#{id}, #{text}, #{imgUrl}, #{type}, #{userId}, #{roomId})
+    </insert>
+
+    <!--删除消息-->
+    <insert id="insertRemoveMessage">
+        INSERT INTO remove_msgs (id, messageId, userId) VALUES (#{id}, #{messageId}, #{userId})
+    </insert>
+
+</mapper>

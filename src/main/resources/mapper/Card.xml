@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.impte.wecard.dao.CardDao">
+
+    <resultMap id="userMap" type="user" autoMapping="false">
+        <id column="userId" property="id"/>
+        <result column="username" property="username"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatarUrl" property="avatarUrl"/>
+        <result column="signature" property="signature"/>
+        <result column="grade" property="grade"/>
+    </resultMap>
+
+    <!--进入卡片详情的用户信息-->
+    <resultMap id="cardUserMap" type="user" autoMapping="false">
+        <id column="userId" property="id"/>
+        <result column="username" property="username"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatarUrl" property="avatarUrl"/>
+        <result column="signature" property="signature"/>
+        <result column="styleImgUrl" property="styleImgUrl"/>
+        <result column="grade" property="grade"/>
+    </resultMap>
+
+    <resultMap id="videoMap" type="video" autoMapping="false">
+        <id column="videoId" property="id"/>
+        <result column="videoUrl" property="url"/>
+    </resultMap>
+    <resultMap id="voiceMap" type="voice">
+        <id column="voiceId" property="id"/>
+        <result column="voiceUrl" property="url"/>
+    </resultMap>
+
+    <!--分享卡片的原卡片的视频和音频-->
+    <resultMap id="sVideoMap" type="video" autoMapping="false">
+        <id column="sVideoId" property="id"/>
+        <result column="sVideoUrl" property="url"/>
+    </resultMap>
+    <resultMap id="sVoiceMap" type="voice">
+        <id column="sVoiceId" property="id"/>
+        <result column="sVoiceUrl" property="url"/>
+    </resultMap>
+
+    <!--卡片预览评论-->
+    <resultMap id="tmpCmntMap" type="comment" autoMapping="false">
+        <id column="id" property="id"/>
+        <result column="text" property="text"/>
+        <association property="user" javaType="user">
+            <result property="avatarUrl" column="avatarUrl"/>
+        </association>
+    </resultMap>
+
+    <!--卡片预览-->
+    <resultMap id="cardPreviewMap" type="card" autoMapping="false">
+        <id column="cardId" property="id"/>
+        <result column="title" property="title"/>
+        <result column="text" property="text"/>
+        <result column="type" property="type"/>
+        <result column="cardHot" property="cardHot"/>
+        <result column="shareNum" property="shareNum"/>
+        <result column="commentNum" property="commentNum"/>
+        <result column="createdTime" property="createdTime"/>
+        <result column="status" property="status"/>
+        <result column="lcUserId" property="iLike"/>
+        <association property="video" javaType="video" resultMap="videoMap"/>
+        <association property="voice" javaType="voice" resultMap="voiceMap"/>
+        <association property="user" javaType="user" resultMap="userMap"/>
+        <association property="share" javaType="card" autoMapping="false">
+            <id column="shareId" property="id"/>
+        </association>
+        <collection property="topics" column="cardId" ofType="topic" select="getTopicsByCardId"/>
+        <collection property="images" column="cardId" ofType="cardImage" select="getImagesByCardId"/>
+        <collection property="comments" column="cardId" ofType="comment" select="getLv1CmntByCardId"/>
+    </resultMap>
+
+    <!--卡片详情-->
+    <resultMap id="cardMap" type="card" autoMapping="false">
+        <id column="cardId" property="id"/>
+        <result column="title" property="title"/>
+        <result column="text" property="text"/>
+        <result column="type" property="type"/>
+        <result column="cardHot" property="cardHot"/>
+        <result column="shareNum" property="shareNum"/>
+        <result column="commentNum" property="commentNum"/>
+        <result column="createdTime" property="createdTime"/>
+        <result column="status" property="status"/>
+        <result column="lcUserId" property="iLike"/>
+        <association property="video" javaType="video" resultMap="videoMap"/>
+        <association property="voice" javaType="voice" resultMap="voiceMap"/>
+        <association property="user" javaType="user" resultMap="cardUserMap"/>
+        <collection property="topics" column="cardId" ofType="topic" select="getTopicsByCardId"/>
+        <collection property="images" column="cardId" ofType="cardImage" select="getImagesByCardId"/>
+    </resultMap>
+
+    <!--分享卡-->
+    <resultMap id="sharedCardMap" type="card" autoMapping="false">
+        <id column="cardId" property="id"/>
+        <result column="title" property="title"/>
+        <result column="text" property="text"/>
+        <result column="type" property="type"/>
+        <result column="cardHot" property="cardHot"/>
+        <result column="shareNum" property="shareNum"/>
+        <result column="commentNum" property="commentNum"/>
+        <result column="createdTime" property="createdTime"/>
+        <result column="status" property="status"/>
+        <result column="lcUserId" property="iLike"/>
+        <association property="video" javaType="video" resultMap="videoMap"/>
+        <association property="voice" javaType="voice" resultMap="voiceMap"/>
+        <association property="user" javaType="user" resultMap="cardUserMap"/>
+        <association property="share" javaType="card">
+            <id column="sCardId" property="id"/>
+            <result column="sTitle" property="title"/>
+            <result column="sText" property="text"/>
+            <result column="sType" property="type"/>
+            <result column="sStatus" property="status"/>
+            <result column="lcsUserId" property="iLike"/>
+            <association property="video" javaType="video" resultMap="sVideoMap"/>
+            <association property="voice" javaType="voice" resultMap="sVoiceMap"/>
+            <association property="user" javaType="user">
+                <id column="sUserId" property="id"/>
+                <result column="sUsername" property="username"/>
+                <result column="sAvatarUrl" property="avatarUrl"/>
+                <result column="sGrade" property="grade"/>
+                <result column="sNickname" property="nickname"/>
+            </association>
+            <collection property="topics" column="sCardId" ofType="topic" select="getTopicsByCardId"/>
+            <collection property="images" column="sCardId" ofType="cardImage" select="getImagesByCardId"/>
+        </association>
+        <collection property="topics" column="cardId" ofType="topic" select="getTopicsByCardId"/>
+        <collection property="images" column="cardId" ofType="cardImage" select="getImagesByCardId"/>
+        <collection property="comments" column="cardId" ofType="comment" select="getLv1CmntByCardId"/>
+    </resultMap>
+
+    <sql id="cardQuery">
+        SELECT
+            c.id      cardId,
+            c.title,
+            c.text,
+            c.type,
+            c.cardHot,
+            c.shareNum,
+            c.commentNum,
+            c.createdTime,
+            c.status,
+            c.shareId,
+            vi.id     videoId,
+            vi.imgUrl videoImgUrl,
+            vi.url    videoUrl,
+            vo.id     voiceId,
+            vo.url    voiceUrl,
+            u.id      userId,
+            u.username,
+            u.avatarUrl,
+            u.signature,
+            u.grade,
+            u.nickname,
+            u.styleImgUrl
+            <if test="currentUserId != null">
+                , lc.userId lcUserId
+            </if>
+        FROM cards c
+            LEFT JOIN videos vi ON vi.`id` = c.`videoId`
+            LEFT JOIN voices vo ON vo.`id` = c.`voiceId`
+            LEFT JOIN users u ON c.userId = u.id AND u.status = 'exist'
+            <if test="currentUserId != null">
+                left join like_card lc on c.id = lc.cardId and lc.userId = #{currentUserId}
+            </if>
+    </sql>
+
+    <sql id="shareCardQuery">
+        SELECT
+            c.id         cardId,
+            c.title,
+            c.text,
+            c.type,
+            c.cardHot,
+            c.shareNum,
+            c.commentNum,
+            c.createdTime,
+            c.status,
+            vi.id        videoId,
+            vi.url       videoUrl,
+            vo.id        voiceId,
+            vo.url       voiceUrl,
+            u.id         userId,
+            u.username,
+            u.avatarUrl,
+            u.signature,
+            u.grade,
+            u.nickname,
+            u.styleImgUrl,
+            sc.id        sCardId,
+            sc.title     sTitle,
+            sc.text      sText,
+            sc.type      sType,
+            sc.status    sStatus,
+            svi.id       sVideoId,
+            svi.url      sVideoUrl,
+            svo.id       sVoiceId,
+            svo.url      sVoiceUrl,
+            su.id        sUserId,
+            su.username  sUsername,
+            su.avatarUrl sAvatarUrl,
+            su.grade     sGrade,
+            su.nickname  sNickname
+            <if test="currentUserId != null">
+                , lc.userId lcUserId
+                , lcs.userId lcsUserId
+            </if>
+        FROM cards c
+            LEFT JOIN videos vi ON vi.`id` = c.`videoId`
+            LEFT JOIN voices vo ON vo.`id` = c.`voiceId`
+            LEFT JOIN users u ON c.userId = u.id AND u.status = 'exist'
+            LEFT JOIN cards sc ON c.`shareId` = sc.`id`
+            LEFT JOIN videos svi ON svi.`id` = sc.`videoId`
+            LEFT JOIN voices svo ON svo.`id` = sc.`voiceId`
+            LEFT JOIN users su ON sc.userId = su.id AND su.status = 'exist'
+            <if test="currentUserId != null">
+                left join like_card lc on c.id = lc.cardId and lc.userId = #{currentUserId}
+                left join like_card lcs on sc.id = lcs.cardId and lcs.userId = #{currentUserId}
+            </if>
+    </sql>
+
+    <select id="findPreviews" parameterType="map" resultMap="cardPreviewMap">
+        <include refid="cardQuery"/>
+        WHERE c.type!='share' AND c.status='exist'
+        order by
+        <choose>
+            <when test='sortKey=="popular"'>c.cardHot</when>
+            <when test='sortKey=="time"'>c.createdTime</when>
+            <otherwise>c.createdTime</otherwise>
+        </choose>
+        DESC
+        limit #{offset},#{limit}
+    </select>
+
+    <select id="findOne" parameterType="string" resultMap="cardMap">
+        <include refid="cardQuery"/>
+        WHERE c.id=#{id} AND c.status='exist'
+    </select>
+
+    <select id="findByUserId" parameterType="map" resultMap="cardPreviewMap">
+        <include refid="cardQuery"/>
+        where u.id=#{userId} AND c.status='exist' and c.type!='share'
+        order by
+        <choose>
+            <when test='sortKey=="popular"'>c.cardHot</when>
+            <when test='sortKey=="time"'>c.createdTime</when>
+            <otherwise>c.createdTime</otherwise>
+        </choose>
+        DESC
+        limit #{offset},#{limit}
+    </select>
+
+    <select id="findLikedByUserId" parameterType="map" resultMap="sharedCardMap">
+        <include refid="shareCardQuery"/>
+        LEFT JOIN like_card ON like_card.`cardId`=c.`id`
+        LEFT JOIN users me ON like_card.`userId`=me.`id`
+        WHERE me.id = #{userId} AND c.status='exist'
+        order by c.createdTime DESC
+        limit #{offset},#{limit}
+    </select>
+
+    <select id="findFollowingByUserId" parameterType="map" resultMap="sharedCardMap">
+        <include refid="shareCardQuery"/>
+        INNER JOIN follow following ON following.`followingId`=c.`userId`
+        INNER JOIN users fans ON fans.`id`=following.`userId`
+        WHERE fans.`id`=#{userId} and c.status='exist'
+        order by c.createdTime DESC
+        limit #{offset},#{limit}
+    </select>
+
+    <select id="findSharedByUserId" parameterType="map" resultMap="sharedCardMap">
+        <include refid="shareCardQuery"/>
+        WHERE u.id = #{userId} and c.type='share' and c.status='exist'
+        ORDER BY c.createdTime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="findShareById" parameterType="string" resultMap="sharedCardMap">
+        <include refid="shareCardQuery"/>
+        where c.type='share' and c.id=#{id} and c.status='exist'
+    </select>
+
+    <select id="countUserCards" parameterType="string" resultType="int">
+        SELECT count(*) count
+        FROM cards
+            LEFT JOIN users u ON cards.userId = u.id AND u.status = 'exist'
+        WHERE u.id = #{userId} AND cards.status = 'exist'
+    </select>
+
+    <select id="countUserLikedCards" parameterType="string" resultType="int">
+        SELECT count(*)
+        FROM cards
+            LEFT JOIN like_card lc ON lc.`cardId` = cards.`id`
+            LEFT JOIN users u ON u.`id` = lc.`userId`
+        WHERE u.id = #{userId} AND cards.status = 'exist'
+    </select>
+
+    <select id="countUserSharedCards" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM cards c
+            LEFT JOIN users u ON u.`id` = c.`userId`
+        WHERE u.id = #{userId} AND c.`type` = 'share' AND c.`status` = 'exist'
+    </select>
+
+    <select id="findByIdAndType" parameterType="map" resultType="card">
+        SELECT id
+        FROM cards
+        WHERE id = #{id} AND type = #{type} AND status = 'exist'
+    </select>
+
+    <insert id="insertLikeCard" parameterType="map">
+        INSERT INTO like_card (id, cardId, userId) VALUES (#{id}, #{cardId}, #{userId})
+    </insert>
+
+    <delete id="deleteLikeCard" parameterType="map">
+        DELETE FROM like_card
+        WHERE cardId = #{cardId} AND userId = #{userId}
+    </delete>
+
+    <insert id="insertCardTopic" parameterType="map">
+        INSERT INTO card_and_topic (id, cardId, topicId)
+        VALUES (#{id}, #{cardId}, #{topicId});
+    </insert>
+
+    <delete id="delCardTopic" parameterType="string">
+        DELETE FROM card_and_topic
+        WHERE cardId = #{cardId}
+    </delete>
+
+    <select id="countTopicByCardId" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM cards
+            LEFT JOIN card_and_topic ct ON cards.`id` = ct.`cardId`
+            LEFT JOIN topics ON topics.`id` = ct.`topicId`
+        WHERE cards.`id` = #{cardId} AND cards.`status` = 'exist';
+    </select>
+
+    <select id="findByTopicName" parameterType="map" resultMap="cardPreviewMap">
+        <include refid="cardQuery"/>
+        LEFT JOIN card_and_topic ca ON c.`id`= ca.cardId
+        LEFT JOIN topics top on top.id = ca.topicId
+        where top.name = #{topicName} and c.status = 'exist' and c.type != 'share'
+        ORDER BY
+        <choose>
+            <when test='sortKey=="popular"'>c.cardHot</when>
+            <when test='sortKey=="time"'>c.createdTime</when>
+            <otherwise>c.cardHot</otherwise>
+        </choose>
+        DESC
+        limit #{offset}, #{limit}
+    </select>
+
+    <select id="findByContent" parameterType="string" resultMap="cardPreviewMap">
+        <include refid="cardQuery"/>
+        where c.status='exist' and c.type!='share'
+        and c.title like '%${content}%'
+        or c.text like '%${content}%'
+        or u.username like '%${content}%'
+        ORDER BY
+        <choose>
+            <when test='sortKey=="popular"'>c.cardHot</when>
+            <when test='sortKey=="time"'>c.createdTime</when>
+            <otherwise>c.cardHot</otherwise>
+        </choose>
+        DESC
+        limit #{offset}, #{limit}
+    </select>
+
+    <insert id="insert" parameterType="card">
+        INSERT INTO
+            cards (id, title, text, `type`,
+                   voiceId, videoId, shareId, userId)
+        VALUES (#{id}, #{title}, #{text}, #{type},
+                #{voice.id}, #{video.id}, #{share.id}, #{user.id});
+    </insert>
+
+    <update id="delete" parameterType="card">
+        UPDATE cards
+        SET title   = '该卡片已被删除', text = '该卡片已被删除', status = 'delete',
+            videoId = NULL, voiceId = NULL
+        WHERE id = #{id}
+    </update>
+
+    <select id="findByIdAndUserId" parameterType="map" resultType="card">
+        SELECT id
+        FROM cards
+        WHERE id = #{id} AND userId = #{userId} AND status = 'exist'
+    </select>
+
+    <update id="updateShareNumAddOne" parameterType="string">
+        UPDATE cards
+        SET shareNum = shareNum + 1
+        WHERE id = #{shareId}
+    </update>
+
+    <select id="countLikeByIdAndUserId" parameterType="map" resultType="int">
+        SELECT count(*)
+        FROM like_card
+        WHERE cardId = #{cardId} AND userId = #{userId}
+    </select>
+
+    <select id="findStatusById" parameterType="string" resultType="string">
+        SELECT status
+        FROM cards
+        WHERE id = #{cardId}
+    </select>
+
+    <select id="getImagesByCardId" parameterType="string" resultType="cardImage">
+        SELECT
+            id,
+            url,
+            remark
+        FROM card_imgs
+        WHERE cardId = #{cardId}
+    </select>
+
+    <select id="getTopicsByCardId" parameterType="string" resultType="topic">
+        SELECT
+            t.id,
+            t.name
+        FROM topics t
+            INNER JOIN card_and_topic ct ON t.id = ct.topicId
+            INNER JOIN cards c ON ct.cardId = c.id
+        WHERE c.id = #{cardId}
+    </select>
+
+    <select id="getLv1CmntByCardId" parameterType="string" resultMap="tmpCmntMap">
+        SELECT
+            com.id,
+            com.text,
+            u.avatarUrl
+        FROM comments com
+            INNER JOIN users u ON com.userId = u.id
+        WHERE com.cardId = #{cardId} AND com.status = 'exist'
+        ORDER BY com.createdTime DESC
+        LIMIT 0, 5
+    </select>
+
+</mapper>

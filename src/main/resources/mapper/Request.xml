@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.RequestDao">
+
+    <!--接受请求时验证接受者发过来的requestId是否存在，返回验证-->
+    <select id="findById" parameterType="string" resultMap="requestMap">
+        SELECT *, requests.id raid, requester.id rbid, rooms.id rdid, requester.username rbname
+        FROM requests
+        INNER JOIN users requester ON requests.requesterId = requester.id
+        LEFT JOIN rooms ON requests.roomId = rooms.id
+        WHERE requests.id = #{id}
+    </select>
+    <resultMap id="requestMap" type="Request" autoMapping="true">
+        <id column="raid" property="id"/>
+        <association property="requester" javaType="User" autoMapping="false">
+            <id column="rbid" property="id"/>
+            <result column="rbname" property="username"/>
+        </association>
+        <association property="receiver" javaType="User" autoMapping="false">
+            <id column="receiverId" property="id"/>
+        </association>
+        <association property="requestGroup" javaType="Group" autoMapping="false">
+            <id column="requestGroupId" property="id"/>
+        </association>
+        <association property="replier" javaType="User" autoMapping="false">
+            <id column="replierId" property="id"/>
+        </association>
+        <association property="room" javaType="Room" autoMapping="false">
+            <id column="rdid" property="id"/>
+            <result column="roomName" property="roomName"/>
+        </association>
+    </resultMap>
+
+    <!--验证是否有资格处理这条请求-->
+    <select id="verifyHandler" resultType="string">
+        SELECT receive.id FROM receive
+        INNER JOIN requests ON requests.id = receive.requestId
+        WHERE receive.receiverId = #{handlerId} AND requestId = #{requestId}
+    </select>
+
+
+    <sql id="findMajorSql">
+        SELECT *, requests.id reqtid, requester.id reqrid, receiver.id recid, replier.id reprid, rooms.id romid,
+                  requester.username reqrname, requester.nickname reqrnick,
+                  replier.username reprname, replier.nickname reprnick,
+                  receiver.username recname, receiver.nickname recnick,
+                  requests.type rtyp
+        FROM requests
+        INNER JOIN receive ON requests.id = receive.requestId
+        INNER JOIN users requester ON requester.id = requests.requesterId AND requester.status = 'exist'
+        LEFT JOIN users receiver ON receiver.id = requests.receiverId AND receiver.status = 'exist'
+        LEFT JOIN users replier ON replier.id = requests.replierId AND replier.status = 'exist'
+        LEFT JOIN rooms ON rooms.id = requests.roomId AND rooms.status = 'exist'
+        LEFT JOIN remove_msgs ON requests.id = remove_msgs.messageId AND remove_msgs.userId = #{userId}
+    </sql>
+
+    <!--查找单个chatItem-->
+    <select id="findRequest" resultMap="findUserRequestsMap">
+        <include refid="findMajorSql"/>
+        WHERE requests.id = #{id} AND (receive.receiverId = #{userId} OR requests.requesterId = #{userId})
+    </select>
+
+    <!--用于加载一个人所有的请求和收到的请求-->
+    <select id="findUserRequests" resultMap="findUserRequestsMap">
+        <include refid="findMajorSql"/>
+        WHERE (requests.requesterId = #{userId} OR receive.receiverId = #{userId}) AND remove_msgs.id IS NULL
+        ORDER BY requestTime DESC LIMIT #{offset},#{limit}
+    </select>
+    <resultMap id="findUserRequestsMap" type="Request" autoMapping="false">
+        <id column="reqtid" property="id"/>
+        <result column="type" property="type"/>
+        <result column="requestTime" property="requestTime"/>
+        <result column="requestMessage" property="requestMessage"/>
+        <result column="requestStatus" property="requestStatus"/>
+        <association property="requester" javaType="User" autoMapping="false">
+            <id column="reqrid" property="id"/>
+            <result column="reqrname" property="username"/>
+            <result column="reqrnick" property="nickname"/>
+        </association>
+        <association property="receiver" javaType="User" autoMapping="false">
+            <id column="recid" property="id"/>
+            <result column="recname" property="username"/>
+            <result column="recnick" property="nickname"/>
+        </association>
+        <association property="replier" javaType="User" autoMapping="false">
+            <id column="reprid" property="id"/>
+            <result column="reprname" property="username"/>
+            <result column="reprnick" property="nickname"/>
+        </association>
+        <association property="room" javaType="Room" autoMapping="false">
+            <id column="romid" property="id"/>
+            <result column="roomName" property="roomName"/>
+        </association>
+    </resultMap>
+
+    <!--插入加好友请求-->
+    <insert id="insertFriendRequest">
+        INSERT INTO requests (id, type, requestGroupId, requestRemark, requesterId, receiverId, requestMessage, requestStatus)
+        VALUES (#{id}, 'friend', #{requestGroupId}, #{requestRemark}, #{requesterId}, #{receiverId}, #{requestMessage}, 'waiting')
+    </insert>
+
+    <!--插入加群请求-->
+    <insert id="insertRoomRequest">
+        INSERT INTO requests (id, type, requesterId, roomId, requestMessage, requestStatus)
+        VALUES (#{id}, 'room', #{requesterId}, #{roomId}, #{requestMessage}, 'waiting')
+    </insert>
+
+    <insert id="insertReceiver">
+        INSERT INTO receive (id, receiverId, requestId) VALUES (#{id}, #{receiverId}, #{requestId})
+    </insert>
+
+    <!--设置请求状态-->
+    <update id="setStatusAndReplierId">
+        UPDATE requests SET requestStatus = #{status}, replierId = #{replierId} WHERE id = #{id}
+    </update>
+
+</mapper>

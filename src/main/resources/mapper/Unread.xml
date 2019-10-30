@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.impte.wecard.dao.UnreadDao">
+
+    <!--找到某个人的未读数量-->
+    <select id="findUnreadCount" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM unread
+        INNER JOIN chat_items ON chat_items.id = unread.chatItemId
+        WHERE chat_items.userId = #{userId}
+    </select>
+
+    <insert id="insertUnread" parameterType="Unread">
+        INSERT INTO unread (id, messageId, chatItemId) VALUES (#{id}, #{messageId}, #{chatItemId})
+    </insert>
+
+    <delete id="deleteByChatItemId" parameterType="string">
+        DELETE FROM unread WHERE chatItemId = #{chatItemId}
+    </delete>
+
+    <delete id="delete" parameterType="string">
+        DELETE FROM unread WHERE id = #{id}
+    </delete>
+
+</mapper>

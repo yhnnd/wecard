@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>微卡 Sign up</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/animate.min.css">
+    <link rel="stylesheet" href="../css/buttons.css">
+    <script src="../js/vendor/jquery.min.js"></script>
+    <script src="../js/vendor/angular.min.js"></script>
+    <script src="../js/vendor/popper.min.js"></script>
+    <script src="../js/vendor/bootstrap.min.js"></script>
+    <script src="../js/vendor/underscore.min.js"></script>
+    <script src="../js/_web_config.js"></script>
+</head>
+
+<body>
+    <style>
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .upper {
+            position: relative;
+            top: -.5px;
+        }
+    </style>
+
+    <div class="container-fluid animated fadeIn" ng-app="module-signup" ng-controller="signup-controller">
+        <div class="row">
+            <div class="col mx-auto text-center">
+                <h4 class="display-4 text-muted my-5">
+                    <span class="mr-1">Sign Up</span>
+                    <a href="login.html?target=../index.html" class="btn btn-outline-primary">Sign In</a>
+                </h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-lg-10 mx-auto">
+                <!-- <form ng-submit="signup()"> -->
+                <div>
+                    <div class="form-group">
+                        <div class="form-row form-group">
+                            <div class="col-12 col-sm-2 offset-sm-1 d-flex align-items-center">
+                                <span>{{input.username.label}}</span>
+                            </div>
+                            <div class="col-12 col-sm-5">
+                                <input type="text" id="username" class="form-control {{input.username.inputClass()}}" placeholder="{{input.username.placeholder}}"
+                                    ng-model="input.username.value" ng-focus="input.username.focus()" ng-blur="input.username.blur()">
+                            </div>
+                            <div class="col-12 col-sm-4 d-flex {{input.username.valid ? 'justify-content-start' : 'justify-content-center'}} align-items-center">
+                                <small class="text-muted" ng-show="input.username.help !== ''">
+                                    {{input.username.help}}
+                                </small>
+                                <small class="text-danger" ng-show="input.username.error !== ''">
+                                    {{input.username.error}}
+                                </small>
+                                <i class="fa fa-check-circle text-success" ng-show="input.username.valid"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-row form-group">
+                            <div class="col-12 col-sm-2 offset-sm-1 d-flex align-items-center">
+                                <span>{{input.password.label}}</span>
+                            </div>
+                            <div class="col-12 col-sm-5">
+                                <input type="password" id="password" class="form-control {{input.password.inputClass()}}" placeholder="{{input.password.placeholder}}"
+                                    ng-model="input.password.value" ng-focus="input.password.focus()" ng-blur="input.password.blur()">
+                            </div>
+                            <div class="col-12 col-sm-4 d-flex {{input.password.valid ? 'justify-content-start' : 'justify-content-center'}} align-items-center">
+                                <small class="text-muted" ng-show="input.password.help !== ''">
+                                    {{input.password.help}}
+                                </small>
+                                <small class="text-danger" ng-show="input.password.error !== ''">
+                                    {{input.password.error}}
+                                </small>
+                                <i class="fa fa-check-circle text-success" ng-show="input.password.valid"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-row form-group">
+                            <div class="col-12 col-sm-2 offset-sm-1 d-flex align-items-center">
+                                <span>{{input.passwordConfirm.label}}</span>
+                            </div>
+                            <div class="col-12 col-sm-5">
+                                <input type="password" id="password-confirm" class="form-control {{input.passwordConfirm.inputClass()}}" placeholder="{{input.passwordConfirm.placeholder}}"
+                                    ng-model="input.passwordConfirm.value" ng-focus="input.passwordConfirm.focus()" ng-blur="input.passwordConfirm.blur()"
+                                    ng-disabled="input.password.value === '' || input.password.error">
+                            </div>
+                            <div class="col-12 col-sm-4 d-flex {{input.passwordConfirm.valid ? 'justify-content-start' : 'justify-content-center'}} align-items-center">
+                                <small class="text-muted" ng-show="input.passwordConfirm.help !== ''">
+                                    {{input.passwordConfirm.help}}
+                                </small>
+                                <small class="text-danger" ng-show="input.passwordConfirm.error !== ''">
+                                    {{input.passwordConfirm.error}}
+                                </small>
+                                <i class="fa fa-check-circle text-success" ng-show="input.passwordConfirm.valid"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-row form-group">
+                            <div class="col-12 col-sm-2 offset-sm-1 d-flex align-items-center">
+                                <span>{{input.phoneNumber.label}}</span>
+                            </div>
+                            <div class="col-12 col-sm-5">
+                                <div class="input-group">
+                                    <input type="tel" id="phone-number" class="form-control {{input.phoneNumber.inputClass()}}" placeholder="{{input.phoneNumber.placeholder}}"
+                                        ng-model="input.phoneNumber.value" ng-focus="input.phoneNumber.focus()" ng-blur="input.phoneNumber.blur()"
+                                        ng-change="input.phoneNumber.blur()">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" ng-disabled="!input.phoneNumber.available" ng-click="input.phoneNumber.sendVerCode()">
+                                            {{input.phoneNumber.buttonText}}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-4 d-flex {{input.phoneNumber.valid ? 'justify-content-start' : 'justify-content-center'}} align-items-center"
+                                ng-show="input.phoneNumber.timeLeft === 0">
+                                <small class="text-muted" ng-show="input.phoneNumber.help !== ''">
+                                    {{input.phoneNumber.help}}
+                                </small>
+                                <small class="text-danger" ng-show="input.phoneNumber.error !== ''">
+                                    {{input.phoneNumber.error}}
+                                </small>
+                                <i class="fa fa-check-circle text-success" ng-show="input.phoneNumber.valid"></i>
+                            </div>
+                            <div class="col-12 col-sm-4 d-flex justify-content-center align-items-center" ng-show="input.phoneNumber.timeLeft > 0">
+                                <small class="text-muted">
+                                    还有 {{input.phoneNumber.timeLeft / 1000}} 秒可以再次发送验证码
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-row form-group">
+                            <div class="col-12 col-sm-2 offset-sm-1 d-flex align-items-center">
+                                <span>{{input.verCode.label}}</span>
+                            </div>
+                            <div class="col-12 col-sm-5">
+                                <input type="text" id="verification-code" class="form-control {{input.verCode.inputClass()}}" placeholder="{{input.verCode.placeholder}}"
+                                    ng-model="input.verCode.value" ng-focus="input.verCode.focus()" ng-blur="input.verCode.blur()"
+                                    ng-change="input.verCode.blur()" ng-disabled="!input.verCode.available">
+                            </div>
+                            <div class="col-12 col-sm-4 d-flex {{input.verCode.valid ? 'justify-content-start' : 'justify-content-center'}} align-items-center">
+                                <small class="text-muted" ng-show="input.verCode.help !== ''">
+                                    {{input.verCode.help}}
+                                </small>
+                                <small class="text-danger" ng-show="input.verCode.error !== ''">
+                                    {{input.verCode.error}}
+                                </small>
+                                <i class="fa fa-check-circle text-success" ng-show="input.verCode.valid"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-row form-group">
+                            <div class="col-12 col-sm-2 offset-sm-1 d-flex align-items-center">
+                                <span class="text-primary">服务协议</span>
+                            </div>
+                            <div class="col-12 col-sm-5">
+                                <div class="btn-group w-100">
+                                    <div class="btn btn-outline-primary w-50 px-0 cursor-pointer disabled" style="overflow:hidden;" onclick="$('.modal.terms-of-use').modal('show')">
+                                        查看用户服务协议
+                                    </div>
+                                    <div class="btn btn-outline-primary w-50 d-flex justify-content-center align-items-center disabled">
+                                        <span class="upper mx-2 mx-lg-3">同意</span>
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="terms" ng-model="input.terms.valid">
+                                            <label class="custom-control-label cursor-pointer" for="terms"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-4 d-flex justify-content-center align-items-center">
+                                <small id="terms-of-use-help" class="text-muted" ng-show="allValid()">
+                                    {{input.terms.help}}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-row form-group">
+                            <div class="col-8 col-sm-6 col-md-4 mx-auto d-flex justify-content-start align-items-center">
+                                <small id="terms-of-use-help" class="text-muted">
+                                    确认注册即表示您已同意用户服务协议
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-row form-group">
+                            <div class="col-12 col-sm-2 offset-sm-1 d-flex align-items-center">
+                            </div>
+                            <div class="col-12 col-sm-5">
+                                <button class="btn btn-primary btn-block" ng-click="signup()" ng-disabled="!allValid()">
+                                    注册
+                                </button>
+                            </div>
+                            <div class="col-12 col-sm-4 d-flex justify-content-center align-items-center">
+                                <small id="sign-up-help" class="text-muted">
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- Terms of Use -->
+    <div class="modal terms-of-use">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        用户协议与服务条款
+                    </h5>
+                    <button class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>欢迎您与各我方平台经营者（详见定义条款）共同签署本《用户服务协议》（下称“本协议”）并使用我方平台服务！</p>
+                    <p>各条款标题仅为帮助您理解该条款表达的主旨之用，不影响或限制本协议条款的含义或解释。为维护您自身权益，建议您仔细阅读各条款具体表述。</p>
+                    <p>
+                        <b>【审慎阅读】</b>您在申请注册流程中点击同意本协议之前，应当认真阅读本协议。请您务必审慎阅读、充分理解各条款内容，特别是免除或者限制责任的条款、法律适用和争议解决条款。免除或者限制责任的条款将
+                        <strong>
+                            <u>以粗体下划线标识，您应重点阅读。 如您对协议有任何疑问，可向我方平台客服咨询。</u>
+                        </strong>
+                    </p>
+                    <p>
+                        <b>【签约动作】</b>当您按照注册页面提示填写信息、阅读并同意本协议且完成全部注册程序后，即表示您已充分阅读、理解并接受本协议的全部内容，并与印象科技和我方平台网站达成一致，成为印象科技或我方平台“用户”。阅读本协议的过程中，
+                        <strong>
+                            <u>如果您不同意本协议或其中任何条款约定，您应立即停止注册程序。</u>
+                        </strong>
+                    </p>
+                    <p>如果您在本协议生效前已成为我方平台的注册用户，则您通过访问和/或使用我方平台网站，
+                        <strong>
+                            <u>即视为您表示同意接受本协议的全部内容，否则请您不要访问或使用我方平台网站。</u>
+                        </strong>
+                    </p>
+                    <p>1. 定义</p>
+                    <p>我方平台：指包括印象科技（域名为 impte.com）等我方平台经营者的单称或合称，包括印象科技经营者印象科技有限公司等。</p>
+                    <p>我方平台服务：我方平台基于互联网，以包含我方平台网站、内容分发、信息网络传播等方式在内的各种形态（包括未来技术发展出现的新的服务形态）向您提供的各项服务。</p>
+                    <p>我方平台规则：包括在所有我方平台网站内已经发布及后续发布的全部规则、用户服务协议、解读、公告等内容以及各平台在频道、活动页面、帮助中心等发布的各类规则、实施细则、产品说明、公告等。</p>
+                    <p>2. 账户使用及网站功能</p>
+                    <p>2.1 账户使用管理</p>
+                    <p>
+                        <strong>
+                            <u>用户使用我方平台所产生的任何后果及影响均与我司无关，用户引起的所有法律刑事责任后果由用户自己承担。</u>
+                        </strong>
+                    </p>
+                    <p>2.2 网站功能介绍</p>
+                    <p>2.2.1 网站支持功能</p>
+                    <p>我方平台（微卡）是一个提供网络交友聊天，发布自己的所见所闻，关注自己喜欢的“卡主“的官方平台。不但支持在线聊天、自定义个人面板、等多种功能，并可查看其他用户发布的”微卡“，自己有何新鲜想法，发现什么新鲜事物，也能够使用”微卡“与更多人分享。还在等什么呢？快和好友一起加入”微卡“，follow自己喜欢的”卡主“吧！</p>
+                    <p>3. 隐私政策</p>
+                    <p>在您使用我方平台提供的服务时，表示您已同意我方平台按照在我方平台上公布的隐私权政策收集、存储、使用、披露和保护您的个人信息。</p>
+                    <p>我方平台非常重视用户个人信息的保护，根据有关法律法规要求，网络产品、服务具有收集用户信息功能的，其提供者应当向用户明示并取得同意。我方平台特此通过单独明示的
+                        <strong>
+                            <u>《法律声明和隐私权政策》</u>
+                        </strong>明确向您告知收集、使用用户个人信息的目的、方式和范围，查询、更正信息的渠道以及拒绝提供信息的后果。我方平台希望通过隐私权政策向您清楚地介绍我方平台对您个人信息的处理方式，因此我方平台建议您完整地阅读
+                        <strong>
+                            <u>《法律声明和隐私权政策》</u>
+                        </strong>，以帮助您更好地保护您的隐私权。
+                    </p>
+                    <p>如果您不同意
+                        <strong>
+                            <u>《法律声明和隐私权政策》</u>
+                        </strong>的任何内容，您应
+                        <strong>
+                            <u>立即停止</u>
+                        </strong>使用我方平台服务。当您使用我方平台提供的任一服务时，即表示您已同意我们按照我方平台
+                        <strong>
+                            <u>《法律声明和隐私权政策》</u>
+                        </strong>来合法收集、使用和保护您的个人信息。
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <span class="ml-4 mr-auto">
+                        Updated on 3/13 2018 12:56
+                    </span>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script src="../js/vendor/alert.js"></script>
+    <script>
+        let app = angular.module('module-signup', []);
+
+        app.controller('signup-controller', function ($scope, dateFilter, $http, $interval, $timeout) {
+            $scope.webRoot = getWebRoot();
+            $scope.input = {
+                "username": {
+                    "value": "",
+                    "label": "用户名",
+                    "placeholder": "请输入用户名",
+                    "help": "",
+                    "error": "",
+                    "valid": false,
+                    "setMessage": function (type, value) {
+                        this.help = this.error = "";
+                        this.valid = false;
+                        this[type] = value;
+                    },
+                    "focus": function () {
+                        this.setMessage("help", "用户名长度不能大于 12 位");
+                    },
+                    "blur": function () {
+                        if (this.value === "") {
+                            this.setMessage("error", "用户名不能为空");
+                        } else {
+                            // 验证用户名是否可用
+                            let that = this;
+                            $http({
+                                method: 'GET',
+                                url: "http://" + $scope.webRoot + "/register/checkUsername",
+                                params: {
+                                    "username": this.value
+                                },
+                                crossDomain: true,
+                                withCredentials: true
+                            }).then(function (result) {
+                                console.log("username.blur(): " + result.data.message);
+                                switch (result.data.message) {
+                                    case "Username cannot be empty":
+                                        that.setMessage("error", "用户名不能为空 (Server)");
+                                        break;
+                                    case "Username is too long":
+                                        that.setMessage("error", "用户名过长 (Server)");
+                                        break;
+                                    case "Username contains special char":
+                                        that.setMessage("error", "用户名包含非法字符 (Server)");
+                                        break;
+                                    case "Username already exists":
+                                        that.setMessage("error", "用户名已存在 (Server)");
+                                        break;
+                                    case "Username is available":
+                                        that.setMessage("valid", true);
+                                        break;
+                                    default:
+                                        that.setMessage("error", "未知错误: " + result.data.message);
+                                        break;
+                                }
+                            });
+                        }
+                    },
+                    "inputClass": function () {
+                        return this.valid ? "is-valid" : this.error ? "is-invalid" : "";
+                    }
+                },
+                "password": {
+                    "value": "",
+                    "label": "密码",
+                    "placeholder": "请输入登录密码",
+                    "help": "",
+                    "error": "",
+                    "valid": false,
+                    "setMessage": function (type, value) {
+                        this.help = this.error = "";
+                        this.valid = false;
+                        this[type] = value;
+                    },
+                    "focus": function () {
+                        this.setMessage("help", "密码长度必须在 8 至 32 位之间");
+                    },
+                    "blur": function () {
+                        if (this.value === "") {
+                            this.setMessage("error", "密码不能为空");
+                        } else if (this.value.length < 8) {
+                            this.setMessage("error", "密码长度过短");
+                        } else if (this.value.length > 32) {
+                            this.setMessage("error", "密码长度过长");
+                        } else {
+                            this.setMessage("valid", true);
+                        }
+                        if ($scope.input.passwordConfirm.value !== "") {
+                            $scope.input.passwordConfirm.blur();
+                        }
+                    },
+                    "inputClass": function () {
+                        return this.valid ? "is-valid" : this.error ? "is-invalid" : "";
+                    }
+                },
+                "passwordConfirm": {
+                    "value": "",
+                    "label": "确认密码",
+                    "placeholder": "请再输入一次登录密码",
+                    "help": "",
+                    "error": "",
+                    "valid": false,
+                    "setMessage": function (type, value) {
+                        this.help = this.error = "";
+                        this.valid = false;
+                        this[type] = value;
+                    },
+                    "focus": function () {
+                        this.setMessage("help", "请确保两次输入的密码保持一致");
+                    },
+                    "blur": function () {
+                        if (this.value !== $scope.input.password.value) {
+                            this.setMessage("error", "两次输入的密码不一致");
+                        } else {
+                            this.setMessage("valid", true);
+                        }
+                    },
+                    "inputClass": function () {
+                        return this.valid ? "is-valid" : this.error ? "is-invalid" : "";
+                    }
+                },
+                "phoneNumber": {
+                    "value": "",
+                    "label": "电话号码",
+                    "placeholder": "请输入电话号码",
+                    "help": "",
+                    "error": "",
+                    "valid": false,// 电话号码是否合法
+                    "available": false,// 是否可以发送验证码
+                    "buttonText": "获取验证码",
+                    "timeLeft": 0,
+                    "setMessage": function (type, value) {
+                        this.available = false;// 禁用发送验证码按钮
+                        this.help = this.error = "";
+                        this.valid = false;
+                        this[type] = value;
+                    },
+                    "focus": function () {
+                        this.setMessage("help", "请输入有效的电话号码");
+                    },
+                    "blur": function () {
+                        if (this.value === "") {
+                            this.setMessage("error", "电话号码不能为空");
+                        } else if (/^1\d{10}$/.test(this.value)) {
+                            // 验证电话号码是否可用
+                            let that = this;
+                            $http({
+                                method: 'GET',
+                                url: "http://" + $scope.webRoot + "/register/checkPhoneNumber",
+                                params: {
+                                    "phoneNumber": this.value
+                                },
+                                crossDomain: true,
+                                withCredentials: true
+                            }).then(function (result) {
+                                console.log("phoneNumber.blur(): " + result.data.message);
+                                switch (result.data.message) {
+                                    case "Phone number cannot be empty":
+                                        that.setMessage("error", "电话号码不能为空 (Server)");
+                                        break;
+                                    case "Incorrect phone number format":
+                                        that.setMessage("error", "无效的电话号码 (Server)");
+                                        break;
+                                    case "Phone number already exists":
+                                        that.setMessage("error", "电话号码已存在 (Server)");
+                                        break;
+                                    case "Phone number is available":
+                                        that.setMessage("valid", true);
+                                        if (that.timeLeft === 0) {
+                                            that.available = true;// 激活发送验证码按钮
+                                        }
+                                        break;
+                                    default:
+                                        that.setMessage("error", "未知错误: " + result.data.message);
+                                        break;
+                                }
+                            });
+                        } else {
+                            this.setMessage("error", "无效的电话号码");
+                        }
+                    },
+                    "inputClass": function () {
+                        return this.valid ? "is-valid" : this.error ? "is-invalid" : "";
+                    },
+                    "sendVerCode": function () {
+                        this.available = false;// 禁用发送验证码按钮
+                        // 确认发送验证码
+                        let that = this;
+                        $http({
+                            method: 'GET',
+                            url: "http://" + $scope.webRoot + "/register/sendVerCode",
+                            params: {
+                                "phoneNumber": this.value
+                            },
+                            crossDomain: true,
+                            withCredentials: true
+                        }).then(function (result) {
+                            console.log("phoneNumber.sendVerCode(): " + result.data.message);
+                            switch (result.data.message) {
+                                case "Frequency limit":
+                                    that.setMessage("error", "次数过于频繁 (Server)");
+                                    break;
+                                case "Send fail":
+                                    that.setMessage("error", "短信发送失败 (Server)");
+                                    break;
+                                case "Phone number cannot be empty":
+                                    that.setMessage("error", "电话号码不能为空 (Server)");
+                                    break;
+                                case "Incorrect phone number format":
+                                    that.setMessage("error", "无效的电话号码 (Server)");
+                                    break;
+                                case "Phone number already exists":
+                                    that.setMessage("error", "电话号码已存在 (Server)");
+                                    break;
+                                case "Send success":
+                                    $scope.input.verCode.value = "";
+                                    $scope.input.verCode.placeholder = "验证码发送成功，请尽快输入";
+                                    $scope.input.verCode.available = true;// 激活验证码输入框
+                                    // 开始倒计时（倒计时结束时重新判断是否激活发送验证码按钮）
+                                    this.timeLeft = 30000;
+                                    $timeout(function () {
+                                        $scope.input.phoneNumber.blur();
+                                    }, 30000);
+                                    break;
+                                default:
+                                    that.setMessage("error", "未知错误: " + result.data.message);
+                                    break;
+                            }
+                        });
+                    }
+                },
+                "verCode": {
+                    "value": "",
+                    "label": "验证码",
+                    "placeholder": "请输入短信验证码",
+                    "help": "",
+                    "error": "",
+                    "valid": false,
+                    "available": false,
+                    "setMessage": function (type, value) {
+                        this.help = this.error = "";
+                        this.valid = false;
+                        this[type] = value;
+                    },
+                    "focus": function () {
+                        this.setMessage("help", "请在 3 分钟内输入验证码");
+                    },
+                    "blur": function () {
+                        if (this.value === "") {
+                            this.setMessage("error", "验证码不能为空");
+                        } else if (/^\d{5}$/.test(this.value)) {
+                            this.setMessage("valid", true);
+                        } else {
+                            this.setMessage("error", "验证码应为 5 位数字");
+                        }
+                    },
+                    "inputClass": function () {
+                        return this.valid ? "is-valid" : this.error ? "is-invalid" : "";
+                    }
+                },
+                "terms": {
+                    "valid": false,
+                    "help": "请仔细阅读用户服务协议",
+                    "setMessage": function (type, value) {
+                        alert(type + ": " + value);
+                    }
+                }
+            };
+
+            $interval(function () {
+                if ($scope.input.phoneNumber.timeLeft <= 0) {
+                    $scope.input.phoneNumber.timeLeft = 0;
+                } else {
+                    $scope.input.phoneNumber.timeLeft -= 1000;
+                }
+            }, 1000);
+
+
+            $scope.allValid = function () {
+                let i = true;
+                for (elem in $scope.input) {
+                    i = i && $scope.input[elem].valid;
+                }
+                return i;
+            };
+
+
+            $scope.signup = function () {
+                $http({
+                    method: 'GET',
+                    url: "http://" + $scope.webRoot + "/register",
+                    params: {
+                        "username": $scope.input.username.value,
+                        "password": $scope.input.password.value,
+                        "phoneNumber": $scope.input.phoneNumber.value,
+                        "verCode": $scope.input.verCode.value
+                    },
+                    crossDomain: true,
+                    withCredentials: true
+                }).then(function (result) {
+                    console.log("phoneNumber.sendVerCode(): " + result.data.message);
+                    switch (result.data.message) {
+                        /* username */
+                        case "Username cannot be empty":
+                            $scope.input.username.setMessage("error", "用户名不能为空 (Server)");
+                            break;
+                        case "Username is too long":
+                            $scope.input.username.setMessage("error", "用户名过长 (Server)");
+                            break;
+                        case "Username contains special char":
+                            $scope.input.username.setMessage("error", "用户名包含非法字符 (Server)");
+                            break;
+                        case "Username already exists":
+                            $scope.input.username.setMessage("error", "用户名已存在 (Server)");
+                            break;
+                        /* password */
+                        case "Password cannot be empty":
+                            $scope.input.password.setMessage("error", "密码不能为空 (Server)");
+                            break;
+                        case "Password is too short":
+                            $scope.input.password.setMessage("error", "密码过短 (Server)");
+                            break;
+                        case "Password is too long":
+                            $scope.input.password.setMessage("error", "密码过长 (Server)");
+                            break;
+                        case "Password contains special char":
+                            $scope.input.password.setMessage("error", "密码包含非法字符 (Server)");
+                            break;
+                        /* phone number */
+                        case "Phone number cannot be empty":
+                            $scope.input.phoneNumber.setMessage("error", "电话号码不能为空 (Server)");
+                            break;
+                        case "Incorrect phone number format":
+                            $scope.input.phoneNumber.setMessage("error", "无效的电话号码 (Server)");
+                            break;
+                        case "Phone number already exists":
+                            $scope.input.phoneNumber.setMessage("error", "电话号码已存在 (Server)");
+                            break;
+                        case "Phone number are inconsistent":
+                            $scope.input.phoneNumber.setMessage("error", "注册电话号码和短信验证的电话号码不一致 (Server)");
+                            break;
+                        /* verification code */
+                        case "Verification code cannot be empty":
+                            $scope.input.verCode.setMessage("error", "验证码不能为空 (Server)");
+                            break;
+                        case "Verification code have not sent":
+                            $scope.input.verCode.setMessage("error", "验证码还未发送 (Server)");
+                            break;
+                        case "Verification code expired":
+                            $scope.input.verCode.setMessage("error", "验证码已失效, 请重新获取验证码 (Server)");
+                            break;
+                        case "Verification code error":
+                            $scope.input.verCode.setMessage("error", "注册电话和短信验证电话不一致 (Server)");
+                            break;
+                        /* register */
+                        case "Register fail":
+                            $scope.input.terms.setMessage("error", "注册失败 (Server)");
+                            break;
+                        case "Register success":
+                            $scope.input.terms.setMessage("help", "注册成功 (Server)");
+                            setTimeout(function() {
+                                bsAlert("signup.html", "您的账户已注册成功，请点击【登录按钮】进入登录页面", "alert-success");
+                            }, 1000);
+                            break;
+                        default:
+                            $scope.input.terms.setMessage("error", "未知错误: " + result.data.message);
+                            break;
+                    }
+                });
+            };
+        });
+    </script>
+</body>
+
+</html>

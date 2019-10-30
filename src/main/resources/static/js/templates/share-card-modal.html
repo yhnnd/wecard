@@ -1,0 +1,74 @@
+<div class="modal" id="modal-share-card">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-radius-0">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa fa-lg fa-share"></i>
+                    <span class="ml-2">转发卡片</span>
+                </h5>
+                <button class="close" ng-click="hideShareCardModal($event)">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <!-- 被转发卡片的标题 注意是 shared -->
+                    <label class="col-form-label">
+                        <i class="fa fa-lg fa-share-square"></i>
+                        <span class="ml-1" id="shared-card-title">shared card title</span>
+                    </label>
+                    <!-- 被转发卡片的正文内容 注意是 shared -->
+                    <textarea class="form-control border-radius-0" id="shared-card-text" rows="3" disabled>shared card text</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label">
+                                    <span class="d-inline-block">
+                                        <img class="user-avatar-xs rounded-circle upper" ng-src="{{user.avatarUrl}}" alt="x">
+                                    </span>
+                        <span class="ml-1">
+                                        说点什么:
+                                    </span>
+                    </label>
+                    <!-- 转发者追加的文本 注意是 share -->
+                    <textarea class="form-control border-radius-0" rows="3" id="share-card-text"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label" ng-click="selectFriendsToShare()">
+                        <button class="btn btn-primary" id="share-card-to-friends">
+                            同时转发给好友
+                        </button>
+                    </label>
+                    <div id="share-card-to-friends-friends-list">
+                        <input id="friends-to-share" style="display:none;" ng-model="friendsToShare">
+                        <ul class="list-group" ng-if="friendsToShare">
+                            <li class="list-group-item list-group-item-action" 
+                                ng-repeat="friend in friendsToShare track by $index"
+                                data-friend-id="{{friend.id}}">
+                                <div class="row">
+                                    <div class="col-2 px-0 col-lg-3 pl-md-3">
+                                        <img class="user-avatar rounded-circle cursor-pointer" ng-src="{{friend.avatarUrl}}">
+                                    </div>
+                                    <div class="col-8 px-0 col-lg-7 pl-md-3 d-flex align-items-center">
+                                        <div class="w-100 overflow-hidden">
+                                            <div class="d-inline-block" ng-bind="friend.remark"></div>
+                                            <div class="d-inline-block">(</div>
+                                            <div class="d-inline-block" ng-bind="friend.username"></div>
+                                            <div class="d-inline-block">)</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2 text-right" ng-click="removeFriendToShare(friend)">
+                                        <span class="fa fa-lg fa-times-circle"></span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary border-radius-0" ng-click="hideShareCardModal($event)">取消</button>
+                <button class="btn btn-primary border-radius-0" id="share-card-submit">转发未激活</button>
+            </div>
+        </div>
+    </div>
+</div>
