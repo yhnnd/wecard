@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>微卡首页</title>
-    <link rel="stylesheet" href="../css/bootstrap.min.css">
-    <link rel="stylesheet" href="../css/font-awesome.min.css">
-    <link rel="stylesheet" href="../css/buttons.css">
-    <link rel="stylesheet" href="../css/homepage.css">
-    <link rel="stylesheet" href="../css/loading.css">
-    <link rel="stylesheet" href="../css/form-control-v2-7.css">
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/buttons.css">
+    <link rel="stylesheet" href="./css/homepage.css">
+    <link rel="stylesheet" href="./css/loading.css">
+    <link rel="stylesheet" href="./css/form-control-v2-7.css">
     <!-- Quill stylesheet -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 
@@ -33,32 +33,32 @@
     <link rel="alternate stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.15.10/build/styles/tomorrow-night.min.css" title="Tomorrow Night" disabled>
     <link rel="alternate stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.15.10/build/styles/vs2015.min.css" title="VS 2015" disabled>
 
-    <script src="../js/vendor/jquery.min.js"></script>
-    <script src="../js/vendor/angular.min.js"></script>
-    <script src="../js/vendor/popper.min.js"></script>
-    <script src="../js/vendor/bootstrap.min.js"></script>
-    <script src="../js/vendor/underscore.min.js"></script>
-    <script src="../js/vendor/loading.js"></script>
-    <script src="../js/vendor/inspect_image.js"></script>
-    <script src="../js/vendor/alert.js"></script>
-    <script src="../js/_web_config.js"></script>
-    <script src="../js/_index_controller.js"></script>
-    <script src="../js/_index_refresh.js"></script>
+    <script src="./js/vendor/jquery.min.js"></script>
+    <script src="./js/vendor/angular.min.js"></script>
+    <script src="./js/vendor/popper.min.js"></script>
+    <script src="./js/vendor/bootstrap.min.js"></script>
+    <script src="./js/vendor/underscore.min.js"></script>
+    <script src="./js/vendor/loading.js"></script>
+    <script src="./js/vendor/inspect_image.js"></script>
+    <script src="./js/vendor/alert.js"></script>
+    <script src="./js/_web_config.js"></script>
+    <script src="./js/_index_controller.js"></script>
+    <script src="./js/_index_refresh.js"></script>
 
-    <script src="../js/_index_create_card.js"></script>
-    <script src="../js/_index_create_card_with_images.js"></script>
-    <script src="../js/_index_create_card_with_quill.js"></script>
-    <script src="../js/_index_like_card.js"></script>
-    <script src="../js/_index_like_card_cancel.js"></script>
-    <script src="../js/_index_share_card.js"></script>
+    <script src="./js/_index_create_card.js"></script>
+    <script src="./js/_index_create_card_with_images.js"></script>
+    <script src="./js/_index_create_card_with_quill.js"></script>
+    <script src="./js/_index_like_card.js"></script>
+    <script src="./js/_index_like_card_cancel.js"></script>
+    <script src="./js/_index_share_card.js"></script>
 
-    <script src="../js/_index_submit_card_comment.js"></script>
-    <script src="../js/_index_reply_card_comment.js"></script>
-    <script src="../js/_index_delete_card_comment.js"></script>
-    <script src="../js/_index_like_comment.js"></script>
-    <script src="../js/_index_like_comment_cancel.js"></script>
+    <script src="./js/_index_submit_card_comment.js"></script>
+    <script src="./js/_index_reply_card_comment.js"></script>
+    <script src="./js/_index_delete_card_comment.js"></script>
+    <script src="./js/_index_like_comment.js"></script>
+    <script src="./js/_index_like_comment_cancel.js"></script>
 
-    <script src="../js/_index_delete_card.js"></script>
+    <script src="./js/_index_delete_card.js"></script>
 </head>
 
 <body onload="refresh();" onbeforeunload="logout()">
@@ -220,7 +220,7 @@
                             <img class="user-avatar rounded-circle border" ng-src="{{user.avatarUrl}}" alt="x">
                         </a>
                         <!-- 如果用户没登录，就显示商标 -->
-                        <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('../index.html');" ng-show="!user">
+                        <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('./index.html');" ng-show="!user">
                             <span>微卡</span>
                         </a>
                         <li class="nav-item" ng-click="gotoPage('marketplace');">
@@ -238,7 +238,7 @@
                         <!-- 如果用户未登录 -->
                         <li class="nav-item" ng-show="!user">
                             <a class="nav-link" ng-class="isNavbarBackgroundDark?'text-white':'text-dark'" 
-                               href="javascript:login('../index.html',{'page': 'my-social-circle'});">
+                               href="javascript:login('./index.html',{'page': 'my-social-circle'});">
                                 <span class="text-muted">关注</span>
                             </a>
                         </li>
@@ -253,7 +253,7 @@
                         <!-- 如果用户未登录 -->
                         <li class="nav-item" ng-show="!user">
                             <a class="nav-link" ng-class="isNavbarBackgroundDark?'text-white':'text-dark'" 
-                               href="javascript:login('../index.html',{'page': 'my-cards'});">
+                               href="javascript:login('./index.html',{'page': 'my-cards'});">
                                 <span class="text-muted">我的卡片</span>
                             </a>
                         </li>
@@ -272,7 +272,7 @@
                         <!-- 如果用户未登录 -->
                         <li class="nav-item" ng-show="!user">
                             <a class="nav-link" ng-class="isNavbarBackgroundDark?'text-white':'text-dark'" 
-                               href="javascript:login('../index.html',{'page': 'homepage'})">
+                               href="javascript:login('./index.html',{'page': 'homepage'})">
                                 <span class="text-muted">聊天</span>
                             </a>
                         </li>
@@ -289,7 +289,7 @@
                         <li class="nav-item px-3 d-flex justify-content-center align-items-center ml-auto" ng-show="user"
                             data-style="no-support">
                             <a class="nav-link py-0" href="#">
-                                <div class="btn btn-sm btn-outline-danger" onclick="logout('../index.html')">
+                                <div class="btn btn-sm btn-outline-danger" onclick="logout('./index.html')">
                                     <span>登出</span>
                                     <i class="fa fa-sign-out"></i>
                                 </div>
@@ -297,7 +297,7 @@
                         </li>
                         <li class="nav-item d-flex justify-content-center align-items-center ml-auto" ng-show="!user"
                             data-style="no-support">
-                            <a class="nav-link py-0 pr-0" href="javascript:login('../index.html');">
+                            <a class="nav-link py-0 pr-0" href="javascript:login('./index.html');">
                                 <div class="btn btn-sm btn-outline-primary">
                                     <span>登录</span>
                                 </div>
@@ -305,7 +305,7 @@
                         </li>
                         <li class="nav-item pr-3 d-flex justify-content-center align-items-center" ng-show="!user"
                             data-style="no-support">
-                            <a class="nav-link py-0 pr-0" href="../signup.html?target=../index.html">
+                            <a class="nav-link py-0 pr-0" href="./signup.html?target=./index.html">
                                 <div class="btn btn-sm btn-outline-primary">
                                     <span>注册</span>
                                 </div>
@@ -338,7 +338,7 @@
                             <img class="user-avatar rounded-circle border" ng-src="{{user.avatarUrl}}" alt="x">
                         </a>
                         <!-- 如果用户没登录，就显示商标 -->
-                        <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('../index.html');" ng-show="!user">
+                        <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('./index.html');" ng-show="!user">
                             微卡
                         </a>
                         <li class="nav-item" style="position: relative;">
@@ -383,18 +383,18 @@
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <div class="dropdown-item" ng-show="user">
-                                    <div class="btn btn-sm btn-block btn-outline-danger" onclick="logout('../index.html');">
+                                    <div class="btn btn-sm btn-block btn-outline-danger" onclick="logout('./index.html');">
                                         <span>登出</span>
                                         <i class="fa fa-sign-out"></i>
                                     </div>
                                 </div>
                                 <div class="dropdown-item" ng-show="!user">
-                                    <div class="btn btn-sm btn-block btn-outline-primary" onclick="login('../index.html');">
+                                    <div class="btn btn-sm btn-block btn-outline-primary" onclick="login('./index.html');">
                                         <span>登录</span>
                                     </div>
                                 </div>
                                 <div class="dropdown-item" ng-show="!user">
-                                    <a class="btn btn-sm btn-block btn-outline-primary" href="../signup.html?target=../index.html">
+                                    <a class="btn btn-sm btn-block btn-outline-primary" href="./signup.html?target=./index.html">
                                         <span>注册</span>
                                     </a>
                                 </div>
@@ -702,7 +702,7 @@
                 <div class="row" ng-show="!user">
                     <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8">
                         <div class="alert alert-warning py-5 mt-4">
-                            <div class="display-4 text-center cursor-pointer" onclick="login('../index.html');">
+                            <div class="display-4 text-center cursor-pointer" onclick="login('./index.html');">
                                 <i class="fa fa-exclamation-triangle"></i>
                                 请先登录
                             </div>
@@ -2933,9 +2933,9 @@
 
 
 
-    <script src="../js/vendor/ios-button.js"></script>
-    <script src="../js/press_enter_to_send.js"></script>
-    <script src="../js/scroll_control.js"></script>
+    <script src="./js/vendor/ios-button.js"></script>
+    <script src="./js/press_enter_to_send.js"></script>
+    <script src="./js/scroll_control.js"></script>
 
     <script>
         function mockLogin() {
@@ -2945,7 +2945,7 @@
         }
     </script>
 
-    <script src="../js/vendor/editor.js"></script>
+    <script src="./js/vendor/editor.js"></script>
     <script>
         function getImageSrc(picNum) {
             return $(".card-image-preview").eq(picNum).attr("src");
@@ -3143,33 +3143,33 @@
         }
     </script>
     <!-- essentials -->
-    <script src="../js/_homepage_web_socket.js"></script>
+    <script src="./js/_homepage_web_socket.js"></script>
     <!-- update -->
-    <script src="../js/update_friend_group.js"></script>
-    <script src="../js/update_request.js"></script>
-    <script src="../js/update_portal.js"></script>
-    <script src="../js/update_message.js"></script>
+    <script src="./js/update_friend_group.js"></script>
+    <script src="./js/update_request.js"></script>
+    <script src="./js/update_portal.js"></script>
+    <script src="./js/update_message.js"></script>
     <!-- load new -->
-    <script src="../js/load_new_friend_group.js"></script>
-    <script src="../js/load_new_portal.js"></script>
-    <script src="../js/append_message_linkable.js"></script>
-    <script src="../js/load_new_message.js"></script>
-    <script src="../js/load_new_notification.js"></script>
-    <script src="../js/load_new_request.js"></script>
-    <script src="../js/load_new_room.js"></script>
+    <script src="./js/load_new_friend_group.js"></script>
+    <script src="./js/load_new_portal.js"></script>
+    <script src="./js/append_message_linkable.js"></script>
+    <script src="./js/load_new_message.js"></script>
+    <script src="./js/load_new_notification.js"></script>
+    <script src="./js/load_new_request.js"></script>
+    <script src="./js/load_new_room.js"></script>
     <!-- remove -->
-    <script src="../js/remove_room.js"></script>
-    <script src="../js/remove_portal.js"></script>
-    <script src="../js/remove_friend.js"></script>
+    <script src="./js/remove_room.js"></script>
+    <script src="./js/remove_portal.js"></script>
+    <script src="./js/remove_friend.js"></script>
     <!-- send -->
-    <script src="../js/add_friend_request_send.js"></script>
-    <script src="../js/add_friend_request_agree.js"></script>
-    <script src="../js/add_friend_request_refuse.js"></script>
-    <script src="../js/join_room_request_send.js"></script>
-    <script src="../js/join_room_request_agree.js"></script>
+    <script src="./js/add_friend_request_send.js"></script>
+    <script src="./js/add_friend_request_agree.js"></script>
+    <script src="./js/add_friend_request_refuse.js"></script>
+    <script src="./js/join_room_request_send.js"></script>
+    <script src="./js/join_room_request_agree.js"></script>
     <!-- user -->
-    <script src="../js/set_user_avatar.js"></script>
-    <script src="../js/set_user_city.js"></script>
+    <script src="./js/set_user_avatar.js"></script>
+    <script src="./js/set_user_city.js"></script>
     <!-- city select -->
     <script>
         _init_area();
@@ -3177,22 +3177,22 @@
 
 
 
-    <script src="../js/controllers/cardPreviewCtrl.js"></script>
-    <script src="../js/controllers/sharedCardPreviewCtrl.js"></script>
-    <script src="../js/controllers/cardViewCtrl.js"></script>
-    <script src="../js/controllers/cardCommentXSCtrl.js"></script>
-    <script src="../js/controllers/cardCommentSMCtrl.js"></script>
-    <script src="../js/controllers/cardCommentMDCtrl.js"></script>
-    <script src="../js/controllers/cardInfoCtrl.js"></script>
-    <script src="../js/controllers/shareCardCtrl.js"></script>
-    <script src="../js/controllers/shareCardToFriendsCtrl.js"></script>
-    <script src="../js/controllers/chatWindowCtrl.js"></script>
-    <!-- <script src="../js/_login.js"></script> -->
-    <script src="../js/_logout.js"></script>
+    <script src="./js/controllers/cardPreviewCtrl.js"></script>
+    <script src="./js/controllers/sharedCardPreviewCtrl.js"></script>
+    <script src="./js/controllers/cardViewCtrl.js"></script>
+    <script src="./js/controllers/cardCommentXSCtrl.js"></script>
+    <script src="./js/controllers/cardCommentSMCtrl.js"></script>
+    <script src="./js/controllers/cardCommentMDCtrl.js"></script>
+    <script src="./js/controllers/cardInfoCtrl.js"></script>
+    <script src="./js/controllers/shareCardCtrl.js"></script>
+    <script src="./js/controllers/shareCardToFriendsCtrl.js"></script>
+    <script src="./js/controllers/chatWindowCtrl.js"></script>
+    <!-- <script src="./js/_login.js"></script> -->
+    <script src="./js/_logout.js"></script>
 
     <script>
         function login(target, parameters) {
-            let address = "../login.html?from=" + window.location.pathname + "&target=" + target;
+            let address = "./login.html?from=" + window.location.pathname + "&target=" + target;
             if (parameters) {
                 for (let name in parameters) {
                     address += "&" + name + "=" + parameters[name];
@@ -3352,9 +3352,9 @@
     </script>
 
     <!-- remove popovers & tootips -->
-    <script src="../js/_utils.js"></script>
+    <script src="./js/_utils.js"></script>
     <!-- parse table in card -->
-    <script src="../js/vendor/wc-table.js"></script>
+    <script src="./js/vendor/wc-table.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.15.10/build/highlight.min.js"></script>

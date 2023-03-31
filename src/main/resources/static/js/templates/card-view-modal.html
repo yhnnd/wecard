@@ -505,7 +505,7 @@
                                                                 <i class="fa fa-user-plus"></i>
                                                             </button>
                                                             <!-- 【被转发的卡片】收藏卡片按钮，不可用 -->
-                                                            <button class="btn btn-primary border-radius-0" onclick="login('../index.html');" disabled>
+                                                            <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
                                                                 <i class="fa fa-thumbs-up"></i>
                                                             </button>
                                                             <!-- 【被转发的卡片】开关新版卡片渲染引擎 -->
@@ -653,7 +653,7 @@
                                                                                         回复
                                                                                     </button>
                                                                                     <!-- 【被转发的卡片】如果用户没有登录 -->
-                                                                                    <button class="btn btn-sm btn-outline-secondary" onclick="login('../index.html');" ng-show="!user">
+                                                                                    <button class="btn btn-sm btn-outline-secondary" onclick="login('./index.html');" ng-show="!user">
                                                                                         请先登录
                                                                                     </button>
                                                                                 </div>
@@ -743,15 +743,15 @@
                             <!-- 如果用户没有登录 -->
                             <div class="col-12 modal-footer justify-content-center p-3" ng-show="!user">
                                 <!-- 【用户未登录】【禁用的】关注作者按钮，不可用 -->
-                                <button class="btn btn-primary border-radius-0" onclick="login('../index.html');" disabled>
+                                <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
                                     <i class="fa fa-user-plus"></i>
                                 </button>
                                 <!-- 【用户未登录】【禁用的】收藏卡片按钮，不可用 -->
-                                <button class="btn btn-primary border-radius-0" onclick="login('../index.html');" disabled>
+                                <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
                                     <i class="fa fa-thumbs-up"></i>
                                 </button>
                                 <!-- 【用户未登录】【禁用的】转发卡片按钮，不可用 -->
-                                <button class="btn btn-primary border-radius-0" onclick="login('../index.html');" disabled>
+                                <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
                                     <i class="fa fa-share"></i>
                                 </button>
                                 <!-- 【用户未登录】【可用的】选择卡片渲染引擎 (选择卡片显示方式) -->
@@ -809,7 +809,7 @@
                             <!-- 发表评论按钮，变成登录按钮 -->
                             <div class="w-100 d-flex justify-content-end">
                                 <button class="btn btn-success border-radius-0 ml-auto"
-                                        onclick="login('../index.html');" title="登录才能评论">
+                                        onclick="login('./index.html');" title="登录才能评论">
                                     登录以评论
                                 </button>
                             </div>

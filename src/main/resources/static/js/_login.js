@@ -53,7 +53,7 @@ function checkIsLoggedIn() {
 // 获取登录成功之后应该跳转到的页面
 function getTargetPage() {
   var target = getParameter("target");
-  const defaultTarget = "../index.html";
+  const defaultTarget = "./index.html";
   if (target) {
     return target;
   }

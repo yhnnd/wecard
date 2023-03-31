@@ -2,13 +2,13 @@ function gotoPage(page, targetPage) {
     websocket && websocket.close();
     if (page === "login.html") {
         if (targetPage) {
-            window.location.href = "../" + page + "?from=" + window.location.pathname + "&target=" + targetPage;
+            window.location.href = "./" + page + "?from=" + window.location.pathname + "&target=" + targetPage;
         } else {
             // if no target page given, targetPage is same as fromPage
-            window.location.href = "../" + page + "?from=" + window.location.pathname + "&target=.." + window.location.pathname;
+            window.location.href = "./" + page + "?from=" + window.location.pathname + "&target=.." + window.location.pathname;
         }
     } else {
-        window.location.href = "../" + page;
+        window.location.href = "./" + page;
     }
 }
 

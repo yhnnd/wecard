@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>微卡 浏览卡片</title>
-    <link rel="stylesheet" href="../css/bootstrap.min.css" />
-    <link rel="stylesheet" href="../css/font-awesome.min.css" />
-    <link rel="stylesheet" href="../css/animate.min.css" />
-    <link rel="stylesheet" href="../css/buttons.css" />
-    <link rel="stylesheet" href="../css/homepage.css">
+    <link rel="stylesheet" href="./css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/font-awesome.min.css" />
+    <link rel="stylesheet" href="./css/animate.min.css" />
+    <link rel="stylesheet" href="./css/buttons.css" />
+    <link rel="stylesheet" href="./css/homepage.css">
     
     <link rel="alternate stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.15.10/build/styles/default.min.css" title="Default" disabled>
     <link rel="alternate stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.15.10/build/styles/a11y-dark.min.css" title="A 11 Y Dark" disabled>
@@ -29,12 +29,12 @@
     <link rel="alternate stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.15.10/build/styles/tomorrow-night.min.css" title="Tomorrow Night" disabled>
     <link rel="alternate stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.15.10/build/styles/vs2015.min.css" title="VS 2015" disabled>
 
-    <script src="../js/vendor/jquery.min.js"></script>
-    <script src="../js/vendor/angular.min.js"></script>
-    <script src="../js/vendor/popper.min.js"></script>
-    <script src="../js/vendor/bootstrap.min.js"></script>
-    <script src="../js/vendor/underscore.min.js"></script>
-    <script src="../js/_web_config.js"></script>
+    <script src="./js/vendor/jquery.min.js"></script>
+    <script src="./js/vendor/angular.min.js"></script>
+    <script src="./js/vendor/popper.min.js"></script>
+    <script src="./js/vendor/bootstrap.min.js"></script>
+    <script src="./js/vendor/underscore.min.js"></script>
+    <script src="./js/_web_config.js"></script>
   </head>
 
   <body>
@@ -545,7 +545,7 @@
                                                                 <i class="fa fa-user-plus"></i>
                                                             </button>
                                                             <!-- 【被转发的卡片】收藏卡片按钮，不可用 -->
-                                                            <button class="btn btn-primary border-radius-0" onclick="login('../index.html');" disabled>
+                                                            <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
                                                                 <i class="fa fa-thumbs-up"></i>
                                                             </button>
                                                             <!-- 【被转发的卡片】开关新版卡片渲染引擎 -->
@@ -693,7 +693,7 @@
                                                                                         回复
                                                                                     </button>
                                                                                     <!-- 【被转发的卡片】如果用户没有登录 -->
-                                                                                    <button class="btn btn-sm btn-outline-secondary" onclick="login('../index.html');" ng-show="!user">
+                                                                                    <button class="btn btn-sm btn-outline-secondary" onclick="login('./index.html');" ng-show="!user">
                                                                                         请先登录
                                                                                     </button>
                                                                                 </div>
@@ -778,15 +778,15 @@
                             <!-- 如果用户没有登录 -->
                             <div class="col-12 modal-footer justify-content-center p-3" ng-show="!user">
                                 <!-- 【禁用的】关注作者按钮，不可用 -->
-                                <button class="btn btn-primary border-radius-0" onclick="login('../index.html');" disabled>
+                                <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
                                     <i class="fa fa-user-plus"></i>
                                 </button>
                                 <!-- 【禁用的】收藏卡片按钮，不可用 -->
-                                <button class="btn btn-primary border-radius-0" onclick="login('../index.html');" disabled>
+                                <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
                                     <i class="fa fa-thumbs-up"></i>
                                 </button>
                                 <!-- 【禁用的】转发卡片按钮，不可用 -->
-                                <button class="btn btn-primary border-radius-0" onclick="login('../index.html');" disabled>
+                                <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
                                     <i class="fa fa-share"></i>
                                 </button>
                                 <!-- 【可用的】选择渲染引擎 -->
@@ -839,7 +839,7 @@
                             <!-- 发表评论按钮，变成登录按钮 -->
                             <div class="w-100 d-flex justify-content-end">
                                 <button class="btn btn-success border-radius-0 ml-auto disabled"
-                                        onclick="login('../index.html');"
+                                        onclick="login('./index.html');"
                                         title="登录才能评论"
                                         disabled="true">
                                     登录以评论
@@ -916,14 +916,14 @@
     </div>
 
 
-    <script src="../js/vendor/inspect_image.js"></script>
-    <script src="../js/vendor/alert.js"></script>
-    <script src="../js/vendor/param.js"></script>
-    <script src="../js/vendor/wc-table.js"></script>
-    <script src="../js/controllers/cardPageCtrl.js"></script>
-    <script src="../js/controllers/cardCommentXSCtrl.js"></script>
-    <script src="../js/controllers/cardCommentSMCtrl.js"></script>
-    <script src="../js/controllers/cardCommentMDCtrl.js"></script>
+    <script src="./js/vendor/inspect_image.js"></script>
+    <script src="./js/vendor/alert.js"></script>
+    <script src="./js/vendor/param.js"></script>
+    <script src="./js/vendor/wc-table.js"></script>
+    <script src="./js/controllers/cardPageCtrl.js"></script>
+    <script src="./js/controllers/cardCommentXSCtrl.js"></script>
+    <script src="./js/controllers/cardCommentSMCtrl.js"></script>
+    <script src="./js/controllers/cardCommentMDCtrl.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.15.10/build/highlight.min.js"></script>
   </body>

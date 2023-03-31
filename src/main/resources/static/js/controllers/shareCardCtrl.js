@@ -25,7 +25,7 @@
                     .text("转发卡片")
                     .attr("onclick", "shareCardSubmit('" + card.id + "', $('#share-card-text').val());");
             } else {
-                $window.login('../index.html');
+                $window.login('./index.html');
             }
         };
     }

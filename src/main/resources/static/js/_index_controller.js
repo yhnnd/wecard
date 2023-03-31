@@ -1188,7 +1188,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             switch (result.data.message) {
                 case "Please login":
                     // bsAlert("$scope.followUser(" + user.id + "): 请先登录");
-                    $window.location = "../login.html?target=../index.html";
+                    $window.location = "./login.html?target=./index.html";
                     break;
                 case "FollowingId cannot be empty":
                     $scope.alert("$scope.followUser(" + user.id + "):","被关注的人的 ID 不能为空","alert-danger");
@@ -1232,7 +1232,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             switch (result.data.message) {
                 case "Please login":
                     $scope.alert("$scope.unfollowUser(" + user.id + "): 请先登录");
-                    $window.location = "../login.html?target=../index.html";
+                    $window.location = "./login.html?target=./index.html";
                     break;
                 case "FollowingId cannot be empty":
                     $scope.alert("$scope.unfollowUser(" + user.id + "): 被关注的人的 ID 不能为空");
