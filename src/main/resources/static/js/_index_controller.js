@@ -41,7 +41,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         return "javascript:void(0);";
     };
     $scope.viewCardByLink = function(line) {
-        $scope.$parent.viewCard({ id: $scope.getCardId(line) });
+        $scope.viewCard({ id: $scope.getCardId(line) });
     };
     
     const chatWindowOriginalClasses = "chat-window container-fluid mt-0";
@@ -66,6 +66,15 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         if ($scope.is_card_columns_single_column_enabled) {
             $scope.toggle_card_columns_single_column("on");
         }
+        /* modal view card */
+        // 初始化代码高亮样式列表
+        $scope.initCodeHighlightStyles();
+        // 初始化默认代码高亮样式
+        let defaultStyleName = $window.localStorage.getItem("default_code_highlight_style_name");
+        if (defaultStyleName == null) {
+            defaultStyleName = "Default";
+        }
+        $scope.selectCodeHighlightStyle({styleName: defaultStyleName});
     };
 
 
@@ -4491,5 +4500,177 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             $scope.alert("recall message:", "无法连接服务器，错误代码：" + error.status, "alert-danger");
         });
     };
+
+
+
+
+
+
+
+
+
+
+
+    $scope.noPrevCard = false;
+    $scope.noNextCard = false;
+    // 卡片评论显示尺寸
+    $scope.comment_size = "md";
+    // 所有的代码高亮样式选项的数组
+    $scope.allCodeHighlightStyles = [];
+
+
+    $scope.setRenderer = function (renderer) {
+        switch (renderer) {
+            case "primitive":
+                $scope.current_card.isMarkdownEnabled = false;
+                $scope.current_card.scriptIsEnabled = false;
+                $scope.current_card.isHtmlEnabled = false;
+                break;
+            case "wcml":
+                $scope.current_card.isMarkdownEnabled = false;
+                $scope.current_card.scriptIsEnabled = true;
+                $scope.current_card.isHtmlEnabled = false;
+                break;
+            case "markdown":
+                $scope.current_card.isMarkdownEnabled = true;
+                $scope.current_card.scriptIsEnabled = true;
+                $scope.current_card.isHtmlEnabled = false;
+                break;
+            case "html":
+                $scope.current_card.isMarkdownEnabled = false;
+                $scope.current_card.scriptIsEnabled = false;
+                $scope.current_card.isHtmlEnabled = true;
+                break;
+            default:
+                break;
+        }
+    };
+
+
+
+
+
+
+    $scope.initCodeHighlightStyles = function () {
+        $("link[rel=\"alternate stylesheet\"]").each(function () {
+            $scope.allCodeHighlightStyles.push({
+                styleName: $(this).attr("title"),
+                selected: false
+            });
+        });
+    };
+
+
+
+    $scope.selectCodeHighlightStyle = function (option) {
+        $("link[rel=\"alternate stylesheet\"]").each(function () {
+            if ($(this).attr("title") === option.styleName) {
+                $(this).removeAttr("disabled");
+                $scope.allCodeHighlightStyles = $scope.allCodeHighlightStyles.map((e) => {
+                    if (e.styleName === option.styleName) {
+                        e.selected = true;
+                        $window.localStorage.setItem("default_code_highlight_style_name", option.styleName);
+                    } else {
+                        e.selected = false;
+                    }
+                    return e;
+                });
+            } else {
+                $(this).attr("disabled", "disabled");
+            }
+        });
+    };
+
+
+
+    $scope.getTable = function (data) {
+        let table = $window.parseTable(data.tableContentLines).addClass("table table-sm border-bottom mb-0");
+        return $sce.trustAsHtml(table.get(0).outerHTML);
+    };
+
+    function getCard(current_card, msg) {
+        let target_card = current_card;
+        let func = function () {
+            target_card = current_card;
+            return "found";
+        };
+        if (msg === "prev") {
+            func = function (cardGroup) {
+                for (let i = 0; i < cardGroup.length; ++i) {
+                    if (cardGroup[i].id === current_card.id) {
+                        if (i > 0) {
+                            target_card = cardGroup[i - 1];
+                            return "found";
+                        } else {
+                            return "get last of prev group";
+                        }
+                    }
+                }
+            };
+        } else if (msg === "next") {
+            func = function (cardGroup) {
+                for (let i = 0; i < cardGroup.length; ++i) {
+                    if (cardGroup[i].id === current_card.id) {
+                        if (i + 1 < cardGroup.length) {
+                            target_card = cardGroup[i + 1];
+                            return "found";
+                        } else {
+                            return "get first of next group";
+                        }
+                    }
+                }
+            };
+        }
+        let cardGroups = $scope.cardGroups;
+        let result = null;
+        let target_group = [];
+        for (let i = 0; i < cardGroups.length; ++i) {
+            result = func(cardGroups[i]);
+            if (result === "found") {
+                break;
+            } else if (result === "get last of prev group") {
+                if (i > 0) {
+                    target_group = cardGroups[i - 1];
+                    if (target_group.length) {
+                        target_card = target_group[target_group.length - 1];
+                    }
+                }
+                break;
+            } else if (result === "get first of next group") {
+                if (i + 1 < cardGroups.length) {
+                    target_group = cardGroups[i + 1];
+                    if (target_group.length) {
+                        target_card = target_group[0];
+                    }
+                }
+                break;
+            }
+        }
+        return target_card;
+    }
+
+    $scope.viewPrevCard = function () {
+        let card = getCard($scope.current_card, "prev");
+        if (card.id === $scope.current_card.id) {
+            $scope.noPrevCard = true;
+            $timeout(function () {
+                $scope.noPrevCard = false;
+            }, 1000);
+        } else {
+            $scope.viewCard(card);
+        }
+    };
+    $scope.viewNextCard = function () {
+        let card = getCard($scope.current_card, "next");
+        if (card.id === $scope.current_card.id) {
+            $scope.noNextCard = true;
+            $timeout(function () {
+                $scope.noNextCard = false;
+            }, 1000);
+        } else {
+            $scope.viewCard(card);
+        }
+    };
+
 
 });

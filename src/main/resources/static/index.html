@@ -1020,10 +1020,892 @@
 
 
 
-            <!-- 查看卡片 -->
-            <wc-card-view-modal current-card="current_card"
-                                user="user">
-            </wc-card-view-modal>
+            <!-- Modal View Card -->
+            <div class="modal" id="view-card">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content border-radius-0">
+                        <div class="modal-header">
+                            <!-- 卡片头部 -->
+                            <div class="row w-100 m-0">
+                                <!-- 作者头像 -->
+                                <div class="col-3 px-1 pt-1 text-center break-all">
+                                    <img alt="image not found" class="user-avatar rounded-circle cursor-pointer" src="{{current_card.user.avatarUrl}}" data-toggle="tooltip"
+                                         title="{{current_card.user.nickname}}">
+                                </div>
+            
+                                <div class="col-9 p-0">
+                                    <!-- 文章标题 -->
+                                    <div class="row w-100 m-0">
+                                        <!-- 普通卡片标题 -->
+                                        <div class="col-12 p-0" ng-if="current_card.type !== 'share'">
+                                            <div class="overflow-visible" ng-if="current_card.title && current_card.title.length">
+                                                <div class="d-inline-block cursor-pointer" title="{{current_card.id}}" data-placement="right">
+                                                    {{current_card.title}}
+                                                </div>
+                                            </div>
+                                            <div ng-if="!current_card.title || !current_card.title.length">
+                                                <small class="text-muted">卡片没有标题</small>
+                                            </div>
+                                        </div>
+                                        <!-- 转发卡片标题 -->
+                                        <div class="col-12 p-0" ng-if="current_card.type === 'share'">
+                                            <small class="text-muted cursor-pointer" title="{{current_card.id}}">
+                                                <i class="fa fa-share"></i>
+                                                <span class="ml-1">转发卡片</span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="row w-100 m-0">
+                                        <!-- 作者用户名 -->
+                                        <div class="col-8 col-lg-5 p-0 text-muted overflow-hidden">
+                                            <small>
+                                                <span>作者:</span>
+                                                <span>{{current_card.user.nickname}}</span>
+                                                <span>({{current_card.user.username}})</span>
+                                            </small>
+                                        </div>
+                                        <!-- 如果卡片作者是用户自己，禁用关注作者按钮 -->
+                                        <div class="col-4 col-lg-2 p-0" ng-if="user && user.id === current_card.user.id">
+                                            <small>
+                                                <button class="btn btn-sm btn-outline-secondary py-0 border-radius-0" disabled>
+                                                    <span class="upper">关注此人</span>
+                                                </button>
+                                            </small>
+                                        </div>
+                                        <!-- 如果用户未登录或者卡片作者是别人，激活关注作者按钮 -->
+                                        <div class="col-4 col-lg-2 p-0" ng-if="!user || (current_card.user && user.id !== current_card.user.id)">
+                                            <small class="btn btn-sm btn-outline-success py-0 border-radius-0" ng-show="!isFollowing(current_card.user)" ng-click="followUser(current_card.user)">
+                                                <span class="upper">关注此人</span>
+                                            </small>
+                                            <small class="btn btn-sm btn-outline-danger py-0 border-radius-0" ng-show="isFollowing(current_card.user)" ng-click="unfollowUser(current_card.user)">
+                                                <span class="upper">取消关注</span>
+                                            </small>
+                                        </div>
+                                        <!-- 卡片撰写时间 -->
+                                        <div class="col-12 col-lg-5 p-0">
+                                            <small class="text-muted">撰写时间: {{current_card.createdTime}}</small>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                                <div class="col-12 p-0 d-flex align-items-center justify-content-between">
+                                    <div class="cursor-pointer ml-5" ng-click="viewPrevCard()" ng-class="{'text-danger' : noPrevCard}">
+                                        <i class="fa fa-chevron-left" ng-class="{'fa-lg' : noPrevCard}"></i>
+                                    </div>
+                                    <!-- 遍历输出卡片的所有话题 -->
+                                    <div class="card-text" ng-if="current_card.topics && current_card.topics.length">
+                                        <div class="badge badge-pill badge-primary mx-1 cursor-pointer" ng-repeat="topic in current_card.topics track by $index" onselectstart="return false;" ng-click="askToSearchTopic(topic)">
+                                            {{topic.name}}
+                                        </div>
+                                    </div>
+                                    <div class="card-text" ng-if="!current_card.topics || !current_card.topics.length">
+                                        <small class="text-muted">卡片没有话题</small>
+                                    </div>
+                                    <div class="cursor-pointer" ng-click="viewNextCard()" ng-class="{'text-danger' : noNextCard}">
+                                        <i class="fa fa-chevron-right" ng-class="{'fa-lg' : noNextCard}"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- close button -->
+                            <button class="close" data-dismiss="modal" onselect="return false;">
+                                <i class="fa fa-2x fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- Modal Body -->
+                        <div class="modal-body">
+                            <!-- card content -->
+                            <div class="row">
+                                <div class="col-12 col-md-10 mb-0 mx-md-auto">
+                                    <!-- if this card is image card -->
+                                    <div class="row" ng-show="current_card.type === 'image' && current_card.images.length">
+                                        <div class="col px-0 mx-auto d-flex justify-content-center" ng-repeat="image in current_card.images">
+                                            <div class="d-inline-block cursor-pointer mb-2" data-toggle="tooltip" title="{{image.remark}}">
+                                                <div class="img-thumbnail hover-shadow transition-all border-radius-0 overflow-hidden" ng-click="inspect_image(image.url)">
+                                                    <div class="card-image" style="background-image:url({{image.url}});background-size: cover;width:211.1px;height: 118.2px;background-repeat:no-repeat;background-position:top center;">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- 是图片卡，但是没找到图片 -->
+                                    <div class="alert alert-danger border-radius-0 text-center" ng-show="current_card.type === 'image' && !current_card.images.length">
+                                        <i class="fa fa-lg fa-exclamation-triangle upper"></i>
+                                        <span class="ml-1">是图片卡片，但是卡片中没有图片</span>
+                                    </div>
+            
+                                    <!-- if this card is video card -->
+                                    <div class="row" ng-show="current_card.type === 'video'">
+                                        <div class="col px-0 mx-auto d-flex justify-content-center">
+                                            <div class="d-inline-block cursor-pointer">
+                                                <div class="img-thumbnail border-radius-0 overflow-hidden">
+                                                    <video class="card-image w-100" style="max-height: 400px;" src="{{current_card.video.url}}" controls="controls">
+                                                        你的浏览器不支持视频播放
+                                                    </video>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- 是视频卡，但是没找到视频 -->
+                                    <div class="alert alert-danger border-radius-0 text-center" ng-show="current_card.type === 'video' && !current_card.video">
+                                        <i class="fa fa-lg fa-exclamation-triangle upper"></i>
+                                        <span class="ml-1">是视频卡片，但是卡片中没有视频</span>
+                                    </div>
+            
+                                    <!-- 卡片正文全文 -->
+                                    <div class="row">
+                                        <!-- plain-text card content viewer -->
+                                        <div class="col-12 py-1 d-flex justify-content-center align-items-center break-all" ng-if="!current_card.scriptIsEnabled">
+                                            <div class="w-100 cursor-pointer" ng-if="current_card.text">
+                                                <ol class="card-text-lines w-100" ng-if="current_card.text.length" onclick="$(this).toggleClass('show-line-number')">
+                                                    <li ng-repeat="line in current_card.text.split('\n') track by $index">
+                                                        <pre class="line break-all" ng-if="line">{{line}}</pre>
+                                                        <!-- 解决空行不显示的问题 -->
+                                                        <br ng-if="!line">
+                                                    </li>
+                                                </ol>
+                                                <div class="text-muted" ng-if="!current_card.text.length">
+                                                    该卡片正文没有内容
+                                                </div>
+                                            </div>
+                                            <div class="text-muted" ng-if="!current_card.text">
+                                                该卡片没有正文
+                                            </div>
+                                        </div>
+                                        <!-- script-enabled card content viewer -->
+                                        <div class="col-12 py-1 d-flex justify-content-center align-items-center break-all" 
+                                             ng-if="!current_card.isMarkdownEnabled && current_card.scriptIsEnabled">
+                                            <div class="w-100 cursor-pointer" ng-if="current_card.contentLines">
+            
+                                                <div class="w-100" ng-if="debugMode.isEnabled">
+                                                    <div class="alert mb-0 w-100 border-radius-0 alert-success">
+                                                        <small>新版卡片渲染器已开启</small>
+                                                    </div>
+                                                    <div class="bg-dark py-1">
+                                                        <div class="text-white px-2">
+                                                            plain text lineNOs: {{current_card.plainTextIndexList}}
+                                                        </div>
+                                                        <hr class="border border-light my-1">
+                                                        <div class="text-success px-2">
+                                                            script lineNOs: {{current_card.scriptIndexList}}
+                                                        </div>
+                                                    </div>
+                                                </div>
+            
+                                                <ol class="card-text-lines w-100" ng-if="current_card.contentLines.length" onclick="$(this).toggleClass('show-line-number')">
+                                                    <li ng-repeat="line in current_card.contentLines track by $index" ng-init="index = $index">
+                                                        <!-- 开发者模式 显示行号 -->
+                                                        <div class="position-relative" ng-if="debugMode.isEnabled">
+                                                            <div class="position-absolute half-hidden hover-show" style="left: -.5rem; z-index: 200;">
+                                                                <div ng-if="current_card.plainTextIndexList.includes(index)">
+                                                                    <div class="text-danger bg-white" ng-if="current_card.scriptIndexList.includes(index)">
+                                                                        {{index}}
+                                                                    </div>
+                                                                    <div class="text-primary bg-white" ng-if="!current_card.scriptIndexList.includes(index)">
+                                                                        {{index}}
+                                                                    </div>
+                                                                </div>
+                                                                <div ng-if="!current_card.plainTextIndexList.includes(index)">
+                                                                    <div class="text-success bg-white" ng-if="current_card.scriptIndexList.includes(index)">
+                                                                        {{index}}
+                                                                    </div>
+                                                                    <div class="text-muted bg-white" ng-if="!current_card.scriptIndexList.includes(index)">
+                                                                        {{index}}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- 如果这一行不是脚本 -->
+                                                        <div ng-if="!current_card.scriptIndexList.includes(index)">
+                                                            <pre class="line break-all" ng-if="line">{{line}}</pre>
+                                                            <!-- 解决空行不显示的问题 -->
+                                                            <br ng-if="!line">
+                                                        </div>
+                                                        <!-- 如果这一行是脚本 -->
+                                                        <div ng-if="current_card.scriptIndexList.includes(index)" class="w-100">
+                                                            <div ng-switch="current_card.scriptSet['line-' + index].type">
+                                                                <!-- 1 如果是图片 -->
+                                                                <div ng-switch-when="markdown-image-link">
+                                                                    <!-- 如果图片地址存在 -->
+                                                                    <div ng-if="getCardImageSrcByLineNumber(index)">
+                                                                        <div class="img-thumbnail hover-shadow transition-all border-radius-0 overflow-hidden my-2"
+                                                                             ng-click="inspect_image(getCardImageSrcByLineNumber(index))">
+                                                                            <div class="card-image card-image-wrapper">
+                                                                                <!-- 不能给 img 标签加上 onerror 属性, 否则不管图片存在与否, 都会调用 onerror -->
+                                                                                <img src="{{getCardImageSrcByLineNumber(index)}}" alt="{{line}}">
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <!-- 如果图片地址不存在 -->
+                                                                    <div ng-if="!getCardImageSrcByLineNumber(index)" data-toggle="tooltip" title="img src not found">
+                                                                        {{line}}
+                                                                    </div>
+                                                                </div>
+                                                                <!-- 2 wecard version number 版本号 -->
+                                                                <div ng-switch-when="wecard-version" class="alert-success half-hidden hover-show"
+                                                                     data-toggle="tooltip" title="微卡版本号">
+                                                                    {{line}}
+                                                                </div>
+                                                                <!-- 3 用户头像链接 user icon link -->
+                                                                <div ng-switch-when="iconify-user">
+                                                                    <div class="d-inline-block" ng-repeat="word in current_card.scriptSet['line-' + index].lineSubStrings track by $index">
+                                                                        <div ng-switch="current_card.scriptSet['line-' + index].scriptPositions.includes($index)">
+                                                                            <span ng-switch-when="false">{{word}}</span>
+                                                                            <div ng-switch-when="true">
+                                                                                <!-- 默认隐藏此用户的头像图标, 因为未登录的用户无法查看此用户的信息, 也就无法加载用户头像 -->
+                                                                                <div class="iconify-user" data-icon-id="{{current_card.scriptSet['line-' + index].iconId}}">
+                                                                                    <img src="" alt="x" class="user-avatar-xs rounded-circle" style="display: none;">
+                                                                                    <div class="original-script" data-toggle="tooltip" title="该用户不存在">
+                                                                                        {{word}}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- 4 网址链接文本 -->
+                                                                <div ng-switch-when="text-url">
+                                                                    <!-- 根据空格将文本行分割成片段 -->
+                                                                    <div ng-repeat="word in current_card.scriptSet['line-' + index]['a-link-text'].split(' ') track by $index">
+                                                                        <!-- 将第一个片段变成链接 -->
+                                                                        <a href="javascript:void(0);"
+                                                                           ng-if="$index == 0"
+                                                                           ng-click="openExternalLink(current_card.scriptSet['line-' + index]['a-link-href'])"
+                                                                           class="{{current_card.scriptSet['line-' + index]['a-link-class']}}">
+                                                                            <div class="d-inline-block" ng-bind="word"></div>
+                                                                        </a>
+                                                                        <!-- 将第一个片段之后的片段解释成纯文本, 原样显示 -->
+                                                                        <div class="d-inline-block" ng-if="$index > 0">
+                                                                            <div class="d-inline-block" ng-bind="word"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- 5 表格 Table -->
+                                                                <div ng-switch-when="table">
+                                                                    <div ng-if="current_card.scriptSet['line-' + index].marks.includes('open')">
+                                                                        <div class="table-container w-100" id="{{current_card.scriptSet['line-' + index].tableId}}"
+                                                                             ng-bind-html="getTable(current_card.scriptSet['line-' + index])">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div ng-if="current_card.scriptSet['line-' + index].marks.includes('close')">
+                                                                    </div>
+                                                                    <div ng-if="current_card.scriptSet['line-' + index].marks.includes('line')">
+                                                                    </div>
+                                                                </div>
+                                                                <!-- 0 不能识别含义的脚本 -->
+                                                                <div ng-switch-default="" data-toggle="tooltip" title="unknown script">
+                                                                    {{line}}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                </ol>
+                                                <div class="text-muted" ng-if="!current_card.contentLines.length">
+                                                    该卡片正文没有内容
+                                                </div>
+                                            </div>
+                                            <div class="text-muted" ng-if="!current_card.contentLines">
+                                                该卡片没有正文
+                                            </div>
+                                        </div>
+                                        <!-- 卡片 markdown 正文 -->
+                                        <div class="col-12 py-1" id="marked" ng-show="current_card.isMarkdownEnabled">
+                                        </div>
+                                        <!-- 卡片 markdown 正文下方的描述信息 -->
+                                        <div class="col-12 py-1 border border-bottom-0 markdown-settings" ng-show="current_card.isMarkdownEnabled">
+                                            <div class="py-1">
+                                                <div class="d-inline-block">Markdown 语法解析 由</div>
+                                                <a href="https://marked.js.org/" target="_blank">Marked.js</a>
+                                                <div class="d-inline-block">提供支持</div>
+                                                <i class="fa fa-lg fa-times-circle text-muted float-right mt-1" onclick="$(this).closest('.markdown-settings').hide()"></i>
+                                            </div>
+                                            <div class="py-1">
+                                                <div class="d-inline-block">代码高亮 由</div>
+                                                <a href="https://highlightjs.org/" target="_blank">highlight.js</a>
+                                                <div class="d-inline-block">提供支持</div>
+                                            </div>
+                                            <div class="py-1">
+                                                <div class="btn btn-sm btn-outline-dark" 
+                                                     onclick="$(this).siblings().show()">
+                                                    <div>高亮样式</div>
+                                                </div>
+                                                <div class="btn btn-sm btn-outline-dark ml-2" 
+                                                     onclick="$(this).hide().next().hide()" 
+                                                     style="display: none;">
+                                                    <div class="px-2">关闭</div>
+                                                </div>
+                                                <ul class="list-group mt-2" style="display: none;">
+                                                    <li class="list-group-item list-group-item-action" 
+                                                        ng-repeat="option in allCodeHighlightStyles track by $index"
+                                                        ng-click="selectCodeHighlightStyle(option)">
+                                                        <div class="d-inline-block mr-2">
+                                                            <i class="fa fa-lg fa-check-circle" ng-if="option.selected"></i>
+                                                            <i class="fa fa-lg fa-circle-o" ng-if="!option.selected"></i>
+                                                        </div>
+                                                        <div class="d-inline-block" ng-bind="option.styleName"></div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+            
+            
+            
+            
+            
+            
+                                        <!-- 被转发的卡片 BEGIN -->
+            
+                                        <div class="col-12 px-0" ng-if="current_card.type === 'share' && current_card.share">
+                                            <div class="alert-secondary p-2 border" style="box-shadow: 0 0 5px rgba(0,0,0,0.8) inset;">
+                                                <div class="modal-content border-radius-0">
+                                                    <div class="modal-header">
+                                                        <!-- 【被转发的卡片】卡片头部 -->
+                                                        <div class="row w-100 m-0">
+                                                            <!-- 【被转发的卡片】作者头像 -->
+                                                            <div class="col-3 px-1 pt-1 text-center break-all">
+                                                                <img alt="image not found" class="user-avatar rounded-circle cursor-pointer" src="{{current_card.share.user.avatarUrl}}" data-toggle="tooltip"
+                                                                     title="{{current_card.share.user.nickname}}">
+                                                            </div>
+            
+                                                            <div class="col-9 p-0">
+                                                                <!-- 【被转发的卡片】文章标题 -->
+                                                                <div class="row w-100 m-0">
+                                                                    <!-- 【被转发的卡片】卡片标题 -->
+                                                                    <div class="col-12 p-0" ng-if="current_card.share.type !== 'share'">
+                                                                        <div class="overflow-visible" ng-if="current_card.share.title && current_card.share.title.length">
+                                                                            <div class="d-inline-block cursor-pointer" title="{{current_card.share.id}}" data-placement="right">
+                                                                                {{current_card.share.title}}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div ng-if="!current_card.share.title || !current_card.share.title.length">
+                                                                            <small class="text-muted">卡片没有标题</small>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row w-100 m-0">
+                                                                    <!-- 【被转发的卡片】作者用户名 -->
+                                                                    <div class="col-8 col-lg-5 p-0 text-muted overflow-hidden">
+                                                                        <small>
+                                                                            <span>作者:</span>
+                                                                            <span>{{current_card.share.user.nickname}}</span>
+                                                                            <span>({{current_card.share.user.username}})</span>
+                                                                        </small>
+                                                                    </div>
+                                                                    <!-- 【被转发的卡片】如果被转发的卡片的作者是用户自己，禁用关注作者按钮 -->
+                                                                    <div class="col-4 col-lg-2 p-0" ng-if="user && user.id === current_card.share.user.id">
+                                                                        <small>
+                                                                            <button class="btn btn-sm btn-outline-secondary py-0 border-radius-0" disabled>
+                                                                                <span class="upper">关注此人</span>
+                                                                            </button>
+                                                                        </small>
+                                                                    </div>
+                                                                    <!-- 【被转发的卡片】如果用户未登录或者【被转发的卡片】的作者是别人，激活关注作者按钮 -->
+                                                                    <div class="col-4 col-lg-2 p-0" ng-if="!user || (current_card.share.user && user.id !== current_card.share.user.id)">
+                                                                        <small class="btn btn-sm btn-outline-success py-0 border-radius-0" ng-show="!isFollowing(current_card.share.user)" ng-click="followUser(current_card.share.user)">
+                                                                            <span class="upper">关注此人</span>
+                                                                        </small>
+                                                                        <small class="btn btn-sm btn-outline-danger py-0 border-radius-0" ng-show="isFollowing(current_card.share.user)" ng-click="unfollowUser(current_card.share.user)">
+                                                                            <span class="upper">取消关注</span>
+                                                                        </small>
+                                                                    </div>
+                                                                    <!-- 【被转发的卡片】卡片撰写时间 -->
+                                                                    <div class="col-12 col-lg-5 p-0">
+                                                                        <small class="text-muted">撰写时间: {{current_card.share.createdTime}}</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+            
+                                                            <div class="col-12 p-0 text-center">
+                                                                <!-- 【被转发的卡片】遍历输出卡片的所有话题 -->
+                                                                <div class="card-text" ng-if="current_card.share.topics && current_card.share.topics.length">
+                                                                    <div class="badge badge-pill badge-primary mx-1 cursor-pointer" ng-repeat="topic in current_card.share.topics track by $index" onselectstart="return false;" ng-click="askToSearchTopic(topic)">
+                                                                        {{topic.name}}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="card-text" ng-if="!current_card.share.topics || !current_card.share.topics.length">
+                                                                    <small class="text-muted">卡片没有话题</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <!-- 【被转发的卡片】card content -->
+                                                        <div class="row">
+                                                            <div class="col-12 col-md-10 mb-0 mx-md-auto">
+                                                                <!-- 【被转发的卡片】if this card is image card -->
+                                                                <div class="row" ng-show="current_card.share.type === 'image' && current_card.share.images.length">
+                                                                    <div class="col px-0 mx-auto" ng-repeat="image in current_card.share.images">
+                                                                        <div class="d-inline-block cursor-pointer mb-2" data-toggle="tooltip" title="{{image.remark}}">
+                                                                            <div class="img-thumbnail hover-shadow transition-all border-radius-0 overflow-hidden" ng-click="inspect_image(image.url)">
+                                                                                <div class="card-image" style="background-image:url({{image.url}});background-size: cover;width:170px;height: 130px;background-repeat:no-repeat;background-position:top center;">
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- 【被转发的卡片】是图片卡，但是没找到图片 -->
+                                                                <div class="alert alert-danger border-radius-0 text-center" ng-show="current_card.share.type === 'image' && !current_card.share.images.length">
+                                                                    <i class="fa fa-lg fa-exclamation-triangle upper"></i>
+                                                                    <span class="ml-1">是图片卡片，但是卡片中没有图片</span>
+                                                                </div>
+            
+                                                                <!-- 【被转发的卡片】if this card is video card -->
+                                                                <div class="row" ng-show="current_card.share.type === 'video'">
+                                                                    <div class="col px-0 mx-auto d-flex justify-content-center">
+                                                                        <div class="d-inline-block cursor-pointer">
+                                                                            <div class="img-thumbnail border-radius-0 overflow-hidden">
+                                                                                <video class="card-image w-100" style="max-height: 400px;" src="{{current_card.share.video.url}}" controls="controls">
+                                                                                    你的浏览器不支持视频播放
+                                                                                </video>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- 【被转发的卡片】是视频卡，但是没找到视频 -->
+                                                                <div class="alert alert-danger border-radius-0 text-center" ng-show="current_card.share.type === 'video' && !current_card.share.video">
+                                                                    <i class="fa fa-lg fa-exclamation-triangle upper"></i>
+                                                                    <span class="ml-1">是视频卡片，但是卡片中没有视频</span>
+                                                                </div>
+            
+                                                                <!-- 【被转发的卡片】卡片正文全文 -->
+                                                                <div class="row">
+                                                                    <div class="col-12 py-1 d-flex justify-content-center align-items-center break-all">
+                                                                        <div class="w-100 cursor-pointer" ng-if="current_card.share.text">
+                                                                            <ol class="card-text-lines w-100" ng-if="current_card.share.text.length" onclick="$(this).toggleClass('show-line-number')">
+                                                                                <li ng-repeat="line in current_card.share.text.split('\n') track by $index">
+                                                                                    <pre class="line break-all" ng-if="line">{{line}}</pre>
+                                                                                    <!-- 【被转发的卡片】解决空行不显示的问题 -->
+                                                                                    <br ng-if="!line">
+                                                                                </li>
+                                                                            </ol>
+                                                                            <div class="text-muted" ng-if="!current_card.share.text.length">
+                                                                                该卡片正文没有内容
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="text-muted" ng-if="!current_card.share.text">
+                                                                            该卡片没有正文
+                                                                        </div>
+                                                                    </div>
+            
+                                                                    <!-- 【被转发的卡片】如果用户已经登录 -->
+                                                                    <div class="col-12 modal-footer justify-content-center p-3" ng-show="user && current_card.share.status === 'exist'">
+                                                                        <!-- 【被转发的卡片】不论卡片作者是不是我，都会激活这些按钮 -->
+                                                                        <!-- 【被转发的卡片】关注作者按钮 -->
+                                                                        <button class="btn btn-primary border-radius-0" ng-show="!isFollowing(current_card.share.user)" ng-click="followUser(current_card.share.user)">
+                                                                            <i class="fa fa-user-plus"></i>
+                                                                        </button>
+                                                                        <!-- 【被转发的卡片】取消关注作者按钮 -->
+                                                                        <button class="btn btn-danger border-radius-0" ng-show="isFollowing(current_card.share.user)" ng-click="unfollowUser(current_card.share.user)">
+                                                                            <i class="fa fa-user-times"></i>
+                                                                        </button>
+                                                                        <!-- 【被转发的卡片】收藏被转发的卡片按钮 -->
+                                                                        <button class="btn btn-primary border-radius-0" id="like-share-card-button" ng-click="likeCard(current_card.share.id)" ng-if="!current_card.share.iLike">
+                                                                            <i class="fa fa-thumbs-up"></i>
+                                                                        </button>
+                                                                        <!-- 【被转发的卡片】取消收藏被转发的卡片按钮 -->
+                                                                        <button class="btn btn-danger border-radius-0" id="cancel-like-share-card-button" ng-click="cancelLikeCard(current_card.share.id)" ng-if="current_card.share.iLike">
+                                                                            <i class="fa fa-thumbs-down"></i>
+                                                                        </button>
+                                                                        <!-- 【被转发的卡片】如果被转发的卡片作者是我，则激活删除卡片按钮 -->
+                                                                        <button class="btn btn-outline-danger border-radius-0" ng-click="deleteCard(current_card.share)"
+                                                                                ng-show="current_card.share.user && current_card.share.user.id && current_card.share.user.id === user.id">
+                                                                            <i class="fa fa-lg fa-trash-o"></i>
+                                                                        </button>
+                                                                        <!-- 【被转发的卡片】如果被转发的卡片作者是别人，则激活举报卡片按钮 -->
+                                                                        <button class="btn btn-danger border-radius-0" ng-click="reportCard(current_card)"
+                                                                                ng-show="current_card.share.user && current_card.share.user.id && current_card.share.user.id !== user.id">
+                                                                            <i class="fa fa-lg fa-flag"></i>
+                                                                        </button>
+                                                                        <!-- 【被转发的卡片】开关新版卡片渲染引擎 -->
+                                                                        <button class="btn btn-primary border-radius-0" ng-click="current_card.share.scriptIsEnabled = !current_card.share.scriptIsEnabled"
+                                                                                data-toggle="tooltip" title="切换卡片显示方式">
+                                                                            <i class="fa fa-lg fa-file-text"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                    <!-- 【被转发的卡片】如果用户没有登录 -->
+                                                                    <div class="col-12 modal-footer justify-content-center p-3" ng-show="!user">
+                                                                        <!-- 【被转发的卡片】关注作者按钮，不可用 -->
+                                                                        <button class="btn btn-primary border-radius-0" disabled>
+                                                                            <i class="fa fa-user-plus"></i>
+                                                                        </button>
+                                                                        <!-- 【被转发的卡片】收藏卡片按钮，不可用 -->
+                                                                        <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
+                                                                            <i class="fa fa-thumbs-up"></i>
+                                                                        </button>
+                                                                        <!-- 【被转发的卡片】开关新版卡片渲染引擎 -->
+                                                                        <button class="btn btn-primary border-radius-0" ng-click="current_card.share.scriptIsEnabled = !current_card.share.scriptIsEnabled"
+                                                                                data-toggle="tooltip" title="切换卡片显示方式">
+                                                                            <i class="fa fa-lg fa-file-text"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+            
+                                                        <hr class="mt-0">
+            
+                                                        <div class="row">
+                                                            <div class="col-12 mb-2 mx-md-auto col-md-10 mb-md-0">
+                                                                <div class="row">
+                                                                    <div class="col-12">
+                                                                        <!-- 【被转发的卡片】no comment -->
+                                                                        <div ng-if="!current_card.share.comments||!current_card.share.comments.length">
+                                                                            <div class="text-center">
+                                                                                <small class="text-muted">
+                                                                                    没有评论
+                                                                                </small>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="cursor-pointer" ng-repeat="comment in current_card.share.comments track by $index">
+                                                                            <div class="mb-1 {{comment.children && comment.children.length ? 'border pt-1 pl-1' : ''}}">
+            
+                                                                                <div class="message-content-wrapper d-flex justify-content-begin align-items-center">
+                                                                                    <div class="d-flex justify-content-begin align-items-center {{comment.status === 'exist'? '' : 'half-hidden'}}">
+                                                                                        <!-- 【被转发的卡片】1 他的头像 -->
+                                                                                        <div class="avatar-wrapper d-inline-block mr-1">
+                                                                                            <img src="{{comment.user.avatarUrl}}" alt="" class="user-avatar-xs rounded-circle border" data-toggle="tooltip" title="{{comment.user.nickname}}">
+                                                                                        </div>
+                                                                                        <!-- 【被转发的卡片】2 评论气泡 -->
+                                                                                        <div class="bg-white img-thumbnail message-bubble px-2" ng-if="comment.text" style="line-height: 1.25;max-width: 90%;">
+                                                                                            <!-- 【被转发的卡片】删除评论按钮 -->
+                                                                                            <div style="position:relative" ng-show="user && comment.user.id === user.id && comment.status === 'exist'">
+                                                                                                <small style="position:absolute;top: -.55rem;right: -.7rem;">
+                                                                                                    <i class="fa fa-times-circle text-muted" ng-click="deleteComment(current_card.share.id,comment.id)"></i>
+                                                                                                </small>
+                                                                                            </div>
+                                                                                            <!-- 【被转发的卡片】评论内容 -->
+                                                                                            <small class="{{comment.status === 'exist'? 'text-dark' : 'text-muted'}}">
+                                                                                                {{comment.text}}
+                                                                                            </small>
+                                                                                        </div>
+                                                                                        <!-- 【被转发的卡片】3 评论的其他信息 -->
+                                                                                        <div class="d-inline-block" style="height: 26px;position: relative;" ng-if="comment.status === 'exist'">
+                                                                                            <div class="d-inline-block bg-white" style="position: absolute;top: 0;left: 4px;width: 210px;">
+                                                                                                <!-- 【被转发的卡片】回复评论 -->
+                                                                                                <div class="d-inline-block ml-2" data-toggle="tooltip" title="回复评论">
+                                                                                                    <i class="fa fa-comment" style="color:lightskyblue;" data-toggle="collapse" data-target="#comment-{{comment.id}}">
+                                                                                                    </i>
+                                                                                                </div>
+                                                                                                <!-- 【被转发的卡片】点赞评论 -->
+                                                                                                <div class="d-inline-block ml-1">
+                                                                                                    <i class="fa fa-thumbs-up text-primary" data-toggle="tooltip" title="赞" style="opacity: .8;" ng-click="likeComment(comment)">
+                                                                                                    </i>
+                                                                                                    <small class="text-muted" data-toggle="tooltip" title="获赞数">
+                                                                                                        {{comment.commentHot}}
+                                                                                                    </small>
+                                                                                                </div>
+                                                                                                <!-- 【被转发的卡片】评论时间 -->
+                                                                                                <div class="d-inline-block ml-1">
+                                                                                                    <small class="text-muted" data-toggle="tooltip" title="评论时间">
+                                                                                                        {{comment.createdTime}}
+                                                                                                    </small>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <!-- 【被转发的卡片】该评论的所有回复（二级评论） -->
+                                                                                <div class="w-100 px-3 {{comment.children && comment.children.length ? 'pt-2' : ''}}">
+                                                                                    <!-- 【被转发的卡片】二级评论 -->
+                                                                                    <div class="mb-1" ng-repeat="reply in comment.children track by $index">
+                                                                                        <div class="message-content-wrapper">
+                                                                                            <div class="d-flex justify-content-begin align-items-center {{reply.status === 'exist'? '' : 'half-hidden'}}">
+                                                                                                <!-- 【被转发的卡片】1 他的头像 -->
+                                                                                                <div class="avatar-wrapper d-inline-block mr-1">
+                                                                                                    <img src="{{reply.user.avatarUrl}}" alt="" class="user-avatar-xs rounded-circle border">
+                                                                                                </div>
+                                                                                                <!-- 【被转发的卡片】2 二级评论气泡 -->
+                                                                                                <div class="bg-white img-thumbnail message-bubble px-2" ng-if="comment.text" style="line-height: 1.25;max-width: 90%;">
+                                                                                                    <!-- 【被转发的卡片】删除二级评论按钮 -->
+                                                                                                    <div style="position:relative" ng-show="user && reply.user.id === user.id && reply.status === 'exist'">
+                                                                                                        <small style="position:absolute;top: -.55rem;right: -.7rem;">
+                                                                                                            <i class="fa fa-times-circle text-muted" ng-click="deleteComment(current_card.share.id,reply.id)"></i>
+                                                                                                        </small>
+                                                                                                    </div>
+                                                                                                    <!-- 【被转发的卡片】二级评论内容 -->
+                                                                                                    <small class="{{reply.status === 'exist'? 'text-dark' : 'text-muted'}}">
+                                                                                                        {{reply.text}}
+                                                                                                    </small>
+                                                                                                </div>
+                                                                                                <!-- 【被转发的卡片】3 二级评论的更多信息 -->
+                                                                                                <div class="d-inline-block" style="height: 26px;position: relative;" ng-if="reply.status === 'exist'">
+                                                                                                    <div class="d-inline-block" style="position: absolute;top: 0;left: 4px;width: 210px;">
+                                                                                                        <!-- 【被转发的卡片】点赞二级评论 -->
+                                                                                                        <div class="d-inline-block ml-1">
+                                                                                                            <i class="fa fa-thumbs-up text-primary" data-toggle="tooltip" title="赞" style="opacity: .8;" ng-click="likeComment(reply)">
+                                                                                                            </i>
+                                                                                                            <small class="text-muted" data-toggle="tooltip" title="获赞数">
+                                                                                                                {{reply.commentHot}}
+                                                                                                            </small>
+                                                                                                        </div>
+                                                                                                        <!-- 【被转发的卡片】二级评论的提交时间 -->
+                                                                                                        <div class="d-inline-block ml-1">
+                                                                                                            <small class="text-muted" data-toggle="tooltip" title="评论时间">
+                                                                                                                {{reply.createdTime}}
+                                                                                                            </small>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="collapse border my-2 alert-secondary" id="comment-{{comment.id}}">
+                                                                                        <div style="position: relative;">
+                                                                                            <i class="fa fa-times-circle fa-lg" style="position: absolute;top: 0;right: 0;opacity: .5;" onclick="$(this).closest('.collapse').collapse('hide')">
+                                                                                            </i>
+                                                                                        </div>
+                                                                                        <!-- 【被转发的卡片】如果用户已经登录 -->
+                                                                                        <div class="input-group my-2 ml-5 mr-auto" style="width: 300px;" ng-show="user">
+                                                                                            <!-- 【被转发的卡片】回复评论输入框 -->
+                                                                                            <input type="text" class="form-control form-control-sm border-radius-0" data-parent-id="{{comment.id}}">
+                                                                                            <!-- 【被转发的卡片】回复按钮 -->
+                                                                                            <div class="input-group-append">
+                                                                                                <button class="btn btn-sm btn-outline-secondary border-radius-0" onclick="replyComment($(this).parent().prev())" title="回复评论"
+                                                                                                        ng-show="user">
+                                                                                                    回复
+                                                                                                </button>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <!-- 【被转发的卡片】如果用户没有登录 -->
+                                                                                        <div class="input-group my-2 ml-5 mr-auto" style="width: 300px;" ng-show="!user">
+                                                                                            <!-- 【被转发的卡片】回复评论输入框，禁用状态 -->
+                                                                                            <input type="text" class="form-control form-control-sm border-radius-0" disabled>
+                                                                                            <!-- 【被转发的卡片】回复按钮，禁用状态 -->
+                                                                                            <div class="input-group-append">
+                                                                                                <button class="btn btn-sm btn-outline-secondary border-radius-0" onclick="replyComment($(this).parent().prev())" title="回复评论"
+                                                                                                        ng-show="user">
+                                                                                                    回复
+                                                                                                </button>
+                                                                                                <!-- 【被转发的卡片】如果用户没有登录 -->
+                                                                                                <button class="btn btn-sm btn-outline-secondary" onclick="login('./index.html');" ng-show="!user">
+                                                                                                    请先登录
+                                                                                                </button>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+            
+                                        <!-- 被转发的卡片 END -->
+            
+            
+            
+            
+            
+                                        <!-- 如果用户已经登录 -->
+                                        <div class="col-12 modal-footer justify-content-center p-3" ng-show="user && current_card.status === 'exist'">
+                                            <!-- 不论卡片作者是不是我，都会激活这些按钮 -->
+                                            <!-- 【用户已登录】关注作者按钮 -->
+                                            <button class="btn btn-primary border-radius-0" ng-show="!isFollowing(current_card.user)" ng-click="followUser(current_card.user)">
+                                                <i class="fa fa-user-plus"></i>
+                                            </button>
+                                            <!-- 【用户已登录】取消关注作者按钮 -->
+                                            <button class="btn btn-danger border-radius-0" ng-show="isFollowing(current_card.user)" ng-click="unfollowUser(current_card.user)">
+                                                <i class="fa fa-user-times"></i>
+                                            </button>
+                                            <!-- 【用户已登录】收藏卡片按钮 -->
+                                            <button class="btn btn-primary border-radius-0" id="like-card-button" ng-click="likeCard(current_card.id)"
+                                                    title="热度: {{current_card.cardHot}}" data-toggle="tooltip" ng-if="!current_card.iLike">
+                                                <i class="fa fa-thumbs-up"></i>
+                                            </button>
+                                            <!-- 【用户已登录】取消收藏卡片按钮 -->
+                                            <button class="btn btn-danger border-radius-0" id="cancel-like-card-button" ng-click="cancelLikeCard(current_card.id)"
+                                                    title="热度: {{current_card.cardHot}}" data-toggle="tooltip" ng-if="current_card.iLike">
+                                                <i class="fa fa-thumbs-down"></i>
+                                            </button>
+                                            <!-- 【用户已登录】转发【普通】卡片按钮【卡片非 share 类型】 -->
+                                            <button class="btn btn-primary border-radius-0" ng-click="shareCard(current_card)" ng-show="current_card.type !== 'share'"
+                                                    title="转发: {{current_card.shareNum}}" data-toggle="tooltip">
+                                                <i class="fa fa-share"></i>
+                                            </button>
+                                            <!-- 【用户已登录】转发【share】类型的卡片的按钮 -->
+                                            <button class="btn btn-primary border-radius-0" ng-click="shareCard(current_card.share)" ng-show="current_card.type === 'share' && current_card.share"
+                                                    title="转发: {{current_card.share.shareNum}}" data-toggle="tooltip">
+                                                <i class="fa fa-share"></i>
+                                            </button>
+                                            <!-- 【用户已登录】【禁用的】转发【share】类型的卡片的按钮【因为卡片 share 信息缺失】 -->
+                                            <button class="btn btn-primary border-radius-0" ng-show="current_card.type === 'share' && current_card.share == undefined" disabled>
+                                                <i class="fa fa-share"></i>
+                                            </button>
+                                            <!-- 【用户已登录】如果卡片作者是我，则激活删除卡片按钮 -->
+                                            <button class="btn btn-outline-danger border-radius-0" ng-click="deleteCard(current_card)"
+                                                    ng-show="current_card.user && current_card.user.id && current_card.user.id === user.id">
+                                                <i class="fa fa-lg fa-trash-o"></i>
+                                            </button>
+                                            <!-- 【用户已登录】如果卡片作者是别人，则激活举报卡片按钮 -->
+                                            <button class="btn btn-danger border-radius-0" ng-click="reportCard(current_card)"
+                                                    ng-show="current_card.user && current_card.user.id && current_card.user.id !== user.id">
+                                                <i class="fa fa-lg fa-flag"></i>
+                                            </button>
+                                            <!-- 【用户已登录】选择卡片渲染引擎 (选择卡片显示方式) -->
+                                            <div class="dropdown" data-toggle="tooltip" title="选择卡片显示方式">
+                                                <button class="btn btn-primary dropdown-toggle border-radius-0" data-toggle="dropdown">
+                                                    <i class="fa fa-lg fa-file-text"></i>
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <div class="dropdown-item" ng-click="setRenderer('primitive');">无</div>
+                                                    <div class="dropdown-item" ng-click="setRenderer('wcml');">WCML</div>
+                                                    <div class="dropdown-item" ng-click="setRenderer('markdown')">Markdown</div>
+                                                    <div class="dropdown-item" ng-click="setRenderer('html')">HTML</div>
+                                                </div>
+                                            </div>
+                                            <!-- 【用户已登录】以单独页面形式查看卡片 -->
+                                            <a class="btn btn-primary border-radius-0" href="card-page.html?card-id={{current_card.id}}" target="_blank"
+                                                    data-toggle="tooltip" title="单独页面查看卡片">
+                                                <i class="fa fa-lg fa-link"></i>
+                                            </a>
+                                        </div>
+                                        <!-- 如果用户没有登录 -->
+                                        <div class="col-12 modal-footer justify-content-center p-3" ng-show="!user">
+                                            <!-- 【用户未登录】【禁用的】关注作者按钮，不可用 -->
+                                            <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
+                                                <i class="fa fa-user-plus"></i>
+                                            </button>
+                                            <!-- 【用户未登录】【禁用的】收藏卡片按钮，不可用 -->
+                                            <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
+                                                <i class="fa fa-thumbs-up"></i>
+                                            </button>
+                                            <!-- 【用户未登录】【禁用的】转发卡片按钮，不可用 -->
+                                            <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
+                                                <i class="fa fa-share"></i>
+                                            </button>
+                                            <!-- 【用户未登录】【可用的】选择卡片渲染引擎 (选择卡片显示方式) -->
+                                            <div class="dropdown" data-toggle="tooltip" title="选择卡片显示方式">
+                                                <button class="btn btn-primary dropdown-toggle border-radius-0" data-toggle="dropdown">
+                                                    <i class="fa fa-lg fa-file-text"></i>
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <div class="dropdown-item" ng-click="setRenderer('primitive');">无</div>
+                                                    <div class="dropdown-item" ng-click="setRenderer('wcml');">WCML</div>
+                                                    <div class="dropdown-item" ng-click="setRenderer('markdown')">Markdown</div>
+                                                    <div class="dropdown-item" ng-click="setRenderer('html')">HTML</div>
+                                                </div>
+                                            </div>
+                                            <!-- 【用户未登录】【可用的】以单独页面形式查看卡片 -->
+                                            <a class="btn btn-primary border-radius-0" href="card-page.html?card-id={{current_card.id}}" target="_blank"
+                                                    data-toggle="tooltip" title="单独页面查看卡片">
+                                                <i class="fa fa-lg fa-link"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+                            <hr class="mt-0">
+            
+                            <!-- 评论显示区域 -->
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <!-- 如果用户已经登录 -->
+                                    <div ng-show="user">
+                                        <!-- 评论输入框 -->
+                                        <div class="w-100 mb-2">
+                                            <textarea class="form-control border-radius-0 py-0 card-comment-editor" rows="3"
+                                                      ng-model="$parent.my_comment" placeholder="我的评论" maxlength="140">
+                                            </textarea>
+                                        </div>
+                                        <!-- 发表评论按钮 -->
+                                        <div class="w-100 d-flex justify-content-end">
+                                            <button class="btn btn-success border-radius-0 ml-auto"
+                                                    ng-click="submitComment()" title="提交评论">
+                                                发表评论
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- 如果用户没有登录 -->
+                                    <div ng-show="!user">
+                                        <!-- 评论输入框，不可用 -->
+                                        <div class="w-100 mb-2">
+                                            <textarea class="form-control border-radius-0 py-0 card-comment-editor" rows="3"
+                                                      ng-model="$parent.my_comment" placeholder="我的评论" maxlength="140"
+                                                      disabled>
+                                            </textarea>
+                                        </div>
+                                        <!-- 发表评论按钮，变成登录按钮 -->
+                                        <div class="w-100 d-flex justify-content-end">
+                                            <button class="btn btn-success border-radius-0 ml-auto"
+                                                    onclick="login('./index.html');" title="登录才能评论">
+                                                登录以评论
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 mb-2 mx-md-auto col-md-10 mb-md-0">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <!-- no comment -->
+                                            <div ng-if="!current_card.comments||!current_card.comments.length">
+                                                <div class="text-center">
+                                                    <small class="text-muted">
+                                                        没有评论
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3" ng-if="current_card.comments && current_card.comments.length">
+                                                <label title="size of comment">
+                                                    <span>评论气泡尺寸</span>
+                                                </label>
+                                                <label>
+                                                    <input type="radio" ng-model="$parent.comment_size" value="xs">
+                                                    <span>extra small</span>
+                                                </label>
+                                                <label>
+                                                    <input type="radio" ng-model="$parent.comment_size" value="sm">
+                                                    <span>small</span>
+                                                </label>
+                                                <label>
+                                                    <input type="radio" ng-model="$parent.comment_size" value="md">
+                                                    <span>middle</span>
+                                                </label>
+                                                <label>
+                                                    <input type="radio" ng-model="$parent.comment_size" value="lg">
+                                                    <span>large</span>
+                                                </label>
+                                            </div>
+                                            <!-- 遍历当前卡片的所有一级评论 -->
+                                            <div class="cursor-pointer" ng-repeat="comment in current_card.comments track by $index">
+                                                <div ng-if="comment_size == 'xs'">
+                                                    <wc-card-comment-xs comment="comment" current-card="current_card" user="user"></wc-card-comment-xs>
+                                                </div>
+                                                <div ng-if="comment_size == 'sm'">
+                                                    <wc-card-comment-sm comment="comment" current-card="current_card" user="user"></wc-card-comment-sm>
+                                                </div>
+                                                <div ng-if="comment_size == 'md'">
+                                                    <wc-card-comment-md comment="comment" current-card="current_card" user="user"></wc-card-comment-md>
+                                                </div>
+                                                <div ng-if="comment_size == 'lg'">
+                                                    <wc-card-comment-lg comment="comment" current-card="current_card" user="user"></wc-card-comment-lg>
+                                                </div>
+                                            </div>
+                                            <!-- 遍历当前卡片的所有一级评论 END -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <wc-card-info current-card="current_card" ng-if="$parent.debugMode.isEnabled"></wc-card-info>
+                        </div>
+                        <!-- Modal Body End -->
+                        <div class="modal-footer justify-content-end">
+                            <button class="btn btn-primary border-radius-0 px-4"
+                                    onclick="$('.modal#view-card').scrollTop(0);">
+                                回到页面顶部
+                            </button>
+                            <button class="btn btn-secondary border-radius-0 px-4" data-dismiss="modal">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
 
 
 
@@ -3694,7 +4576,6 @@
 
     <script src="./js/controllers/cardPreviewCtrl.js"></script>
     <script src="./js/controllers/sharedCardPreviewCtrl.js"></script>
-    <script src="./js/controllers/cardViewCtrl.js"></script>
     <script src="./js/controllers/cardCommentXSCtrl.js"></script>
     <script src="./js/controllers/cardCommentSMCtrl.js"></script>
     <script src="./js/controllers/cardCommentMDCtrl.js"></script>
