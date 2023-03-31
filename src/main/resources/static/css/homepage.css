@@ -142,6 +142,9 @@ textarea.card-comment-editor {
 }
 
 
+.container-fluid {
+  padding-top: 3.5rem;
+}
 
 @media screen and (max-width: 768px) {
   .container-fluid {
@@ -200,6 +203,11 @@ textarea.card-comment-editor {
   background: linear-gradient(to bottom right, snow, gainsboro, lightgray);
 }
 
+.chat-window .messages-container {
+  margin-top: 4rem;
+  margin-bottom: 8rem;
+}
+
 .chat-window .scroll-control-wrapper {
   position: relative;
 }
@@ -220,25 +228,82 @@ textarea.card-comment-editor {
   left: -6rem;
 }
 
+.chat-window .chat-window-controls {
+  position: fixed;
+  right: 0;
+  opacity: 0.34;
+  width: 179.5px;
+  min-width: 179.5px;
+  max-width: 179.5px;
+  padding-top: 4rem;
+  transition: all ease .1s;
+}
+
+@media screen and (max-width: 992px) {
+  .chat-window .chat-window-controls {
+    right: -166.5px;
+    opacity: 1;
+  }
+}
+
+.chat-window .chat-window-controls:hover {
+  right: 0;
+  opacity: 1;
+}
+
 .chat-window-bg-snow {
   background: linear-gradient(to bottom right, snow, aliceblue, lightcyan);
 }
 
-.chat-window-bg-warm {
-  background: linear-gradient(
-    to bottom right,
-    beige,
-    lightgoldenrodyellow,
-    blanchedalmond
-  );
+.chat-window-bg-blue {
+  background: linear-gradient(to bottom right, royalblue, DodgerBlue, CornflowerBlue);
+}
+
+.chat-window-bg-skyblue {
+  background: linear-gradient(to bottom right, DeepSkyBlue, SkyBlue, LightSkyBlue);
+}
+
+.chat-window-bg-lightgreen {
+  background: linear-gradient(to bottom right, LightGreen, PaleGreen);
 }
 
 .chat-window-bg-green {
   background: linear-gradient(to bottom right, #84b91f, #73a80e, #609500);
 }
 
-.chat-window .editor textarea,
-.chat-window .editor.fake-editor textarea {
+.chat-window-bg-olive {
+  background: linear-gradient(to bottom right, Olive, OliveDrab);
+}
+
+.chat-window-bg-honeydew {
+  background: linear-gradient(to bottom right, HoneyDew, MintCream);
+}
+
+.chat-window-bg-pink {
+  background: linear-gradient(to bottom right, PaleVioletRed, LightPink, Pink);
+}
+
+.chat-window-bg-purple {
+  background: linear-gradient(to bottom right, MediumPurple, Plum);
+}
+
+.chat-window-bg-warm {
+  background: linear-gradient(to bottom right, beige, lightgoldenrodyellow, blanchedalmond);
+}
+
+.chat-window-bg-bisque {
+  background: linear-gradient(to bottom right, Bisque, BlanchedAlmond, Cornsilk);
+}
+
+.chat-window-bg-silver {
+  background: linear-gradient(to bottom right, Silver, LightGray, Gainsboro);
+}
+
+.chat-window .editor {
+  background-color: rgba(220, 220, 220, 0.7);
+}
+
+.chat-window .editor textarea {
   height: 62px;
   min-height: 62px;
   max-height: 200px;
@@ -246,13 +311,14 @@ textarea.card-comment-editor {
 }
 
 .search-results {
-  position: relative;
+  position: fixed;
+  right: 0.25rem;
+  width: 100%;
 }
 
 .search-results > .search-results-container {
-  position: absolute;
+  position: relative;
   top: 0.25rem;
-  right: 0.25rem;
   z-index: 1020;
   box-shadow: 0 0 1rem black;
   border-radius: 0.25rem;
@@ -275,7 +341,7 @@ textarea.card-comment-editor {
 }
 
 @media (min-width: 1000px) {
-  .search-results > .search-results-container {
+  .search-results {
     width: 800px;
   }
 }

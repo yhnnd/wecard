@@ -9,28 +9,28 @@ function scrollMessageIntoView(DOMElement, isSmooth) {
     });
 }
 
-// 滚动到页面最顶端
-function gotoFirstMessage(isSmooth) {
-    scrollMessageIntoView($('.chat-window .message-body:first').get(0), isSmooth);
+
+function gotoMessage(FirstOrLast, isSmooth) {
+    setTimeout(() => {
+        // scroll to the top/bottom of the window
+        scrollMessageIntoView($('.chat-window .message-body:' + FirstOrLast).get(0), isSmooth);
+        // If scroll to the bottom of the window
+        if (FirstOrLast === "last") {
+            setUnreadMessageCount(0);
+        }
+    }, 100);
 }
 
-// 滚动到页面最底端
-function gotoLastMessage(isSmooth) {
-    scrollMessageIntoView($('.chat-window .message-body:last').get(0), isSmooth);
-    setUnreadMessageCount(0);
-}
+
 
 // 设置 scroll control 中的 badge 显示的未读消息数
 function setUnreadMessageCount(count) {
-    let model = document.getElementById('chat-message-list');
-    if (model) {
-        let $scope = angular.element(model).scope();
-        if ($scope) {
-            $scope.$apply(function () {
-                $scope.unread_message_count = count;
-            });
-        }
-    }
+    const model = document.getElementById('chat-message-list');
+    const $scope = angular.element(model).scope();
+    $scope.unread_message_count = count;
+    setTimeout(() => {
+        $scope.$digest();
+    }, 100);
 }
 
 // 判断用户是否能看到页面最底端的消息

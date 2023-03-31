@@ -1,4 +1,4 @@
-let app = angular.module('module-index', []);
+const app = angular.module('module-index', []);
 
 
 app.filter('textLengthSet', function () {
@@ -20,6 +20,66 @@ app.filter('textLengthSet', function () {
 
 
 app.controller("controller", function ($scope, $http, $timeout, $interval, $window, shareCardService) {
+
+    /* Chat Window */
+    $scope.messageToSend = "";
+    $scope.isCardLink = function(line) {
+        return line.startsWith('@shareCard');
+    };
+    $scope.getCardId = function(line) {
+        let beginIndex = line.indexOf(" ");
+        if (beginIndex > 0) {
+            return line.substr(beginIndex + 1);
+        }
+        return false;
+    };
+    $scope.getCardLink = function(line) {
+        let cardId = $scope.getCardId(line);
+        if (cardId) {
+            return "http://" + getWebRoot() + "/card-page.html?card-id=" + cardId;
+        }
+        return "javascript:void(0);";
+    };
+    $scope.viewCardByLink = function(line) {
+        $scope.$parent.viewCard({ id: $scope.getCardId(line) });
+    };
+    
+    const chatWindowOriginalClasses = "chat-window container-fluid mt-0";
+    
+    $scope.setChatWindowBackgroundColor = function (theme) {
+        $('.chat-window').attr('class', chatWindowOriginalClasses + ' chat-window-bg-' + theme);
+        $window.localStorage.setItem("chat_window_background_color", theme);
+    };
+    
+    this.$onInit = function() {
+        /* Chat Window */
+        var theme = $window.localStorage.getItem("chat_window_background_color");
+        if (theme && typeof theme === "string") {
+            $scope.setChatWindowBackgroundColor(theme);
+        }
+        // 读取客制化设置
+        loadDataFromStorage("isNavbarBackgroundDark", "is_navbar_background_dark");
+        loadDataFromStorage("isNavbarMinimized", "is_navbar_minimized");
+        loadDataFromStorage("alwaysViewCardInAnotherPage", "always_view_card_in_another_page");
+        loadDataFromStorage("is_card_columns_single_column_enabled", "is_card_columns_single_column_enabled");
+    
+        if ($scope.is_card_columns_single_column_enabled) {
+            $scope.toggle_card_columns_single_column("on");
+        }
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
     $scope.getInnerWidth = function () {
         return $window.innerWidth;
     };
@@ -97,18 +157,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         }
     }
     
-    // 初始化
-    this.$onInit = function() {
-        // 读取客制化设置
-        loadDataFromStorage("isNavbarBackgroundDark", "is_navbar_background_dark");
-        loadDataFromStorage("isNavbarMinimized", "is_navbar_minimized");
-        loadDataFromStorage("alwaysViewCardInAnotherPage", "always_view_card_in_another_page");
-        loadDataFromStorage("is_card_columns_single_column_enabled", "is_card_columns_single_column_enabled");
-    
-        if ($scope.is_card_columns_single_column_enabled) {
-            $scope.toggle_card_columns_single_column("on");
-        }
-    };
+
     
     // 保存导航栏的客制化设置的函数
     $scope.rememberNavbarSettings = function() {
@@ -392,14 +441,10 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             if (['refresh'].includes(chatItemId)) {
                 setChatLocation($scope.currentChatItemId);
             } else {
-                if (chatItemId) {
-                    $scope.subPageLocation = "chat";
-                    setChatLocation(chatItemId);
-                    // 防止因页面切换动画而导致的页面被隐藏的错误
-                    $(".chat-window").show();
-                } else {
-                    $scope.alert("[ERROR] goto page: pageName is 'chat' but chatItemId undefined");
-                }
+                $scope.subPageLocation = "chat";
+                setChatLocation(chatItemId);
+                // 防止因页面切换动画而导致的页面被隐藏的错误
+                $(".chat-window").show();
             }
         } else if (["homepage", "trans-chat-home"].includes(pageName)) {
             if (!subPageName) {
@@ -447,35 +492,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.goBack = function () {
         $scope.gotoPage($scope.prevPageLocation, $scope.prevSubPageLocation);
     }
-
-
-    // 刷新当前页面
-    $scope.refreshCurrentPage = function () {
-        let pageName = $scope.pageLocation;
-        let subPageName = $scope.subPageLocation;
-        $scope.gotoPage(pageName, subPageName, "refresh");
-        if (["marketplace"].includes(pageName)) {
-            // $scope.refresh();
-            // 不需要在本函数中刷新卡片数组，因为 gotoPage 函数会刷新卡片而本函数调用了该函数
-        } else if (["mySocialCircle"].includes(pageName)) {
-            // $scope.refreshFollowingCards();
-            // 不需要在本函数中刷新卡片数组，因为 gotoPage 函数会刷新卡片而本函数调用了该函数
-        } else if (["cards"].includes(pageName)) {
-            $scope.refreshMyCards();
-            // 需要在本函数中刷新卡片数组，因为 gotoPage 函数不会刷新我的卡片
-        } else if (["chat"].includes(pageName)) {
-            // setChatLocation($scope.currentChatItemId);
-        } else {// 当用户不在聊天室中
-            // setChatLocation("external");
-        }
-        // 当用户在与聊天相关的页面当中
-        if (["homepage","chat","settings"].includes(pageName)) {
-            $scope.refreshUserData();
-        }
-        // 清空所有弹窗
-        removeAllTooltips();
-        removeAllPopovers();
-    };
 
 
     // 获取所有未读消息数总和
@@ -532,137 +548,238 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     // 刷新当前窗口，重新加载所有（热门/最新）卡片
     $scope.refresh = function () {
-        let loadingId = startLoading(max.loading.delay.time, "$scope.refresh()");
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.get.cards.allUsers,
-            params: {
-                "sortKey": $scope.keyOf[$scope.subPageLocation],
-                "start": 0,
-                "limit": $scope.max.get.cards.limit
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
-            switch (result.data.message) {
-                case "no data":
-                    $scope.cardLength = 0;
-                    $scope.cardGroups = [];
-                    $scope.has_more_cards = false;
-                    break;
-                case "card load failed":
-                    $scope.alert("[ERROR] $scope.refresh(): 加载卡片失败");
-                    break;
-                case "card load success":
-                    // 处理从服务器接收的卡片数组
-                    if (result.data.cards.length < $scope.max.get.cards.limit) {
-                        $scope.has_more_cards = false;
-                    } else {
-                        $scope.has_more_cards = true;
-                    }
-                    $scope.cardLength = result.data.cards.length;
-                    $scope.cardGroups = $scope.makeCardGroups(result.data.cards);
-                    break;
-                default:
-                    $scope.alert("[ERROR] $scope.refresh(): 加载卡片失败，错误信息：" + result.data.message);
-                    break;
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("[ERROR] $scope.refresh(): 与服务器连接失败");
-        });
+        // let loadingId = startLoading(max.loading.delay.time, "$scope.refresh()");
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + apis.get.cards.allUsers,
+        //     params: {
+        //         "sortKey": $scope.keyOf[$scope.subPageLocation],
+        //         "start": 0,
+        //         "limit": $scope.max.get.cards.limit
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     stopLoading(loadingId);
+        //     switch (result.data.message) {
+        //         case "no data":
+        //             $scope.cardLength = 0;
+        //             $scope.cardGroups = [];
+        //             $scope.has_more_cards = false;
+        //             break;
+        //         case "card load failed":
+        //             $scope.alert("[ERROR] $scope.refresh(): 加载卡片失败");
+        //             break;
+        //         case "card load success":
+        //             // 处理从服务器接收的卡片数组
+        //             if (result.data.cards.length < $scope.max.get.cards.limit) {
+        //                 $scope.has_more_cards = false;
+        //             } else {
+        //                 $scope.has_more_cards = true;
+        //             }
+        //             $scope.cardLength = result.data.cards.length;
+        //             $scope.cardGroups = $scope.makeCardGroups(result.data.cards);
+        //             break;
+        //         default:
+        //             $scope.alert("[ERROR] $scope.refresh(): 加载卡片失败，错误信息：" + result.data.message);
+        //             break;
+        //     }
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     $scope.alert("[ERROR] $scope.refresh(): 与服务器连接失败");
+        // });
     };
 
 
     // 刷新用户数据，包括用户加入的房间列表及用户的好友分组
     $scope.refreshUserData = function () {
-        // 刷新当前窗口，更新用户所有数据
-        let loadingId = startLoading(max.loading.delay.time, "$scope.refreshUserData()");
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.get.user.data,
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
-            let data = result.data;
-            if (data.message === "Please login") {
-                $scope.alert("[ERROR] $scope.refreshUserData(): 请先登录");
-            } else if (data.message === "Refresh fail") {
-                $scope.alert("[ERROR] $scope.refreshUserData(): 更新用户数据失败");
-            } else if (data.message === "Refresh success") {
-                $scope.userData = data;
-            } else {
-                $scope.alert("[ERROR] $scope.refreshUserData(): 未知错误 " + data.message);
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("[ERROR] $scope.refreshUserData(): 无法连接服务器");
-            gotoLogin("index.html");
-        });
+        // // 刷新当前窗口，更新用户所有数据
+        // let loadingId = startLoading(max.loading.delay.time, "$scope.refreshUserData()");
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + apis.get.user.data,
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     stopLoading(loadingId);
+        //     let data = result.data;
+        //     if (data.message === "Please login") {
+        //         $scope.alert("[ERROR] $scope.refreshUserData(): 请先登录");
+        //     } else if (data.message === "Refresh fail") {
+        //         $scope.alert("[ERROR] $scope.refreshUserData(): 更新用户数据失败");
+        //     } else if (data.message === "Refresh success") {
+        //         $scope.userData = data;
+        //     } else {
+        //         $scope.alert("[ERROR] $scope.refreshUserData(): 未知错误 " + data.message);
+        //     }
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     $scope.alert("[ERROR] $scope.refreshUserData(): 无法连接服务器");
+        //     gotoLogin("index.html");
+        // });
+
+        /* mock data (userData in refreshUserData) */
+        $scope.user = {
+            "id": "1",
+            "username": "user",
+            "nickname": "yhn",
+            "grade": "3",
+            "lastLoginTime": "just now",
+            "followNum": "2",
+            "fansNum": "23",
+            "cardsNum": "0",
+            "gender": "male",
+            "city": "New York",
+            "phone": "124 5322 3296",
+            "signature": "fuck ccp",
+            "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
+        };
+        $scope.userData = {
+            mesage: "Refresh success",
+            user: {
+                "id": "1",
+                "username": "user",
+                "nickname": "yhn",
+                "grade": "3",
+                "lastLoginTime": "just now",
+                "followNum": "2",
+                "fansNum": "23",
+                "cardsNum": "0",
+                "gender": "male",
+                "city": "New York",
+                "phone": "124 5322 3296",
+                "signature": "fuck ccp",
+                "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
+            },
+            chatList: [{
+                id: "1",
+                type: "room",
+                room: {
+                    "roomName": "room 1",
+                    "remark": "some room 1",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                }
+            },{
+                id: "2",
+                type: "room",
+                room: {
+                    "roomName": "room 2",
+                    "remark": "some room 2",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                }
+            },{
+                id: "3",
+                type: "friend",
+                friend: {
+                    username: "user 1",
+                    remark: "my friend 1",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                }
+            },{
+                id: "4",
+                type: "friend",
+                friend: {
+                    username: "user 2",
+                    remark: "my friend 2",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                }
+            }],
+            allChatItems: [{
+                id: "1",
+                type: "room",
+                room: {
+                    "id": "1",
+                    "roomName": "room 1",
+                    "remark": "some room 1"
+                }
+            },{
+                id: "2",
+                type: "room",
+                room: {
+                    "id": "2",
+                    "roomName": "room 2",
+                    "remark": "some room 2"
+                }
+            },{
+                id: "3",
+                type: "friend",
+                friend: {
+                    "id": "123",
+                    "remark": "friend 1",
+                    "username": "user"
+                }
+            },{
+                id: "4",
+                type: "friend",
+                friend: {
+                    "id": "123",
+                    "remark": "friend 1",
+                    "username": "user"
+                }
+            }]
+        };
     };
 
     // 加载更多卡片
     $scope.load_more_cards = function () {
-        let loadingId = startLoading(max.loading.delay.time, "$scope.load_more_cards()");
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.get.cards.allUsers,
-            params: {
-                "sortKey": $scope.keyOf[$scope.subPageLocation],
-                "start": $scope.cardLength,
-                "limit": $scope.max.get.cards.limit
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
+        // let loadingId = startLoading(max.loading.delay.time, "$scope.load_more_cards()");
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + apis.get.cards.allUsers,
+        //     params: {
+        //         "sortKey": $scope.keyOf[$scope.subPageLocation],
+        //         "start": $scope.cardLength,
+        //         "limit": $scope.max.get.cards.limit
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     stopLoading(loadingId);
 
-            switch (result.data.message) {
-                case "no data":
-                    $scope.has_more_cards = false;
-                    break;
-                case "card load failed":
-                    $scope.alert("[ERROR] load more cards: 加载卡片失败");
-                    break;
-                case "card load success":
-                    // 处理从服务器接收的卡片数组
-                    if (result.data.cards.length < $scope.max.get.cards.limit) {
-                        $scope.has_more_cards = false;
-                    } else {
-                        $scope.has_more_cards = true;
-                    }
-                    // 将新加载的卡片添加到已加载的卡片数组当中
-                    let newCardGroup = [];
-                    _.each(result.data.cards, function (card) {
-                        if (card.hasOwnProperty("ilike") && !card.hasOwnProperty("iLike")) {
-                            card.iLike = card.ilike;
-                        }
-                        card.isLoadedRightNow = true;// 高亮新加载的卡片
-                        newCardGroup.push(card);
-                    });
-                    $scope.cardGroups.push(newCardGroup);
-                    $scope.cardLength += newCardGroup.length;
-                    // 解除新加载的卡片的高亮
-                    $timeout(function () {
-                        $scope.cardGroups = _.map($scope.cardGroups, function (cardGroup) {
-                            cardGroup = _.map(cardGroup, function(card) {
-                                card.isLoadedRightNow = false;
-                                return card;
-                            });
-                            return cardGroup;
-                        });
-                    }, 10 * result.data.cards.length);
-                    break;
-                default:
-                    $scope.alert("[ERROR] load more cards: 加载卡片失败，错误信息：" + result.data.message);
-                    break;
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("[ERROR] load more cards: 与服务器连接失败");
-        });
+        //     switch (result.data.message) {
+        //         case "no data":
+        //             $scope.has_more_cards = false;
+        //             break;
+        //         case "card load failed":
+        //             $scope.alert("[ERROR] load more cards: 加载卡片失败");
+        //             break;
+        //         case "card load success":
+        //             // 处理从服务器接收的卡片数组
+        //             if (result.data.cards.length < $scope.max.get.cards.limit) {
+        //                 $scope.has_more_cards = false;
+        //             } else {
+        //                 $scope.has_more_cards = true;
+        //             }
+        //             // 将新加载的卡片添加到已加载的卡片数组当中
+        //             let newCardGroup = [];
+        //             _.each(result.data.cards, function (card) {
+        //                 if (card.hasOwnProperty("ilike") && !card.hasOwnProperty("iLike")) {
+        //                     card.iLike = card.ilike;
+        //                 }
+        //                 card.isLoadedRightNow = true;// 高亮新加载的卡片
+        //                 newCardGroup.push(card);
+        //             });
+        //             $scope.cardGroups.push(newCardGroup);
+        //             $scope.cardLength += newCardGroup.length;
+        //             // 解除新加载的卡片的高亮
+        //             $timeout(function () {
+        //                 $scope.cardGroups = _.map($scope.cardGroups, function (cardGroup) {
+        //                     cardGroup = _.map(cardGroup, function(card) {
+        //                         card.isLoadedRightNow = false;
+        //                         return card;
+        //                     });
+        //                     return cardGroup;
+        //                 });
+        //             }, 10 * result.data.cards.length);
+        //             break;
+        //         default:
+        //             $scope.alert("[ERROR] load more cards: 加载卡片失败，错误信息：" + result.data.message);
+        //             break;
+        //     }
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     $scope.alert("[ERROR] load more cards: 与服务器连接失败");
+        // });
     };
 
 
@@ -671,112 +788,111 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     // 刷新当前窗口，重新加载所有我关注的人的所有卡片
     $scope.refreshFollowingCards = function () {
-        let loadingId = startLoading(max.loading.delay.time, "$scope.refreshFollowingCards()");
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.get.cards.following,
-            params: {
-                "start": 0,
-                "limit": $scope.max.get.cards.limit
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
+        // let loadingId = startLoading(max.loading.delay.time, "$scope.refreshFollowingCards()");
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + apis.get.cards.following,
+        //     params: {
+        //         "start": 0,
+        //         "limit": $scope.max.get.cards.limit
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     stopLoading(loadingId);
 
-            switch (result.data.message) {
-                case "no data":
-                    $scope.cardLength = 0;
-                    $scope.cardGroups = [];
-                    $scope.has_more_following_cards = false;
-                    break;
-                case "Please login":
-                    $scope.alert("[ERROR] $scope.refreshFollowingCards(): 请先登录");
-                    break;
-                case "card load failed":
-                    $scope.alert("[ERROR] $scope.refreshFollowingCards(): 加载卡片失败");
-                    break;
-                case "card load success":
-                    // 处理从服务器接收的卡片数组
-                    if (result.data.cards.length < $scope.max.get.cards.limit) {
-                        $scope.has_more_following_cards = false;
-                    } else {
-                        $scope.has_more_following_cards = true;
-                    }
-                    $scope.cardGroups = $scope.makeCardGroups(result.data.cards);
-                    $scope.cardLength += result.data.cards.length;
-                    break;
-                default:
-                    $scope.alert("[ERROR] $scope.refreshFollowingCards(): 加载卡片失败，错误信息：" + result.data.message);
-                    break;
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("[ERROR] $scope.refreshFollowingCards(): 与服务器连接失败");
-        });
+        //     switch (result.data.message) {
+        //         case "no data":
+        //             $scope.cardLength = 0;
+        //             $scope.cardGroups = [];
+        //             $scope.has_more_following_cards = false;
+        //             break;
+        //         case "Please login":
+        //             $scope.alert("[ERROR] $scope.refreshFollowingCards(): 请先登录");
+        //             break;
+        //         case "card load failed":
+        //             $scope.alert("[ERROR] $scope.refreshFollowingCards(): 加载卡片失败");
+        //             break;
+        //         case "card load success":
+        //             // 处理从服务器接收的卡片数组
+        //             if (result.data.cards.length < $scope.max.get.cards.limit) {
+        //                 $scope.has_more_following_cards = false;
+        //             } else {
+        //                 $scope.has_more_following_cards = true;
+        //             }
+        //             $scope.cardGroups = $scope.makeCardGroups(result.data.cards);
+        //             $scope.cardLength += result.data.cards.length;
+        //             break;
+        //         default:
+        //             $scope.alert("[ERROR] $scope.refreshFollowingCards(): 加载卡片失败，错误信息：" + result.data.message);
+        //             break;
+        //     }
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     $scope.alert("[ERROR] $scope.refreshFollowingCards(): 与服务器连接失败");
+        // });
     };
 
 
     // 加载更多卡片
     $scope.load_more_following_cards = function () {
-        let loadingId = startLoading(max.loading.delay.time, "$scope.load_more_following_cards()");
+        // let loadingId = startLoading(max.loading.delay.time, "$scope.load_more_following_cards()");
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + apis.get.cards.following,
+        //     params: {
+        //         "start": $scope.cardLength,
+        //         "limit": $scope.max.get.cards.limit
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     stopLoading(loadingId);
 
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.get.cards.following,
-            params: {
-                "start": $scope.cardLength,
-                "limit": $scope.max.get.cards.limit
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
-
-            switch (result.data.message) {
-                case "no data":
-                    $scope.has_more_following_cards = false;
-                    break;
-                case "card load failed":
-                    $scope.alert("[ERROR] load more following cards: 加载卡片失败");
-                    break;
-                case "card load success":
-                    // 处理从服务器接收的卡片数组
-                    if (result.data.cards.length < $scope.max.get.cards.limit) {
-                        $scope.has_more_following_cards = false;
-                    } else {
-                        $scope.has_more_following_cards = true;
-                    }
-                    // 将新加载的卡片添加到已加载的卡片数组当中
-                    let newCardGroup = [];
-                    _.each(result.data.cards, function (card) {
-                        if (card.hasOwnProperty("ilike") && !card.hasOwnProperty("iLike")) {
-                            card.iLike = card.ilike;
-                        }
-                        card.isLoadedRightNow = true;// 高亮新加载的卡片
-                        newCardGroup.push(card);
-                    });
-                    $scope.cardGroups.push(newCardGroup);
-                    $scope.cardLength += newCardGroup.length;
-                    // 解除新加载的卡片的高亮
-                    $timeout(function () {
-                        $scope.cardGroups = _.map($scope.cardGroups, function (cardGroup) {
-                            cardGroup = _.map(cardGroup, function(card) {
-                                card.isLoadedRightNow = false;
-                                return card;
-                            });
-                            return cardGroup;
-                        });
-                    }, 10 * result.data.cards.length);
-                    break;
-                default:
-                    $scope.alert("[ERROR] load more following cards: 加载卡片失败，错误信息：" + result.data.message);
-                    break;
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("[ERROR] load more following cards: 与服务器连接失败");
-        });
+        //     switch (result.data.message) {
+        //         case "no data":
+        //             $scope.has_more_following_cards = false;
+        //             break;
+        //         case "card load failed":
+        //             $scope.alert("[ERROR] load more following cards: 加载卡片失败");
+        //             break;
+        //         case "card load success":
+        //             // 处理从服务器接收的卡片数组
+        //             if (result.data.cards.length < $scope.max.get.cards.limit) {
+        //                 $scope.has_more_following_cards = false;
+        //             } else {
+        //                 $scope.has_more_following_cards = true;
+        //             }
+        //             // 将新加载的卡片添加到已加载的卡片数组当中
+        //             let newCardGroup = [];
+        //             _.each(result.data.cards, function (card) {
+        //                 if (card.hasOwnProperty("ilike") && !card.hasOwnProperty("iLike")) {
+        //                     card.iLike = card.ilike;
+        //                 }
+        //                 card.isLoadedRightNow = true;// 高亮新加载的卡片
+        //                 newCardGroup.push(card);
+        //             });
+        //             $scope.cardGroups.push(newCardGroup);
+        //             $scope.cardLength += newCardGroup.length;
+        //             // 解除新加载的卡片的高亮
+        //             $timeout(function () {
+        //                 $scope.cardGroups = _.map($scope.cardGroups, function (cardGroup) {
+        //                     cardGroup = _.map(cardGroup, function(card) {
+        //                         card.isLoadedRightNow = false;
+        //                         return card;
+        //                     });
+        //                     return cardGroup;
+        //                 });
+        //             }, 10 * result.data.cards.length);
+        //             break;
+        //         default:
+        //             $scope.alert("[ERROR] load more following cards: 加载卡片失败，错误信息：" + result.data.message);
+        //             break;
+        //     }
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     $scope.alert("[ERROR] load more following cards: 与服务器连接失败");
+        // });
     };
 
 
@@ -785,129 +901,126 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     // 重新加载我的所有卡片
     $scope.refreshMyCards = function () {
-        let api = apis.get.cards.mine;
-        if ($scope.subPageLocation === "myLikes") {
-            api = apis.get.cards.liked;
-        } else if ($scope.subPageLocation === "myShares") {
-            api = apis.get.cards.shared;
-        }
+        // let api = apis.get.cards.mine;
+        // if ($scope.subPageLocation === "myLikes") {
+        //     api = apis.get.cards.liked;
+        // } else if ($scope.subPageLocation === "myShares") {
+        //     api = apis.get.cards.shared;
+        // }
 
-        let loadingId = startLoading(max.loading.delay.time, "$scope.refreshMyCards()");
+        // let loadingId = startLoading(max.loading.delay.time, "$scope.refreshMyCards()");
 
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + api,
-            params: {
-                "sortKey": "time",
-                "start": 0,
-                "limit": $scope.max.get.cards.limit
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
-            switch (result.data.message) {
-                case "Please login":
-                    $scope.alert("[ERROR] $scope.refreshMyCards(): 请先登录");
-                    break;
-                case "no data":
-                    $scope.myCardLength = 0;
-                    $scope.myCardGroups = [];
-                    $scope.has_more_my_cards = false;
-                    break;
-                case "card load failed":
-                    $scope.alert("[ERROR] $scope.refreshMyCards(): 加载卡片失败");
-                    break;
-                case "card load success":
-                    // 处理从服务器接收的卡片数组
-                    if (result.data.cards.length < $scope.max.get.cards.limit) {
-                        $scope.has_more_my_cards = false;
-                    } else {
-                        $scope.has_more_my_cards = true;
-                    }
-                    $scope.myCardGroups = $scope.makeCardGroups(result.data.cards);
-                    $scope.myCardLength = result.data.cards.length;
-                    break;
-                default:
-                    $scope.alert("[ERROR] $scope.refreshMyCards(): 加载卡片失败，错误信息：" + result.data.message);
-                    break;
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("[ERROR] $scope.refreshMyCards(): 与服务器连接失败");
-        });
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + api,
+        //     params: {
+        //         "sortKey": "time",
+        //         "start": 0,
+        //         "limit": $scope.max.get.cards.limit
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     stopLoading(loadingId);
+        //     switch (result.data.message) {
+        //         case "Please login":
+        //             $scope.alert("[ERROR] $scope.refreshMyCards(): 请先登录");
+        //             break;
+        //         case "no data":
+        //             $scope.myCardLength = 0;
+        //             $scope.myCardGroups = [];
+        //             $scope.has_more_my_cards = false;
+        //             break;
+        //         case "card load failed":
+        //             $scope.alert("[ERROR] $scope.refreshMyCards(): 加载卡片失败");
+        //             break;
+        //         case "card load success":
+        //             // 处理从服务器接收的卡片数组
+        //             if (result.data.cards.length < $scope.max.get.cards.limit) {
+        //                 $scope.has_more_my_cards = false;
+        //             } else {
+        //                 $scope.has_more_my_cards = true;
+        //             }
+        //             $scope.myCardGroups = $scope.makeCardGroups(result.data.cards);
+        //             $scope.myCardLength = result.data.cards.length;
+        //             break;
+        //         default:
+        //             $scope.alert("[ERROR] $scope.refreshMyCards(): 加载卡片失败，错误信息：" + result.data.message);
+        //             break;
+        //     }
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     $scope.alert("[ERROR] $scope.refreshMyCards(): 与服务器连接失败");
+        // });
     };
 
 
 
     // 加载更多我的卡片
     $scope.load_more_my_cards = function () {
-        let api = apis.get.cards.mine;
-        if ($scope.subPageLocation === "myLikes") {
-            api = apis.get.cards.liked;
-        } else if ($scope.subPageLocation === "myShares") {
-            api = apis.get.cards.shared;
-        }
-
-        let loadingId = startLoading(max.loading.delay.time, "$scope.load_more_my_cards()");
-
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + api,
-            params: {
-                "sortKey": "time",
-                "start": $scope.myCardLength,
-                "limit": $scope.max.get.cards.limit
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
-
-            switch (result.data.message) {
-                case "no data":
-                    $scope.has_more_my_cards = false;
-                    break;
-                case "card load failed":
-                    $scope.alert("[ERROR] load more my cards: 加载卡片失败");
-                    break;
-                case "card load success":
-                    // 处理从服务器接收的卡片数组
-                    if (result.data.cards.length < $scope.max.get.cards.limit) {
-                        $scope.has_more_my_cards = false;
-                    } else {
-                        $scope.has_more_my_cards = true;
-                    }
-                    // 将新加载的卡片添加到已加载的卡片数组当中
-                    let newCardGroup = [];
-                    _.each(result.data.cards, function (card) {
-                        if (card.hasOwnProperty("ilike") && !card.hasOwnProperty("iLike")) {
-                            card.iLike = card.ilike;
-                        }
-                        card.isLoadedRightNow = true;// 高亮新加载的卡片
-                        newCardGroup.push(card);
-                    });
-                    $scope.myCardGroups.push(newCardGroup);
-                    $scope.myCardLength += newCardGroup.length;
-                    // 解除新加载的卡片的高亮
-                    $timeout(function () {
-                        $scope.myCardGroups = _.map($scope.myCardGroups, function (cardGroup) {
-                            cardGroup = _.map(cardGroup, function(card) {
-                                card.isLoadedRightNow = false;
-                                return card;
-                            });
-                            return cardGroup;
-                        });
-                    }, 10 * result.data.cards.length);
-                    break;
-                default:
-                    $scope.alert("[ERROR] load more my cards: 加载卡片失败，错误信息：" + result.data.message);
-                    break;
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("[ERROR] load more my cards: 与服务器连接失败");
-        });
+        // let api = apis.get.cards.mine;
+        // if ($scope.subPageLocation === "myLikes") {
+        //     api = apis.get.cards.liked;
+        // } else if ($scope.subPageLocation === "myShares") {
+        //     api = apis.get.cards.shared;
+        // }
+        // let loadingId = startLoading(max.loading.delay.time, "$scope.load_more_my_cards()");
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + api,
+        //     params: {
+        //         "sortKey": "time",
+        //         "start": $scope.myCardLength,
+        //         "limit": $scope.max.get.cards.limit
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     stopLoading(loadingId);
+        //     switch (result.data.message) {
+        //         case "no data":
+        //             $scope.has_more_my_cards = false;
+        //             break;
+        //         case "card load failed":
+        //             $scope.alert("[ERROR] load more my cards: 加载卡片失败");
+        //             break;
+        //         case "card load success":
+        //             // 处理从服务器接收的卡片数组
+        //             if (result.data.cards.length < $scope.max.get.cards.limit) {
+        //                 $scope.has_more_my_cards = false;
+        //             } else {
+        //                 $scope.has_more_my_cards = true;
+        //             }
+        //             // 将新加载的卡片添加到已加载的卡片数组当中
+        //             let newCardGroup = [];
+        //             _.each(result.data.cards, function (card) {
+        //                 if (card.hasOwnProperty("ilike") && !card.hasOwnProperty("iLike")) {
+        //                     card.iLike = card.ilike;
+        //                 }
+        //                 card.isLoadedRightNow = true;// 高亮新加载的卡片
+        //                 newCardGroup.push(card);
+        //             });
+        //             $scope.myCardGroups.push(newCardGroup);
+        //             $scope.myCardLength += newCardGroup.length;
+        //             // 解除新加载的卡片的高亮
+        //             $timeout(function () {
+        //                 $scope.myCardGroups = _.map($scope.myCardGroups, function (cardGroup) {
+        //                     cardGroup = _.map(cardGroup, function(card) {
+        //                         card.isLoadedRightNow = false;
+        //                         return card;
+        //                     });
+        //                     return cardGroup;
+        //                 });
+        //             }, 10 * result.data.cards.length);
+        //             break;
+        //         default:
+        //             $scope.alert("[ERROR] load more my cards: 加载卡片失败，错误信息：" + result.data.message);
+        //             break;
+        //     }
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     $scope.alert("[ERROR] load more my cards: 与服务器连接失败");
+        // });
     };
 
 
@@ -1066,95 +1179,59 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
 
-    // 点击导航栏上的刷新按钮会调用此函数
-    $scope.isLoggedIn = function () {
-        let loadingId = startLoading(max.loading.delay.time,"$scope.isLoggedIn()");
-        $scope.user = null;
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.user.is.LoggedIn,
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
-            switch (result.data.message) {
-                case "true":
-                    if (result.data.user) {
-                        console.log("$scope.isLoggedIn(): 用户已经登录");
-                        $scope.user = result.data.user;
-                        $scope.loadUserFollowing(result.data.user);
-                        $scope.loadUserFans(result.data.user);
-                    } else {
-                        $scope.alert("[ERROR] $scope.isLoggedIn(): 用户登录了，但是服务器没有返回用户数据");
-                    }
-                    break;
-                case "false":
-                    console.log("$scope.isLoggedIn(): 用户没有登录");
-                    break;
-                default:
-                    $scope.alert("[ERROR] $scope.isLoggedIn(): 未知错误：" + result.data.message);
-                    break;
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("[ERROR] $scope.isLoggedIn(): 与服务器连接失败");
-        });
-    };
-
-
 
     // 加载我关注的人（注入到 user 中）
     $scope.loadUserFollowing = function (user) {
-        let loadingId = startLoading(max.loading.delay.time,"$scope.loadUserFollowing()");
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.get.user.following,
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
-            switch (result.data.message) {
-                case "Please login":
-                    $scope.alert("$scope.loadUserFans(" + user.id + "):","请先登录","alert-danger");
-                    break;
-                case "Find success":
-                    $scope.user.following = result.data.following;
-                    break;
-                default:
-                    $scope.alert("$scope.loadUserFollowing(" + user.id + "):","未知错误: " + result.data.message,"alert-danger");
-                    break;
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("$scope.loadUserFollowing(" + user.id + "):","无法连接服务器","alert-danger");
-        });
+        // let loadingId = startLoading(max.loading.delay.time,"$scope.loadUserFollowing()");
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + apis.get.user.following,
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     stopLoading(loadingId);
+        //     switch (result.data.message) {
+        //         case "Please login":
+        //             $scope.alert("$scope.loadUserFans(" + user.id + "):","请先登录","alert-danger");
+        //             break;
+        //         case "Find success":
+        //             $scope.user.following = result.data.following;
+        //             break;
+        //         default:
+        //             $scope.alert("$scope.loadUserFollowing(" + user.id + "):","未知错误: " + result.data.message,"alert-danger");
+        //             break;
+        //     }
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     $scope.alert("$scope.loadUserFollowing(" + user.id + "):","无法连接服务器","alert-danger");
+        // });
     };
 
     // 加载我的粉丝（注入到 user 中）
     $scope.loadUserFans = function (user) {
-        let loadingId = startLoading(max.loading.delay.time,"$scope.loadUserFans()");
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.get.user.fans,
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
-            switch (result.data.message) {
-                case "Please login":
-                    $scope.alert("$scope.loadUserFans(" + user.id + "):","请先登录","alert-danger");
-                    break;
-                case "Find success":
-                    $scope.user.fans = result.data.fans;
-                    break;
-                default:
-                    $scope.alert("$scope.loadUserFans(" + user.id + "):","未知错误: " + result.data.message,"alert-danger");
-                    break;
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("$scope.loadUserFans(" + user.id + "):","无法连接服务器","alert-danger");
-        });
+        // let loadingId = startLoading(max.loading.delay.time,"$scope.loadUserFans()");
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + apis.get.user.fans,
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     stopLoading(loadingId);
+        //     switch (result.data.message) {
+        //         case "Please login":
+        //             $scope.alert("$scope.loadUserFans(" + user.id + "):","请先登录","alert-danger");
+        //             break;
+        //         case "Find success":
+        //             $scope.user.fans = result.data.fans;
+        //             break;
+        //         default:
+        //             $scope.alert("$scope.loadUserFans(" + user.id + "):","未知错误: " + result.data.message,"alert-danger");
+        //             break;
+        //     }
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     $scope.alert("$scope.loadUserFans(" + user.id + "):","无法连接服务器","alert-danger");
+        // });
     };
 
     // 判断我是否关注了这个用户
@@ -1982,136 +2059,216 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             $scope.prevChatItemName = $scope.currentChatItemName;
             $scope.prevChatItemAvatar = $scope.currentChatItemAvatar;
         }
-
-        let loadingId = startLoading(max.loading.delay.time, "setChatLocation(\"" + location + "\")");
-
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.set.chat.location,
-            params: {
-                "location": location
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
-
-            let data = result.data;
-            if (data.message === "Please login") {
-                gotoLogin("index.html");
-            } else if (data.message === "Set success") {
-                $scope.currentChatItemId = location;
-                console.log("set chat location(" + location + "): '" + data.message + "'");
-            } else {
-                bsAlert("[ERROR] set chat location(" + location + "): '" + data.message + "'");
-            }
-        }, function (error) {
-            stopLoading(loadingId, error);
-        });
+        $scope.currentChatItemId = location;
+        console.log("setChatLocation(" + location + ")");
     }
+
+
+
 
     // 进入聊天室
     $scope.openChatRoom = function (chatItem) {
-        var beginTime = new Date().getTime();
-        // 注意: 此时并未开始执行页面跳转, 所以我们不应该使用 prevPageLocation
+        // var beginTime = new Date().getTime();
+        // // 注意: 此时并未开始执行页面跳转, 所以我们不应该使用 prevPageLocation
+        // if (["homepage"].includes($scope.pageLocation)) {
+        //     // Start Animation
+        //     $scope.gotoPage("trans-home-chat");
+        // }
+        // // Start Loading
+        // let loadingId = startLoading(max.loading.delay.time, "$scope.openChatRoom(\"" + chatItem.id + "\")");
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + apis.get.messages.limited,
+        //     params: {
+        //         "chatItemId": chatItem.id,
+        //         "offset": 0,
+        //         "limit": max.get.messages.limit
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     stopLoading(loadingId);
+        //     let data = result.data;
+        //     if (data.message === "Please login") {
+        //         gotoLogin("index.html");
+        //     } else if (data.message === "Load fail") {
+        //         $scope.alert("[ERROR] open chat room: 加载失败");
+        //     } else if (data.message === "Load success") {
+        //         $scope.gotoPage("chat", "chat", chatItem.id);
+        //         $scope.currentChatItemType = chatItem.type;
+        //         // 好友房间
+        //         if (chatItem.type === "friend") {
+        //             // 缓存当前好友的个人信息（为防止当前 chatItem 中的 friend 中的信息不全，从 allChatItems 中获取好友的完整信息）
+        //             $scope.current_friend = _.filter($scope.userData.allChatItems, function (e) {
+        //                 return e.id === chatItem.id && e.type === "friend" && e.friend;
+        //             })[0].friend;
+        //             // 加载好友的备注名
+        //             if (chatItem.friend) {
+        //                 if (chatItem.friend.remark) {
+        //                     $scope.currentChatItemName = chatItem.friend.remark;
+        //                 } else if (chatItem.friend.username) {
+        //                     $scope.currentChatItemName = chatItem.friend.username;
+        //                 } else if (chatItem.friend.id) {
+        //                     $scope.currentChatItemName = "用户" + chatItem.friend.id;
+        //                 }
+        //             } else {
+        //                 $scope.alert("[ERROR] open chat room: 聊天项类型为 'friend', 但是聊天项中没有 'friend' 对象");
+        //             }
+        //             $scope.currentChatItemAvatar = chatItem.friend.avatarUrl;
+        //         } else if (chatItem.type === "room") {
+        //             $scope.currentChatItemName = chatItem.room.roomName;
+        //             $scope.currentChatItemAvatar = chatItem.room.avatarUrl;
+        //         } else if (chatItem.type === "system") {
+        //             $scope.currentChatItemName = "系统消息";
+        //             $scope.currentChatItemAvatar = "img/icon-system.jpg";
+        //         } else if (chatItem.type === "inform") {
+        //             $scope.currentChatItemName = "验证消息";
+        //             $scope.currentChatItemAvatar = "img/icon-inform.jpg";
+        //         } else {
+        //             $scope.currentChatItemName = "未知聊天室";
+        //             $scope.currentChatItemAvatar = "";
+        //         }
+        //         // 显示刚加载的聊天室内的消息（一定是最新的消息）
+        //         $scope.current.sizeOf.messagesLoadedLimitedUpdate(data.messages.length);
+        //         $scope.chatMessageList = data.messages.slice().reverse();
+        //         // 遍历每一个消息
+        //         _.each($scope.chatMessageList, function (msg) {
+        //             // 将消息中的 URL 网址转换成 a 链接
+        //             msg.url = append_message_linkable(msg.text);
+        //         });
+        //         const timeElapsed = new Date().getTime() - beginTime;
+        //         // 滚动窗口到最新的消息
+        //         if (["friend", "room"].includes($scope.currentChatItemType)) {
+        //             setTimeout(() => {
+        //                 $window.gotoMessage('last',false);
+        //             }, 1010 - timeElapsed);
+        //             // 1000 is for page switch animation and 10 is for angular putting messages in DOM
+        //         }
+        //         // 滚动窗口到最新的请求消息或系统消息
+        //         if (["system", "inform"].includes($scope.currentChatItemType)) {
+        //             setTimeout(() => {
+        //                 scrollMessageIntoView($('.chat-window .card:last').get(0), false);
+        //             }, 1010 - timeElapsed);
+        //             // 1000 is for page switch animation and 10 is for angular putting messages in DOM
+        //         }
+        //         // 将未读消息数设为 0
+        //         $scope.unread_message_count = 0;
+        //         $scope.userData.chatList = _.map($scope.userData.chatList, function (e) {
+        //             if (e.id === chatItem.id) {
+        //                 e.unreadNum = 0;
+        //             }
+        //             return e;
+        //         });
+        //     } else {
+        //         $scope.alert("[ERROR] open chat room: 未知错误: " + data.message);
+        //     }
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     $scope.alert("[ERROR] open chat room: 与服务器连接失败");
+        // });
+
+
         if (["homepage"].includes($scope.pageLocation)) {
             // Start Animation
             $scope.gotoPage("trans-home-chat");
         }
-        // Start Loading
-        let loadingId = startLoading(max.loading.delay.time, "$scope.openChatRoom(\"" + chatItem.id + "\")");
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.get.messages.limited,
-            params: {
-                "chatItemId": chatItem.id,
-                "offset": 0,
-                "limit": max.get.messages.limit
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            stopLoading(loadingId);
 
-            let data = result.data;
-            if (data.message === "Please login") {
-                gotoLogin("index.html");
-            } else if (data.message === "Load fail") {
-                $scope.alert("[ERROR] open chat room: 加载失败");
-            } else if (data.message === "Load success") {
-                $scope.gotoPage("chat", "chat", chatItem.id);
-                $scope.currentChatItemType = chatItem.type;
-                // 好友房间
-                if (chatItem.type === "friend") {
-                    // 缓存当前好友的个人信息（为防止当前 chatItem 中的 friend 中的信息不全，从 allChatItems 中获取好友的完整信息）
-                    $scope.current_friend = _.filter($scope.userData.allChatItems, function (e) {
-                        return e.id === chatItem.id && e.type === "friend" && e.friend;
-                    })[0].friend;
-                    // 加载好友的备注名
-                    if (chatItem.friend) {
-                        if (chatItem.friend.remark) {
-                            $scope.currentChatItemName = chatItem.friend.remark;
-                        } else if (chatItem.friend.username) {
-                            $scope.currentChatItemName = chatItem.friend.username;
-                        } else if (chatItem.friend.id) {
-                            $scope.currentChatItemName = "用户" + chatItem.friend.id;
-                        }
-                    } else {
-                        $scope.alert("[ERROR] open chat room: 聊天项类型为 'friend', 但是聊天项中没有 'friend' 对象");
-                    }
-                    $scope.currentChatItemAvatar = chatItem.friend.avatarUrl;
-                } else if (chatItem.type === "room") {
-                    $scope.currentChatItemName = chatItem.room.roomName;
-                    $scope.currentChatItemAvatar = chatItem.room.roomImgUrl;
-                } else if (chatItem.type === "system") {
-                    $scope.currentChatItemName = "系统消息";
-                    $scope.currentChatItemAvatar = "img/icon-system.jpg";
-                } else if (chatItem.type === "inform") {
-                    $scope.currentChatItemName = "验证消息";
-                    $scope.currentChatItemAvatar = "img/icon-inform.jpg";
-                } else {
-                    $scope.currentChatItemName = "未知聊天室";
-                    $scope.currentChatItemAvatar = "";
+        /* mock data (messages in openChatRoom) */
+        data = {
+            messages: [{
+                id: "1",
+                text: "hi",
+                messageCreateTime: "yesterday",
+                user: {
+                    id: "1",
+                    username: "user",
+                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
                 }
-                // 显示刚加载的聊天室内的消息（一定是最新的消息）
-                $scope.current.sizeOf.messagesLoadedLimitedUpdate(data.messages.length);
-                $scope.chatMessageList = data.messages.slice().reverse();
-                // 遍历每一个消息
-                _.each($scope.chatMessageList, function (msg) {
-                    // 将消息中的 URL 网址转换成 a 链接
-                    msg.url = append_message_linkable(msg.text);
-                });
-                const timeElapsed = new Date().getTime() - beginTime;
-                // 滚动窗口到最新的消息
-                if (["friend", "room"].includes($scope.currentChatItemType)) {
-                    setTimeout(() => {
-                        $window.gotoLastMessage(false);
-                    }, 1010 - timeElapsed);
-                    // 1000 is for page switch animation and 10 is for angular putting messages in DOM
+            },{
+                id: "2",
+                text: "hello",
+                messageCreateTime: "yesterday",
+                user: {
+                    id: "1",
+                    username: "user",
+                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
                 }
-                // 滚动窗口到最新的请求消息或系统消息
-                if (["system", "inform"].includes($scope.currentChatItemType)) {
-                    setTimeout(() => {
-                        scrollMessageIntoView($('.chat-window .card:last').get(0), false);
-                    }, 1010 - timeElapsed);
-                    // 1000 is for page switch animation and 10 is for angular putting messages in DOM
+            },{
+                id: "3",
+                text: "who is this?",
+                messageCreateTime: "just now",
+                user: {
+                    id: "2",
+                    username: "someone",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
                 }
-                // 将未读消息数设为 0
-                $scope.unread_message_count = 0;
-                $scope.userData.chatList = _.map($scope.userData.chatList, function (e) {
-                    if (e.id === chatItem.id) {
-                        e.unreadNum = 0;
-                    }
-                    return e;
-                });
-            } else {
-                $scope.alert("[ERROR] open chat room: 未知错误: " + data.message);
-            }
-        }, function () {
-            stopLoading(loadingId);
-            $scope.alert("[ERROR] open chat room: 与服务器连接失败");
+            },{
+                id: "4",
+                text: "your follower",
+                messageCreateTime: "just now",
+                user: {
+                    id: "1",
+                    username: "user",
+                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
+                }
+            },{
+                id: "5",
+                text: "emmmm",
+                messageCreateTime: "just now",
+                user: {
+                    id: "2",
+                    username: "someone",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                }
+            }]
+        };
+
+        $scope.gotoPage("chat", "chat", chatItem.id);
+        $scope.currentChatItemType = chatItem.type;
+        // 好友房间
+        if (chatItem.type === "friend") {
+            // 缓存当前好友的个人信息
+            $scope.current_friend = chatItem.friend;
+            // set friend's name and show it on chat window top bar
+            $scope.currentChatItemName = chatItem.friend.remark + " (" + chatItem.friend.username + ")";
+            $scope.currentChatItemAvatar = chatItem.friend.avatarUrl;
+        } else if (chatItem.type === "room") {
+            // set room's name and show it on chat window top bar
+            $scope.currentChatItemName = chatItem.room.remark + " (" + chatItem.room.roomName + ")";
+            $scope.currentChatItemAvatar = chatItem.room.avatarUrl;
+        } else if (chatItem.type === "system") {
+            $scope.currentChatItemName = "系统消息";
+            $scope.currentChatItemAvatar = "img/icon-system.jpg";
+        } else if (chatItem.type === "inform") {
+            $scope.currentChatItemName = "验证消息";
+            $scope.currentChatItemAvatar = "img/icon-inform.jpg";
+        } else {
+            $scope.currentChatItemName = "未知聊天室";
+            $scope.currentChatItemAvatar = "";
+        }
+        // 显示刚加载的聊天室内的消息（一定是最新的消息）
+        $scope.current.sizeOf.messagesLoadedLimitedUpdate(data.messages.length);
+        $scope.chatMessageList = data.messages;
+        // 遍历每一个消息
+        _.each($scope.chatMessageList, function (msg) {
+            // 将消息中的 URL 网址转换成 a 链接
+            msg.url = append_message_linkable(msg.text);
         });
+        // 将未读消息数设为 0
+        $scope.unread_message_count = 0;
+        $scope.userData.chatList = _.map($scope.userData.chatList, function (e) {
+            if (e.id === chatItem.id) {
+                e.unreadNum = 0;
+            }
+            return e;
+        });
+        $scope.$apply();
     };
+
+
+
+
+
 
 
     // 加载更多历史消息
@@ -2164,87 +2321,82 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
     $scope.sendMessage = function () {
-        if (!$scope.messageToSend || !$scope.user) {
+        const theUser = $scope.userData.user;
+        if (!$scope.messageToSend || !theUser) {
+            console.log("send message: message or user is undefined.");
             return false;
         }
         // start loading
         var fakeId = "fake-id-" + Date.now();
         let roomMember = null;
         if ($scope.currentChatItemType === "room") {
-            roomMember = $scope.user;
+            roomMember = theUser;
             roomMember.roomRemark = " ";// cannot be empty string because empty string is false
         }
         $scope.chatMessageList.push({
             id: fakeId,
-            user: $scope.user,
+            user: theUser,
             roomMember: roomMember,
             text: $scope.messageToSend,
             sendStatus: "sending"
         });
         // go to bottom of window
-        if ($window.gotoLastMessage) {
-            let dataId = $('.chat-window .message-body:last').attr("data-id");
-            if (dataId && dataId.startsWith("fake-id-")) {
-                $window.gotoLastMessage(true);
-            } else {
-                $timeout(() => {
-                    $window.gotoLastMessage(true);
-                }, 100);
-            }
+        if ($window.gotoMessage) {
+            $window.gotoMessage('last',true);
         }
 
-        let messageText = $scope.messageToSend;
+        // const messageText = $scope.messageToSend;
         $scope.messageToSend = "";
 
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.sendMessage,
-            params: {
-                "text": messageText,
-                "chatItemId": $scope.currentChatItemId
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            // stop loading
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + apis.sendMessage,
+        //     params: {
+        //         "text": messageText,
+        //         "chatItemId": $scope.currentChatItemId
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     // stop loading
             $scope.chatMessageList = $scope.chatMessageList.map((message) => {
                 if (message.id === fakeId) {
                     message.sendStatus = "done"
                 }
                 return message;
             });
+            console.log("send message: Send success.");
 
-            console.log("send message: " + result.data.message);
-            let isSendSuccess = false;
-            switch (result.data.message) {
-                case "Please login":
-                    gotoLogin("index.html");
-                    break;
-                case "ChatItem does not exist":
-                    $scope.alert("[ERROR] send message: 该聊天项不存在");
-                    break;
-                case "He/she is not your friend":
-                    $scope.alert("[ERROR] send message: 该用户不是你的好友");
-                    break;
-                case "Text cannot be empty":
-                    $scope.alert("[ERROR] send message: 消息内容不能为空");
-                    break;
-                case "Send fail":
-                    $scope.alert("[ERROR] send message: 发送失败");
-                    break;
-                case "Send success":
-                    isSendSuccess = true;
-                    break;
-                default:
-                    $scope.alert("[ERROR] send message: 未知错误 " + result.data.message);
-                    break;
-            }
-            if (!isSendSuccess) {
-                if (confirm("发送消息失败，是否恢复输入框中的消息？")) {
-                    $scope.messageToSend = messageText;
-                }
-            }
-        });
+        //     let isSendSuccess = false;
+        //     switch (result.data.message) {
+        //         case "Please login":
+        //             gotoLogin("index.html");
+        //             break;
+        //         case "ChatItem does not exist":
+        //             $scope.alert("[ERROR] send message: 该聊天项不存在");
+        //             break;
+        //         case "He/she is not your friend":
+        //             $scope.alert("[ERROR] send message: 该用户不是你的好友");
+        //             break;
+        //         case "Text cannot be empty":
+        //             $scope.alert("[ERROR] send message: 消息内容不能为空");
+        //             break;
+        //         case "Send fail":
+        //             $scope.alert("[ERROR] send message: 发送失败");
+        //             break;
+        //         case "Send success":
+        //             isSendSuccess = true;
+        //             break;
+        //         default:
+        //             $scope.alert("[ERROR] send message: 未知错误 " + result.data.message);
+        //             break;
+        //     }
+        //     if (!isSendSuccess) {
+        //         if (confirm("发送消息失败，是否恢复输入框中的消息？")) {
+        //             $scope.messageToSend = messageText;
+        //         }
+        //     }
+        // });
     };
 
 
@@ -3246,16 +3398,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     }
 
 
-
-    $scope.getRoomMemberName = function (member) {
-        if (!member) return "用户为 null";
-        if (member.roomRemark) return member.roomRemark;
-        if (member.nickname) return member.nickname// + " (该用户已不是群成员)";
-        if (member.username) return member.username// + " (该用户已不是群成员)";
-        if (member.id) return member.id + " (该用户已不是群成员)";
-        $scope.alert("[ERROR] get room member name: 房间成员没有用户名: " + angular.toJson(member));
-        return "未知用户";
-    }
 
 
     $scope.allow_set_room_member_remark = function () {

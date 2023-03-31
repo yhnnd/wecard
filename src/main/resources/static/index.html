@@ -43,7 +43,6 @@
     <script src="./js/vendor/alert.js"></script>
     <script src="./js/_web_config.js"></script>
     <script src="./js/_index_controller.js"></script>
-    <script src="./js/_index_refresh.js"></script>
 
     <script src="./js/_index_create_card.js"></script>
     <script src="./js/_index_create_card_with_images.js"></script>
@@ -64,7 +63,7 @@
 <body>
     <!-- module index (card) -->
     <div ng-app="module-index" ng-cloak="ng-cloak">
-        <div ng-controller="controller">
+        <div ng-controller="controller" ng-init="refreshUserData();">
             <!-- data for cards -->
             <input id="user" style="display:none;" ng-model="user">
             <input id="card-groups" style="display:none;" ng-model="cardGroups">
@@ -77,134 +76,6 @@
             <input id="data-groups" style="display:none;" ng-model="userData.groups">
             <input id="chat-message-list" style="display:none;" ng-model="chatMessageList">
 
-
-            <div class="fake-navbar w-100 alert-secondary">
-                <!-- fake navbar -->
-                <nav class="navbar navbar-expand-lg navbar-dark alert-secondary px-2"
-                     ng-class="isNavbarMinimized === true ? 'py-0' : 'py-2'"
-                     style="opacity: 0.3;">
-                    <a class="navbar-brand" href="#">fake navbar</a>
-                </nav>
-                <!-- fake portal bar -->
-                <div class="w-100 p-2 alert-secondary" ng-if="currentChatItemId !== 'external'"
-                     style="opacity: 0.3;">
-                    <div class="text-center">
-                        <div class="text-white">fake portal bar</div>
-                    </div>
-                </div>
-                <!-- search cards results -->
-                <div class="search-results" ng-show="isSearching === true">
-                    <div class="search-results-container">
-                        <div class="search-results-wrapper">
-                            <!-- stop search cards -->
-                            <div class="stop-search-button-wrapper">
-                                <i class="fa fa-lg fa-times-circle mb-1 text-muted" ng-click="stopSearch()"></i>
-                            </div>
-                            <ul class="list-group" ng-if="isSearchingLoading">
-                                <!-- search card: loading -->
-                                <li class="list-group-item list-group-item-secondary text-center">
-                                    <span class="fa fa-spinner fa-pulse fa-fw"></span>
-                                    搜索中 ...
-                                </li>
-                            </ul>
-                            <ul class="list-group" ng-if="!isSearchingLoading">
-                                <li class="list-group-item" ng-repeat="card in searchResults track by $index">
-                                    <div class="row" ng-click="viewCard(card)">
-                                        <div class="col col-12 col-lg-8">
-                                            <h5 class="w-100 cursor-pointer overflow-hidden">
-                                                <small class="d-flex align-items-center justify-content-start">
-                                                    <span class="d-inline-block">
-                                                        <img ng-src="{{card.user.avatarUrl}}" alt="" class="user-avatar-xxs rounded-circle">
-                                                    </span>
-                                                    <small class="d-inline-block ml-1 pt-1 text-muted overflow-hidden" style="min-width: 40px;width: 40px;max-width: 40px;">
-                                                        {{card.user.nickname}}
-                                                    </small>
-                                                    <span class="ml-2" ng-if="card.type !== 'share'">
-                                                        <span ng-if="keyword">
-<!--                                                        code line below can not be formatted into several lines for preventing white spaces -->
-                                                            <span ng-repeat="slice in card.title.split(keyword) track by $index"><span ng-bind="slice"></span><span ng-if="!$last" ng-bind="keyword" class="highlight"></span></span>
-                                                        </span>
-                                                        <!-- when searching topic -->
-                                                        <span ng-if="!keyword">
-                                                            {{card.title}}
-                                                        </span>
-                                                    </span>
-                                                    <span class="ml-2 text-muted" ng-if="card.type === 'share'">
-                                                        <i class="fa fa-share"></i>
-                                                            转发卡片
-                                                    </span>
-                                                </small>
-                                            </h5>
-                                            <div class="w-100 d-flex align-items-center justify-content-start">
-                                                <small>
-                                                    <span ng-if="keyword">
-<!--                                                    code line below can not be formatted into several lines for preventing white spaces -->
-                                                        <span ng-repeat="slice in card.text.split(keyword) track by $index">{{slice|textLengthSet:true:110:'...'}}<span ng-if="!$last" ng-bind="keyword" class="highlight"></span></span>
-                                                    </span>
-                                                    <!-- when searching topic -->
-                                                    <span ng-if="!keyword">
-                                                        {{card.text|textLengthSet:true:110:'...'}}
-                                                    </span>
-                                                </small>
-                                            </div>
-                                        </div>
-                                        <div class="col col-12 mt-2 col-lg-4 px-lg-3 mt-lg-0 d-flex align-items-center justify-content-center">
-                                            <div class="w-100 overflow-hidden bg-dark" style="max-height:88px;">
-                                                <img src="{{card.images[0].url}}" alt="image not found" class="d-block mx-auto" ng-if="card.type === 'image' && card.images.length"
-                                                     style="height:88px;">
-                                                <video src="{{card.video.url}}" controls="controls" class="d-block mx-auto" ng-if="card.type === 'video'" style="height:88px;">
-                                                    你的浏览器不支持视频播放
-                                                </video>
-                                                <div class="d-block mx-auto bg-white" ng-if="['text','share'].includes(card.type)">
-                                                    <div style="line-height: 1rem;">
-                                                        <div class="row">
-                                                            <div class="col">
-                                                                <small>热度:</small>
-                                                            </div>
-                                                            <div class="col">
-                                                                <small>{{card.cardHot}}</small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col">
-                                                                <small>转发:</small>
-                                                            </div>
-                                                            <div class="col">
-                                                                <small>{{card.shareNum}}</small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col">
-                                                                <small>评论:</small>
-                                                            </div>
-                                                            <div class="col">
-                                                                <small>{{card.commentNum}}</small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col">
-                                                                <small>发布时间:</small>
-                                                            </div>
-                                                            <div class="col">
-                                                                <small>{{card.createdTime}}</small>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <!-- search card: no search result -->
-                                <li class="list-group-item list-group-item-danger text-center" ng-if="!searchResults || !(searchResults.length)">
-                                    无搜索结果, 换一个关键词试试
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
 
 
@@ -220,19 +91,19 @@
                             <img class="user-avatar rounded-circle border" ng-src="{{user.avatarUrl}}">
                         </a>
                         <!-- 如果用户没登录，就显示商标 -->
-                        <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('./index.html');" ng-show="!user">
-                            <span>微卡</span>
+                        <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('./index.html');" >
+                            <span>WeCard</span>
                         </a>
                         <li class="nav-item" ng-click="gotoPage('marketplace');">
                             <a class="nav-link" ng-class="pageLocation==='marketplace'?'text-white bg-secondary':isNavbarBackgroundDark?'text-white':'text-dark'" href="#marketplace">
-                                <span>广场</span>
+                                <span>Marketplace</span>
                             </a>
                         </li>
 
                         <!-- 如果用户登录了 -->
                         <li class="nav-item" ng-click="gotoPage('mySocialCircle');">
                             <a class="nav-link" ng-class="pageLocation==='mySocialCircle'?'text-white bg-secondary':isNavbarBackgroundDark?'text-white':'text-dark'" href="#mySocialCircle">
-                                <span>mySocialCircle</span>
+                                <span>MySocialCircle</span>
                             </a>
                         </li>
 
@@ -293,7 +164,7 @@
                         <li class="nav-item pr-3 d-flex justify-content-center align-items-center"
                             data-style="no-support">
                             <button class="button button-small button-border button-circle"
-                                    ng-click="refreshCurrentPage();isLoggedIn();"
+                                    ng-click="refreshUserData();"
                                     ng-class="isNavbarBackgroundDark ? 'button-plain' : 'button-inverse'">
                                 <i class="fa fa-refresh"></i>
                             </button>
@@ -316,8 +187,8 @@
                             <img class="user-avatar rounded-circle border" ng-src="{{user.avatarUrl}}">
                         </a>
                         <!-- 如果用户没登录，就显示商标 -->
-                        <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('./index.html');" ng-show="!user">
-                            微卡
+                        <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('./index.html');" >
+                            WeCard
                         </a>
                         <li class="nav-item" style="position: relative;">
                             <div class="nav-link" ng-class="isNavbarBackgroundDark?'text-white':'text-dark'" data-toggle="dropdown">
@@ -366,12 +237,12 @@
                                         <i class="fa fa-sign-out"></i>
                                     </div>
                                 </div>
-                                <div class="dropdown-item" ng-show="!user">
+                                <div class="dropdown-item" >
                                     <div class="btn btn-sm btn-block btn-outline-primary">
                                         <span>登录</span>
                                     </div>
                                 </div>
-                                <div class="dropdown-item" ng-show="!user">
+                                <div class="dropdown-item" >
                                     <a class="btn btn-sm btn-block btn-outline-primary" href="./signup.html?target=./index.html">
                                         <span>注册</span>
                                     </a>
@@ -384,6 +255,7 @@
                         </li>
                     </ul>
                 </div>
+
                 <!-- portal bar -->
                 <div class="w-100 p-2 bg-primary text-white current-portal" ng-if="currentChatItemId !== 'external'">
                     <div class="overflow-hidden">
@@ -408,13 +280,126 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- search cards results -->
+                <div class="search-results" ng-show="isSearching === true">
+                    <div class="search-results-container">
+                        <div class="search-results-wrapper">
+                            <!-- stop search cards -->
+                            <div class="stop-search-button-wrapper">
+                                <i class="fa fa-lg fa-times-circle mb-1 text-muted" ng-click="stopSearch()"></i>
+                            </div>
+                            <ul class="list-group" ng-if="isSearchingLoading">
+                                <!-- search card: loading -->
+                                <li class="list-group-item list-group-item-secondary text-center">
+                                    <span class="fa fa-spinner fa-pulse fa-fw"></span>
+                                    搜索中 ...
+                                </li>
+                            </ul>
+                            <ul class="list-group" ng-if="!isSearchingLoading">
+                                <li class="list-group-item" ng-repeat="card in searchResults track by $index">
+                                    <div class="row" ng-click="viewCard(card)">
+                                        <div class="col col-12 col-lg-8">
+                                            <h5 class="w-100 cursor-pointer overflow-hidden">
+                                                <small class="d-flex align-items-center justify-content-start">
+                                                    <span class="d-inline-block">
+                                                        <img ng-src="{{card.user.avatarUrl}}"  class="user-avatar-xxs rounded-circle">
+                                                    </span>
+                                                    <small class="d-inline-block ml-1 pt-1 text-muted overflow-hidden" style="min-width: 40px;width: 40px;max-width: 40px;">
+                                                        {{card.user.nickname}}
+                                                    </small>
+                                                    <span class="ml-2" ng-if="card.type !== 'share'">
+                                                        <span ng-if="keyword">
+<!--                                                        code line below can not be formatted into several lines for preventing white spaces -->
+                                                            <span ng-repeat="slice in card.title.split(keyword) track by $index"><span ng-bind="slice"></span><span ng-if="!$last" ng-bind="keyword" class="highlight"></span></span>
+                                                        </span>
+                                                        <!-- when searching topic -->
+                                                        <span ng-if="!keyword">
+                                                            {{card.title}}
+                                                        </span>
+                                                    </span>
+                                                    <span class="ml-2 text-muted" ng-if="card.type === 'share'">
+                                                        <i class="fa fa-share"></i>
+                                                            转发卡片
+                                                    </span>
+                                                </small>
+                                            </h5>
+                                            <div class="w-100 d-flex align-items-center justify-content-start">
+                                                <small>
+                                                    <span ng-if="keyword">
+<!--                                                    code line below can not be formatted into several lines for preventing white spaces -->
+                                                        <span ng-repeat="slice in card.text.split(keyword) track by $index">{{slice|textLengthSet:true:110:'...'}}<span ng-if="!$last" ng-bind="keyword" class="highlight"></span></span>
+                                                    </span>
+                                                    <!-- when searching topic -->
+                                                    <span ng-if="!keyword">
+                                                        {{card.text|textLengthSet:true:110:'...'}}
+                                                    </span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="col col-12 mt-2 col-lg-4 px-lg-3 mt-lg-0 d-flex align-items-center justify-content-center">
+                                            <div class="w-100 overflow-hidden bg-dark" style="max-height:88px;">
+                                                <img src="{{card.images[0].url}}"  class="d-block mx-auto" ng-if="card.type === 'image' && card.images.length"
+                                                     style="height:88px;">
+                                                <video src="{{card.video.url}}" controls="controls" class="d-block mx-auto" ng-if="card.type === 'video'" style="height:88px;">
+                                                    你的浏览器不支持视频播放
+                                                </video>
+                                                <div class="d-block mx-auto bg-white" ng-if="['text','share'].includes(card.type)">
+                                                    <div style="line-height: 1rem;">
+                                                        <div class="row">
+                                                            <div class="col">
+                                                                <small>热度:</small>
+                                                            </div>
+                                                            <div class="col">
+                                                                <small>{{card.cardHot}}</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col">
+                                                                <small>转发:</small>
+                                                            </div>
+                                                            <div class="col">
+                                                                <small>{{card.shareNum}}</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col">
+                                                                <small>评论:</small>
+                                                            </div>
+                                                            <div class="col">
+                                                                <small>{{card.commentNum}}</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col">
+                                                                <small>发布时间:</small>
+                                                            </div>
+                                                            <div class="col">
+                                                                <small>{{card.createdTime}}</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <!-- search card: no search result -->
+                                <li class="list-group-item list-group-item-danger text-center" ng-if="!searchResults || !(searchResults.length)">
+                                    无搜索结果, 换一个关键词试试
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
             <!-- /* z-index of it should be no more than 1050 */ -->
             <div class="d-inline-block px-3 py-2 border bg-white"
                  style="position:fixed;bottom: 0;right: 0;z-index: 1049;"
-                 ng-show="user && (['marketplace','mySocialCircle'].includes(pageLocation) || pageLocation === 'cards' && subPageLocation !== 'write')"
+                 ng-show=" (['marketplace','mySocialCircle'].includes(pageLocation) || pageLocation === 'cards' && subPageLocation !== 'write')"
                  ng-click="gotoPage('cards');subPageLocation = 'write';">
                 <span class="fa fa-3x fa-pencil" title="撰写卡片" data-toggle="tooltip"></span>
             </div>
@@ -729,7 +714,10 @@
                                     user="user"></wc-shared-card-preview>
                             </div>
                         </div>
-                        <!-- 加载更多我的卡片 -->
+                    </div>
+
+                    <!-- 加载更多我的卡片 -->
+                    <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8" ng-show="['myCards','myLikes','myShares'].includes(subPageLocation)">
                         <div class="w-100 text-center my-4">
                             <div class="btn btn-block btn-outline-primary border-radius-0" ng-click="load_more_my_cards()" ng-if="has_more_my_cards">
                                 <span>加载更多卡片</span>
@@ -1080,13 +1068,13 @@
                                 <div class="cursor-pointer overflow-hidden" ng-click="openPrevChatRoom()">
                                     <div class="d-inline-block" ng-switch="prevChatItemType">
                                         <div ng-switch-when="friend">
-                                            <img class="user-avatar-xs rounded-circle border" src="{{prevChatItemAvatar}}" alt="×">
+                                            <img class="user-avatar-xs rounded-circle border" src="{{prevChatItemAvatar}}" >
                                         </div>
                                         <div ng-switch-when="room">
-                                            <img class="user-avatar-xs rounded border" src="{{prevChatItemAvatar}}" alt="×">
+                                            <img class="user-avatar-xs rounded border" src="{{prevChatItemAvatar}}" >
                                         </div>
                                         <div ng-switch-default>
-                                            <img class="user-avatar-xs rounded-circle border" src="img/icon-{{prevChatItemType}}.jpg" alt="×">
+                                            <img class="user-avatar-xs rounded-circle border" src="img/icon-{{prevChatItemType}}.jpg" >
                                         </div>
                                     </div>
                                     <small>{{prevChatItemName}}</small>
@@ -1119,12 +1107,12 @@
                                 <div class="card-body alert alert-secondary py-3 mb-0 half-hidden">
                                     <p class="card-text text-center">
                                         <i class="fa fa-exclamation-triangle mr-2"></i>
-                                        <span>你的聊天列表为空</span>
+                                        <span>Your Chat List is Empty</span>
                                     </p>
                                 </div>
                             </div>
                             <ul class="list-group">
-                                <li class="list-group-item border-radius-0 {{['system','inform'].includes(chatItem.type)?'list-group-item-info':''}}" ng-repeat="chatItem in userData.chatList track by $index">
+                                <li class="list-group-item border-radius-0" ng-repeat="chatItem in userData.chatList track by $index">
                                     <div class="row w-100">
                                         <div class="col-11 d-flex cursor-pointer" ng-click="openChatRoom(chatItem)">
                                             <div class="row w-100 align-self-center">
@@ -1133,13 +1121,13 @@
                                                     <div class="avatar-wrapper text-center">
                                                         <div ng-switch="chatItem.type">
                                                             <div ng-switch-when="friend">
-                                                                <img class="user-avatar rounded-circle border" ng-src="{{chatItem.friend.avatarUrl}}" alt="×">
+                                                                <img class="user-avatar rounded-circle border" ng-src="{{chatItem.friend.avatarUrl}}" >
                                                             </div>
                                                             <div ng-switch-when="room">
-                                                                <img class="user-avatar rounded border" ng-src="{{chatItem.room.roomImgUrl}}" alt="×">
+                                                                <img class="user-avatar rounded border" ng-src="{{chatItem.room.avatarUrl}}" >
                                                             </div>
                                                             <div ng-switch-default>
-                                                                <img class="user-avatar rounded-circle border" ng-src="img/icon-{{chatItem.type}}.jpg" alt="×">
+                                                                <img class="user-avatar rounded-circle border" ng-src="img/icon-{{chatItem.type}}.jpg" >
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1150,13 +1138,8 @@
                                                     <div class="row">
                                                         <!-- 好友消息 -->
                                                         <div class="overflow-hidden" ng-if="chatItem.type == 'friend'">
-                                                            <span ng-if="chatItem.friend.remark">
-                                                                <span data-toggle="tooltip" data-placement="left" title="{{chatItem.friend.remark}}">
-                                                                    {{chatItem.friend.remark}}
-                                                                </span>
-                                                            </span>
-                                                            <span ng-if="!chatItem.friend.remark">
-                                                                <span class="text-danger" data-toggle="tooltip" data-placement="left" title="{{chatItem.friend.username}}">
+                                                            <span>
+                                                                <span data-toggle="tooltip" data-placement="left" title="{{chatItem.friend.username}}">
                                                                     {{chatItem.friend.username}}
                                                                 </span>
                                                             </span>
@@ -1334,7 +1317,7 @@
                                             <li class="list-group-item bg-dark text-white cursor-pointer" ng-repeat="friend in searchUserResults track by $index">
                                                 <div class="row">
                                                     <div class="col-6 d-flex align-items-center justify-content-start">
-                                                        <img class="user-avatar rounded-circle cursor-pointer" ng-src="{{friend.avatarUrl}}" alt="image not found" data-toggle="popover"
+                                                        <img class="user-avatar rounded-circle cursor-pointer" ng-src="{{friend.avatarUrl}}"  data-toggle="popover"
                                                              data-content="{{getUserInfoAvatar(friend)}}">
                                                         <span class="d-inline-block overflow-hidden ml-2" style="min-width:100px;">
                                                             <span class="text-white" data-toggle="tooltip" data-placement="bottom" title="用户昵称">
@@ -1425,7 +1408,7 @@
                                                     <div class="row">
                                                         <!-- 好友分组中的好友 头像 -->
                                                         <div class="col-2 pr-0">
-                                                            <img class="user-avatar rounded-circle cursor-pointer" ng-src="{{friend.avatarUrl}}" alt="image not found" data-toggle="popover"
+                                                            <img class="user-avatar rounded-circle cursor-pointer" ng-src="{{friend.avatarUrl}}"  data-toggle="popover"
                                                                  data-content="{{getUserInfoAvatar(friend)}}">
                                                         </div>
                                                         <!-- 好友分组中的好友 用户名 -->
@@ -1588,7 +1571,7 @@
                                             <li class="list-group-item bg-dark text-white cursor-pointer" ng-repeat="room in searchRoomResults track by $index">
                                                 <div class="row">
                                                     <div class="col-6 d-flex align-items-center justify-content-start">
-                                                        <img class="user-avatar rounded cursor-pointer" src="{{room.roomImgUrl}}" alt="image not found">
+                                                        <img class="user-avatar rounded cursor-pointer" src="{{room.avatarUrl}}" >
                                                         <span class="d-inline-block overflow-hidden ml-2" style="max-width:300px;">
                                                             <span class="text-white">{{room.roomName}}</span>
                                                             <small class="text-light" ng-if="debugMode.isEnabled">({{room.id}})</small>
@@ -1640,7 +1623,7 @@
                                 <li class="list-group-item cursor-pointer" ng-repeat="room in userData.rooms track by $index" ng-click="clickRoom($event.target,room.id)">
                                     <div class="row">
                                         <div class="col-2">
-                                            <img class="user-avatar rounded cursor-pointer" src="{{room.roomImgUrl}}">
+                                            <img class="user-avatar rounded cursor-pointer" src="{{room.avatarUrl}}">
                                         </div>
                                         <div class="col-6 d-flex align-items-center">
                                             <a href="#">
@@ -1727,7 +1710,7 @@
                                     <li class="list-group-item cursor-pointer" ng-repeat="portal in userData.allChatItems track by $index" ng-if="portal.type === 'inform'" ng-click="openChatRoom(portal)">
                                         <div class="row">
                                             <div class="col-2">
-                                                <img class="user-avatar rounded-circle cursor-pointer" src="img/icon-{{portal.type}}.jpg" alt="image not found">
+                                                <img class="user-avatar rounded-circle cursor-pointer" src="img/icon-{{portal.type}}.jpg" >
                                             </div>
                                             <div class="col-6 d-flex align-items-center">
                                                 <span>验证消息</span>
@@ -1742,7 +1725,7 @@
                                     <li class="list-group-item cursor-pointer" ng-repeat="portal in userData.allChatItems track by $index" ng-if="portal.type === 'system'" ng-click="openChatRoom(portal)">
                                         <div class="row">
                                             <div class="col-2">
-                                                <img class="user-avatar rounded-circle cursor-pointer" src="img/icon-{{portal.type}}.jpg" alt="image not found">
+                                                <img class="user-avatar rounded-circle cursor-pointer" src="img/icon-{{portal.type}}.jpg" >
                                             </div>
                                             <div class="col-6 d-flex align-items-center">
                                                 <span>系统消息</span>
@@ -1769,15 +1752,581 @@
 
 
 
-            <!-- 聊天窗口 -->
-            <wc-chat-window ng-show="['chat','trans-home-chat','trans-chat-home'].includes(pageLocation)"
-                            current-chat-item-type="currentChatItemType"
-                            chat-message-list="chatMessageList"
-                            current="current"
-                            max="max"
-                            user-data="userData"
-                            unread-message-count="unread_message_count">
-            </wc-chat-window>
+            <!-- Chat Window -->
+            <div class="chat-window container-fluid mt-0" ng-show="['chat','trans-home-chat','trans-chat-home'].includes(pageLocation)">
+                <div class="row">
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-8 offset-lg-2">
+                        <div class="p-3">
+                            <!-- chat window of friend (type) -->
+                            <div ng-if="currentChatItemType === 'friend'" class="messages-container">
+                                <!-- 好友聊天历史消息 -->
+                                <div ng-if="!chatMessageList.length">
+                                    <h5 class="display-5 text-center mx-5 pt-1 pb-3">
+                                        <button class="button button-small text-dark" disabled>没有历史消息</button>
+                                    </h5>
+                                </div>
+                                <div ng-if="chatMessageList.length && current.sizeOf.messagesLoadedLimited < max.get.messages.limit">
+                                    <h5 class="display-5 text-center mx-5 pt-1 pb-3">
+                                        <button class="button button-small text-dark" disabled>没有更多消息</button>
+                                    </h5>
+                                </div>
+                                <div ng-if="current.sizeOf.messagesLoadedLimited === max.get.messages.limit">
+                                    <h5 class="display-5 text-center mx-5 pt-1 pb-3">
+                                        <div class="button button-border button-rounded button-primary button-small" ng-click="load_more_messages()" onselectstart="return false;">
+                                            加载更多消息
+                                        </div>
+                                    </h5>
+                                </div>
+                                <h5 class="display-5 alert alert-warning text-center mx-5 py-3" ng-if="current.sizeOf.messagesLoadedLimited > max.get.messages.limit">
+                                    <i class="fa fa-exclamation-triangle mr-1"></i>
+                                    <span>发生错误，一次加载消息数量超限</span>
+                                </h5>
+                                <!-- 好友聊天消息 -->
+                                <div ng-repeat="message in chatMessageList track by $index">
+                                    <!-- if message is sent by me -->
+                                    <div ng-if="message.user.id === userData.user.id">
+                                        <div class="message-body p-1 mb-1"
+                                                onmouseenter="$(this).find('.button-wrapper').show()"
+                                                onmouseleave="$(this).find('.button-wrapper').hide()"
+                                                data-id="{{message.id}}"
+                                                title="{{message.id}}">
+                                            <div class="message-content-wrapper d-flex justify-content-end align-items-center">
+                                                <!-- 消息已被撤回 -->
+                                                <div class="mx-auto badge badge-pill badge-secondary" ng-if="message.recall === 1">
+                                                    你撤回了一条消息
+                                                </div>
+                                                <!-- 消息没被撤回 -->
+                                                <div class="w-100 d-flex justify-content-end align-items-center" ng-if="!message.recall" style="position: relative;">
+                                                    <!-- 按钮区域 -->
+                                                    <div class="button-wrapper message-left-side-button-wrapper" style="display: none;">
+                                                        <!-- (发送者是我) 撤回消息按钮 -->
+                                                        <button class="button button-caution button-glow button-circle button-tiny mr-2 mt-1" ng-click="recall_friend_room_message(message.id)"
+                                                                data-toggle="tooltip" title="撤回消息">
+                                                            <i class="fa fa-lg fa-times"></i>
+                                                        </button>
+                                                        <!-- (发送者是我) 删除消息按钮 -->
+                                                        <button class="button button-primary button-glow button-circle button-tiny mr-2 mt-1" ng-click="remove_message(message.id)"
+                                                                data-toggle="tooltip" title="删除消息">
+                                                            <i class="fa fa-lg fa-times"></i>
+                                                        </button>
+                                                        <!-- (发送者是我) 消息发送时间 -->
+                                                        <div class="message-create-time d-inline-block cursor-pointer" data-toggle="tooltip" title="消息发送时间" onselect="return false;">
+                                                            {{message.messageCreateTime}}
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-inline-block hover-inner-show" ng-if="message.sendStatus">
+                                                        <!-- 发送状态 -->
+                                                        <span class="hidden hover-show">{{message.sendStatus}}</span>
+                                                        <!-- 发送状态: 发送中 -->
+                                                        <i class="fa fa-spin fa-circle-o-notch fa-fw text-secondary" ng-if="message.sendStatus === 'sending'" title="sending"></i>
+                                                        <!-- 发送状态: 发送完毕 -->
+                                                        <i class="fa fa-check fa-fw text-success" ng-if="message.sendStatus === 'done'" title="done"></i>
+                                                    </div>
+                                                    <!-- 消息气泡 -->
+                                                    <div class="bg-white img-thumbnail message-bubble px-2" onclick="$(this).prev('.button-wrapper').toggle()" ng-class="{'half-hidden hover-show':message.sendStatus === 'sending'}">
+                                                        <div ng-if="message.text">
+                                                            <div ng-repeat="line in message.text.split('\n') track by $index">
+                                                                <pre ng-if="line && !isCardLink(line)" ng-bind="line" class="line break-all"></pre>
+                                                                <a ng-if="line && isCardLink(line)" class="mt-1" ng-bind="getCardLink(line)" href="{{getCardLink(line)}}" target="_blank"></a>
+                                                                <button ng-if="line && isCardLink(line)" class="btn btn-block btn-primary mt-1" ng-click="viewCardByLink(line)">
+                                                                    <div>查看卡片</div>
+                                                                </button>
+                                                                <br ng-if="!line">
+                                                            </div>
+                                                        </div>
+                                                        <!-- 消息中的链接 -->
+                                                        <div class="d-inline-block w-100" ng-if="message.url">
+                                                            <small class="text-muted">访问
+                                                                <a href="{{message.url}}" target="_blank">{{message.url}}</a>
+                                                            </small>
+                                                        </div>
+                                                        <div ng-if="!message.text" class="text-danger">
+                                                            该消息没有内容
+                                                        </div>
+                                                    </div>
+                                                    <!-- 我的头像 -->
+                                                    <div class="avatar-wrapper d-inline-block ml-1">
+                                                        <img ng-src="{{message.user.avatarUrl}}"  class="user-avatar rounded-circle border">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- if message is not sent by me -->
+                                    <div ng-if="message.user.id !== userData.user.id">
+                                        <div class="message-body p-1 mb-1"
+                                                onmouseenter="$(this).find('.button-wrapper').show()"
+                                                onmouseleave="$(this).find('.button-wrapper').hide()">
+                                            <div class="message-content-wrapper d-flex justify-content-begin align-items-center">
+                                                <!-- 消息已被撤回 -->
+                                                <div class="mx-auto badge badge-pill badge-secondary" ng-if="message.recall === 1">
+                                                    对方撤回了一条消息
+                                                </div>
+                                                <!-- 消息没被撤回 -->
+                                                <div class="w-100 d-flex justify-content-begin align-items-center" ng-if="!message.recall" style="position: relative;">
+                                                    <!-- 他的头像 -->
+                                                    <div class="avatar-wrapper d-inline-block mr-1">
+                                                        <img ng-src="{{message.user.avatarUrl}}"  class="user-avatar rounded-circle border">
+                                                    </div>
+                                                    <!-- 消息气泡 -->
+                                                    <div class="bg-white img-thumbnail message-bubble px-2" onclick="$(this).next('.button-wrapper').toggle()">
+                                                        <div ng-if="message.text">
+                                                            <div ng-repeat="line in message.text.split('\n') track by $index">
+                                                                <pre ng-if="line && !isCardLink(line)" ng-bind="line" class="line break-all"></pre>
+                                                                <a ng-if="line && isCardLink(line)" class="mt-1" ng-bind="getCardLink(line)" href="{{getCardLink(line)}}" target="_blank"></a>
+                                                                <button ng-if="line && isCardLink(line)" class="btn btn-block btn-primary mt-1" ng-click="viewCardByLink(line)">
+                                                                    <div>查看卡片</div>
+                                                                </button>
+                                                                <br ng-if="!line">
+                                                            </div>
+                                                        </div>
+                                                        <!-- 消息中的链接 -->
+                                                        <div class="d-inline-block w-100" ng-if="message.url">
+                                                            <small class="text-muted">访问
+                                                                <a href="{{message.url}}" target="_blank">{{message.url}}</a>
+                                                            </small>
+                                                        </div>
+                                                        <div ng-if="!message.text" class="text-danger">
+                                                            该消息没有内容
+                                                        </div>
+                                                    </div>
+                                                    <div class="button-wrapper message-right-side-button-wrapper" style="display: none;">
+                                                        <!-- (发送者是对方) 消息发送时间 -->
+                                                        <div class="message-create-time d-inline-block cursor-pointer" data-toggle="tooltip" title="消息发送时间" onselect="return false;">
+                                                            {{message.messageCreateTime}}
+                                                        </div>
+                                                        <!-- (发送者是对方) 删除消息按钮 -->
+                                                        <button class="button button-primary button-glow button-circle button-tiny ml-2 mt-1" ng-click="remove_message(message.id)"
+                                                                data-toggle="tooltip" title="删除消息">
+                                                            <i class="fa fa-lg fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+            
+                            <!-- chat window of room (type) -->
+                            <div ng-if="currentChatItemType === 'room'" class="messages-container">
+                                <!-- 聊天室历史消息 -->
+                                <div ng-if="!chatMessageList.length">
+                                    <h5 class="display-5 text-center mx-5 pt-1 pb-3">
+                                        <button class="button button-small text-dark" disabled>没有历史消息</button>
+                                    </h5>
+                                </div>
+                                <div ng-if="chatMessageList.length && current.sizeOf.messagesLoadedLimited < max.get.messages.limit">
+                                    <h5 class="display-5 text-center mx-5 pt-1 pb-3">
+                                        <button class="button button-small text-dark" disabled>没有更多消息</button>
+                                    </h5>
+                                </div>
+                                <div ng-if="current.sizeOf.messagesLoadedLimited === max.get.messages.limit">
+                                    <h5 class="display-5 text-center mx-5 pt-1 pb-3">
+                                        <div class="button button-border button-rounded button-primary button-small" ng-click="load_more_messages()" onselectstart="return false;">
+                                            加载更多消息
+                                        </div>
+                                    </h5>
+                                </div>
+                                <h5 class="display-5 alert alert-warning text-center mx-5 py-3" ng-if="current.sizeOf.messagesLoadedLimited > max.get.messages.limit">
+                                    <i class="fa fa-exclamation-triangle mr-1"></i>
+                                    <span>发生错误，一次加载消息数量超限</span>
+                                </h5>
+                                <!-- 聊天室聊天消息 -->
+                                <div ng-repeat="message in chatMessageList track by $index">
+                                    <div class="message-body p-1 mb-1 {{message.user.id === userData.user.id ? 'text-right' : ''}}"
+                                            onmouseenter="$(this).find('.button-wrapper').show()"
+                                            onmouseleave="$(this).find('.button-wrapper').hide()"
+                                            data-id="{{message.id}}"
+                                            title="{{message.id}}">
+                                        <!-- 消息内容 -->
+                                        <div class="message-content-wrapper {{message.recall === 1?'text-center':''}}">
+                                            <!-- 消息已被撤回 -->
+                                            <div class="mx-auto badge badge-pill badge-secondary" ng-if="message.recall === 1">
+                                                {{message.user.username}} 撤回了一条消息
+                                            </div>
+                                            <!-- 消息没被撤回 -->
+                                            <div ng-if="!message.recall">
+                                                <!-- 用户名 -->
+                                                <div class="username-wrapper mb-1">
+                                                    <!-- 如果是我发的消息：我的用户名 -->
+                                                    <div class="d-inline-block" ng-if="message.user.id === userData.user.id">
+                                                        {{message.user.username}}
+                                                    </div>
+                                                    <!-- 头像 -->
+                                                    <img ng-src="{{message.user.avatarUrl}}"  class="user-avatar rounded-circle border cursor-pointer" ng-click="startChatWithRoomMember(message.user.id)">
+                                                    <!-- 如果是别人发的消息：别人的用户名 -->
+                                                    <div class="d-inline-block" ng-if="message.user.id !== userData.user.id">
+                                                        {{message.user.username}}
+                                                    </div>
+                                                </div>
+            
+                                                <div style="position: relative;">
+                                                    <!-- 发送者是我 sender is me -->
+                                                    <div class="button-wrapper message-left-side-button-wrapper" ng-if="message.user.id === userData.user.id"
+                                                            style="display: none;">
+                                                        <!-- (发送者是我) 撤回消息按钮 -->
+                                                        <div class="d-inline-block">
+                                                            <button class="button button-caution button-glow button-circle button-tiny mr-2 mt-1" ng-click="recall_chat_room_message(message.id)"
+                                                                    data-toggle="tooltip" title="撤回消息">
+                                                                <i class="fa fa-lg fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                        <!-- (发送者是我) 删除消息按钮 -->
+                                                        <div class="d-inline-block">
+                                                            <button class="button button-primary button-glow button-circle button-tiny mr-2" ng-click="remove_message(message.id)" data-toggle="tooltip"
+                                                                    title="删除消息">
+                                                                <i class="fa fa-lg fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                        <!-- (发送者是我) 消息发送时间 -->
+                                                        <div class="message-create-time d-inline-block cursor-pointer" data-toggle="tooltip" title="消息发送时间" onselect="return false;">
+                                                            {{message.messageCreateTime}}
+                                                        </div>
+                                                    </div>
+            
+                                                    <div class="d-inline-block hover-inner-show" ng-if="message.sendStatus">
+                                                        <!-- 发送状态 -->
+                                                        <span class="hidden hover-show">{{message.sendStatus}}</span>
+                                                        <!-- 发送状态: 发送中 -->
+                                                        <i class="fa fa-spin fa-circle-o-notch fa-fw text-secondary" ng-if="message.sendStatus === 'sending'" title="sending"></i>
+                                                        <!-- 发送状态: 发送完毕 -->
+                                                        <i class="fa fa-check fa-fw text-success" ng-if="message.sendStatus === 'done'" title="done"></i>
+                                                    </div>
+            
+                                                    <!-- (发送者是我) 消息气泡 -->
+                                                    <div class="bg-white img-thumbnail message-bubble px-2" onclick="$(this).siblings('.button-wrapper').toggle()" ng-class="{'half-hidden hover-show':message.sendStatus === 'sending'}">
+                                                        <div ng-if="message.text">
+                                                            <div ng-repeat="line in message.text.split('\n') track by $index">
+                                                                <pre ng-if="line && !isCardLink(line)" ng-bind="line" class="line break-all"></pre>
+                                                                <a ng-if="line && isCardLink(line)" class="mt-1" ng-bind="getCardLink(line)" href="{{getCardLink(line)}}" target="_blank"></a>
+                                                                <button ng-if="line && isCardLink(line)" class="btn btn-block btn-primary mt-1" ng-click="viewCardByLink(line)">
+                                                                    <div>查看卡片</div>
+                                                                </button>
+                                                                <br ng-if="!line">
+                                                            </div>
+                                                        </div>
+                                                        <!-- 消息中的链接 -->
+                                                        <div class="d-inline-block w-100" ng-if="message.url">
+                                                            <small class="text-muted">访问
+                                                                <a href="{{message.url}}" target="_blank">{{message.url}}</a>
+                                                            </small>
+                                                        </div>
+                                                        <div ng-if="!message.text" class="text-danger">
+                                                            该消息没有内容
+                                                        </div>
+                                                    </div>
+                                                    <!-- 发送者是别人 -->
+                                                    <div class="button-wrapper message-right-side-button-wrapper" ng-if="message.user.id !== userData.user.id"
+                                                            style="display: none;">
+                                                        <!-- (发送者是别的群成员) 消息发送时间 -->
+                                                        <div class="message-create-time d-inline-block cursor-pointer" data-toggle="tooltip" title="消息发送时间" onselect="return false;">
+                                                            {{message.messageCreateTime}}
+                                                        </div>
+                                                        <!-- (发送者是别的群成员) 删除消息按钮 -->
+                                                        <div class="d-inline-block">
+                                                            <button class="button button-primary button-glow button-circle button-tiny ml-2" ng-click="remove_message(message.id)" data-toggle="tooltip"
+                                                                    title="删除消息">
+                                                                <i class="fa fa-lg fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+            
+                            <!-- request -->
+                            <div ng-if="['request', 'inform'].includes(currentChatItemType)">
+                                <div ng-repeat="request in chatMessageList track by $index">
+                                    <!-- add friend request -->
+                                    <div class="card w-100 mb-3" ng-if="request.type === 'friend'">
+                                        <div class="card-header">
+                                            <span ng-if="request.requester.id === userData.user.id">
+                                                你
+                                            </span>
+                                            <span ng-if="request.requester.id !== userData.user.id">
+                                                {{request.requester.nickname}}
+                                            </span>
+                                            请求添加
+                                            <i class="fa fa-user ml-1"></i>
+                                            <span ng-if="request.receiver.id === userData.user.id">
+                                                你
+                                            </span>
+                                            <span ng-if="request.receiver.id !== userData.user.id">
+                                                {{request.receiver.nickname}}
+                                            </span>
+                                            为好友
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text {{request.receiver.id === userData.user.id ? 'text-dark' : 'text-muted'}}">
+                                                验证消息: <span ng-bind="request.requestMessage"></span>
+                                            </p>
+                                            <p class="card-text">
+                                                发送时间: <span ng-bind="request.requestTime"></span>
+                                            </p>
+                                            <div class="card-text d-flex align-items-center">
+                                                <div class="d-inline-block" ng-if="!(request.receiver.id === userData.user.id && request.requestStatus === 'waiting')">
+                                                    状态:&nbsp;
+                                                </div>
+                                                <!-- 别人加我好友 -->
+                                                <div class="d-inline-block" ng-if="request.receiver.id === userData.user.id">
+                                                    <div ng-if="request.requestStatus === 'waiting'">
+                                                        <button class="btn btn-sm btn-outline-primary px-3 mx-2" data-toggle="popover" title="{{getAgreeAddFriendTitle(request)}}"
+                                                                data-content="{{getAgreeAddFriendContent(request)}}">
+                                                            同意
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-danger px-3 mx-2" ng-click="refuseAddFriendRequest(request, $event.target)">
+                                                            拒绝
+                                                        </button>
+                                                    </div>
+                                                    <!-- <span ng-if="request.requestStatus === 'agreed'"> -->
+                                                    <div ng-if="request.requestStatus === 'agree'">
+                                                        已同意
+                                                    </div>
+                                                    <!-- <span ng-if="request.requestStatus === 'refused'"> -->
+                                                    <div ng-if="request.requestStatus === 'refuse'">
+                                                        已拒绝
+                                                    </div>
+                                                </div>
+                                                <!-- 我加别人好友 -->
+                                                <div class="d-inline-block" ng-if="request.receiver.id !== userData.user.id">
+                                                    <div ng-if="request.requestStatus === 'waiting'">
+                                                        等待中
+                                                    </div>
+                                                    <!-- <span ng-if="request.requestStatus === 'agreed'"> -->
+                                                    <div ng-if="request.requestStatus === 'agree'">
+                                                        你们已成为好友
+                                                    </div>
+                                                    <!-- <span ng-if="request.requestStatus === 'refused'"> -->
+                                                    <div ng-if="request.requestStatus === 'refuse'">
+                                                        对方已拒绝
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- join room request -->
+                                    <div class="card w-100 mb-3" ng-if="request.type === 'room'">
+                                        <div class="card-header">
+                                            <span ng-if="request.requester.id === userData.user.id">
+                                                我
+                                            </span>
+                                            <span ng-if="request.requester.id !== userData.user.id">
+                                                {{request.requester.username}}
+                                            </span>
+                                            请求加入
+                                            <i class="fa fa-home ml-1"></i>
+                                            <span ng-if="request.room.roomName">
+                                                {{request.room.roomName}}
+                                            </span>
+                                            <small class="ml-1" ng-if="request.room.id && debugMode.isEnabled">
+                                                ({{request.room.id}})
+                                            </small>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text {{request.receiver.id === userData.user.id ? 'text-dark' : 'text-muted'}}">
+                                                验证消息: <span ng-bind="request.requestMessage"></span>
+                                            </p>
+                                            <p class="card-text">
+                                                发送时间: <span ng-bind="request.requestTime"></span>
+                                            </p>
+                                            <div class="card-text d-flex align-items-center">
+                                                <div class="d-inline-block" ng-if="!(request.requester.id !== userData.user.id && request.requestStatus === 'waiting')">
+                                                    状态:&nbsp;
+                                                </div>
+                                                <!-- 别人申请加我管理的房间 -->
+                                                <div class="d-inline-block" ng-if="request.requester.id !== userData.user.id">
+                                                    <div ng-if="request.requestStatus === 'waiting'">
+                                                        <!-- <button class="btn btn-sm btn-outline-primary px-3 mx-2" data-toggle="popover" title="{{getAgreeJoinRoomTitle(request)}}"
+                                                            data-content="{{getAgreeJoinRoomContent(request)}}">
+                                                            同意
+                                                        </button> -->
+                                                        <button class="btn btn-sm btn-outline-primary px-3 mx-2" ng-click="agreeJoinRoomRequest(request, $event.target)">
+                                                            同意
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-danger px-3 mx-2" ng-click="refuseJoinRoomRequest(request, $event.target)">
+                                                            拒绝
+                                                        </button>
+                                                    </div>
+                                                    <!-- <span ng-if="request.requestStatus === 'agreed'"> -->
+                                                    <div ng-if="request.requestStatus === 'agree'">
+                                                        已同意
+                                                    </div>
+                                                    <!-- <span ng-if="request.requestStatus === 'refused'"> -->
+                                                    <div ng-if="request.requestStatus === 'refuse'">
+                                                        已拒绝
+                                                    </div>
+                                                </div>
+                                                <!-- 我申请加别人管理的房间 -->
+                                                <div class="d-inline-block" ng-if="request.requester.id === userData.user.id">
+                                                    <span ng-if="request.requestStatus === 'waiting'">
+                                                        等待中
+                                                    </span>
+                                                    <!-- <span ng-if="request.requestStatus === 'agreed'"> -->
+                                                    <span ng-if="request.requestStatus === 'agree'">
+                                                        你已加入该房间
+                                                    </span>
+                                                    <!-- <span ng-if="request.requestStatus === 'refused'"> -->
+                                                    <span ng-if="request.requestStatus === 'refuse'">
+                                                        你被拒绝加入该房间
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+            
+                            <!-- system -->
+                            <div ng-if="['system'].includes(currentChatItemType)">
+                                <div class="card w-100 mb-3" ng-repeat="message in chatMessageList track by $index">
+                                    <div class="card-header">
+                                        <span>微卡系统消息</span>
+                                        <small ng-if="message.id === special_ids.new_user_system_message">
+                                            (新用户系统消息)
+                                        </small>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="card-text d-flex align-items-center">
+                                            <img class="user-avatar-sm mr-2" src="img/icon-system.jpg" >
+                                            <div class="d-inline-block">{{message.systemMsg}}</div>
+                                        </div>
+                                        <div class="card-text d-flex align-items-center">
+                                            <small class="text-muted ml-auto">
+                                                {{message.createTime}}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+                        </div>
+            
+            
+
+            
+                        <!-- send message -->
+                        <div class="editor fixed-bottom w-100 p-3 alert-dark">
+                            <div class="row">
+                                <div class="col-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2">
+                                    <div class="input-group">
+                                        <!-- <div class="input-group-prepend" ng-show="false">
+                                            <span class="input-group-text">message</span>
+                                        </div> -->
+                                        <textarea class="form-control" id="message" ng-model="messageToSend">
+                                                    </textarea>
+                                        <div class="input-group-append w-25">
+                                            <button class="btn btn-primary w-100" ng-click="sendMessage()">发送</button>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                                <!-- 滚动控制器 -->
+                                <div class="d-inline-block scroll-control-wrapper" ng-show="is_scroll_control_enabled === true">
+                                    <div class="scroll-control d-flex justify-content-center">
+                                        <div class="w-100 h-100 align-self-center">
+                                            <small class="d-block w-100 h-50 d-flex justify-content-center text-muted" onclick="gotoMessage('first',true)">
+                                                <i class="fa fa-lg fa-angle-up align-self-center"></i>
+                                            </small>
+                                            <small class="d-block w-100 h-50 d-flex justify-content-center text-muted" onclick="gotoMessage('last',true)">
+                                                <i class="fa fa-lg fa-angle-down align-self-center"></i>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div id="unread-message-count" class="badge badge-pill badge-secondary" ng-show="unread_message_count">
+                                        {{unread_message_count}}
+                                    </div>
+                                </div>
+            
+                            </div>
+                        </div>
+                    </div>
+            
+            
+                    <style>
+                        .color-box {
+                            display: inline-block;
+                            width: 2rem;
+                            height: 2rem;
+                            background-color: rgba(0, 0, 0, 0.1);
+                        }
+            
+                        .color-box:hover {
+                            box-shadow: 0 0 3px black;
+                        }
+                    </style>
+            
+            
+                    <!-- chat window controls -->
+                    <div class="col-2 chat-window-controls toolbox fixed"
+                            ng-show="['friend','room'].includes(currentChatItemType)">
+                        <div class="row alert-secondary border border-secondary">
+                            <div class="col-12">
+                                <div class="alert pr-0">
+                                    <div>聊天背景</div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="color-box chat-window-bg-snow" ng-click="setChatWindowBackgroundColor('snow')"></div>
+                                            <div class="color-box chat-window-bg-blue" ng-click="setChatWindowBackgroundColor('blue')"></div>
+                                            <div class="color-box chat-window-bg-skyblue" ng-click="setChatWindowBackgroundColor('skyblue')"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="color-box chat-window-bg-lightgreen" ng-click="setChatWindowBackgroundColor('lightgreen')"></div>
+                                            <div class="color-box chat-window-bg-green" ng-click="setChatWindowBackgroundColor('green')"></div>
+                                            <div class="color-box chat-window-bg-olive" ng-click="setChatWindowBackgroundColor('olive')"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="color-box chat-window-bg-honeydew" ng-click="setChatWindowBackgroundColor('honeydew')"></div>
+                                            <div class="color-box chat-window-bg-pink" ng-click="setChatWindowBackgroundColor('pink')"></div>
+                                            <div class="color-box chat-window-bg-purple" ng-click="setChatWindowBackgroundColor('purple')"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="color-box chat-window-bg-warm" ng-click="setChatWindowBackgroundColor('warm')"></div>
+                                            <div class="color-box chat-window-bg-bisque" ng-click="setChatWindowBackgroundColor('bisque')"></div>
+                                            <div class="color-box chat-window-bg-silver" ng-click="setChatWindowBackgroundColor('silver')"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="alert pr-0">
+                                    <div>
+                                        <div id="image-to-send">
+                                            <div class="image-to-send-wrapper"></div>
+                                            <input type="file" accept="image/png, image/jpeg, image/gif, image/bmp" class="display-none">
+                                        </div>
+                                        <button class="btn btn-primary" onclick="send_image_select_file('image-to-send')">
+                                            <span>发送图片</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <script>
+            function send_image_select_file (wrapperId) {
+                var wrapper = $("#" + wrapperId);
+                var input = wrapper.find("input[type='file']");
+                if (input.length) {
+                    input.click();
+                }
+            }
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                
 
 
 
@@ -1997,7 +2546,6 @@
                                         <div class="col-6 text-center">
                                             <img class="user-avatar img-thumbnail rounded-circle cursor-pointer"
                                                  ng-src="{{userData.user.avatarUrl}}"
-                                                 alt="image not found"
                                                  onclick="$(this).next().trigger('click')">
                                             <!-- 选择用户头像文件 -->
                                             <input type="file" accept="image/png,image/jpg,image/gif" class="display-none" onchange="uploadFile(apis.user.set.avatar,'avatar',$(this))">
@@ -2009,7 +2557,7 @@
                                     <div class="row">
                                         <div class="col-6">个人主页背景图片</div>
                                         <div class="col-6 offset-lg-1 col-lg-4 text-center">
-                                            <img class="img-fluid border cursor-pointer" src="{{userData.user.styleImgUrl}}" alt="image not found" onclick="$(this).next().trigger('click')">
+                                            <img class="img-fluid border cursor-pointer" src="{{userData.user.styleImgUrl}}"  onclick="$(this).next().trigger('click')">
                                             <!-- 选择用户个人主页背景图片文件 -->
                                             <input type="file" accept="image/png,image/jpg,image/gif" class="display-none" onchange="uploadFile(apis.user.set.styleImage,'styleImg',$(this))">
                                         </div>
@@ -2288,7 +2836,7 @@
                             <!-- room info -->
                             <div class="row w-100 m-0">
                                 <div class="col-3 p-1 text-center break-all">
-                                    <img src="{{current_room.roomImgUrl}}" alt="image not found" class="user-avatar">
+                                    <img src="{{current_room.avatarUrl}}"  class="user-avatar">
                                 </div>
                                 <div class="col-5 p-0">
                                     <div class="overflow-hidden">
@@ -2559,19 +3107,19 @@
                                         <ul class="pagination pagination-sm justify-content-center mb-2">
                                             <li class="page-item disabled" ng-if="current_room_members.length > 0" 
                                                 onclick="$(this).siblings().removeClass('disabled');$(this).addClass('disabled');">
-                                                <a class="page-link py-0" href="#" ng-click="$parent.current_room_members_list_offset = 0">1</a>
+                                                <a class="page-link py-0" href="#" ng-click="current_room_members_list_offset = 0">1</a>
                                             </li>
                                             <li class="page-item" ng-if="current_room_members.length > 1 * current_room_members_list_limit" 
                                                 onclick="$(this).siblings().removeClass('disabled');$(this).addClass('disabled');">
-                                                <a class="page-link py-0" href="#" ng-click="$parent.current_room_members_list_offset = 1">2</a>
+                                                <a class="page-link py-0" href="#" ng-click="current_room_members_list_offset = 1">2</a>
                                             </li>
                                             <li class="page-item" ng-if="current_room_members.length > 2 * current_room_members_list_limit" 
                                                 onclick="$(this).siblings().removeClass('disabled');$(this).addClass('disabled');">
-                                                <a class="page-link py-0" href="#" ng-click="$parent.current_room_members_list_offset = 2">3</a>
+                                                <a class="page-link py-0" href="#" ng-click="current_room_members_list_offset = 2">3</a>
                                             </li>
                                             <li class="page-item" ng-if="current_room_members.length > 3 * current_room_members_list_limit" 
                                                 onclick="$(this).siblings().removeClass('disabled');(this).addClass('disabled');">
-                                                <a class="page-link py-0" href="#" ng-click="$parent.current_room_members_list_offset = 3">4</a>
+                                                <a class="page-link py-0" href="#" ng-click="current_room_members_list_offset = 3">4</a>
                                             </li>
                                         </ul>
                                     </nav>
@@ -2852,7 +3400,7 @@
                         <a target="_blank" href="http://www.beian.gov.cn">
                             <small>
                                 <span class="d-inline-block upper">
-                                    <img src="img/icon-police.png" alt="">
+                                    <img src="img/icon-police.png" >
                                 </span>
                                 津 ICP 备 17004538 号 -2
                             </small>

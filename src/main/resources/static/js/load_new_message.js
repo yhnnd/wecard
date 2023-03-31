@@ -30,12 +30,7 @@ function loadNewMessage(messageId) {
                     let $scope = angular.element(model).scope();
                     if ($scope.userData.user) {
                         // bsAlert("load new message: " + JSON.stringify(data));
-                        // 解析消息的发送者
-                        if (data.message.roomMember) {
-                            data.message.user = data.message.roomMember;
-                        } else if (data.message.friend) {
-                            data.message.user = data.message.friend;
-                        }
+
                         // 将消息中的 URL 网址转换成 a 链接
                         data.message.url = append_message_linkable(data.message.text);
 
@@ -55,9 +50,9 @@ function loadNewMessage(messageId) {
                         // 自动滚动聊天窗口（如果消息发送者是我，或者我正在浏览最新消息，就自动滚动窗口到最底部，否则不滚动窗口而是增加未读消息数）
                         if (data.message.user) {// 消息发送者是我
                             if (data.message.user.id === $scope.userData.user.id) {
-                                gotoLastMessage(true);
+                                gotoMessage('last',true);
                             } else if (is_viewing_last_message) {// 用户（我）正在浏览最新消息
-                                gotoLastMessage(true);
+                                gotoMessage('last',true);
                             } else {// 用户（我）正在查看历史消息
                                 $scope.unread_message_count++;
                                 $scope.$apply();
