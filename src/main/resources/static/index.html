@@ -61,7 +61,7 @@
     <script src="./js/_index_delete_card.js"></script>
 </head>
 
-<body onload="refresh();" onbeforeunload="logout()">
+<body>
     <!-- module index (card) -->
     <div ng-app="module-index" ng-cloak="ng-cloak">
         <div ng-controller="controller">
@@ -216,8 +216,8 @@
                         ng-class="isNavbarMinimized === true ? 'py-0' : 'py-2'">
                         <!-- 左侧 -->
                         <!-- 如果用户登入了，就显示用户头像 -->
-                        <a class="navbar-brand py-0 ml-1 ml-lg-2 mr-2 mr-lg-3" ng-click="gotoPage('settings');" href="#" ng-show="user">
-                            <img class="user-avatar rounded-circle border" ng-src="{{user.avatarUrl}}" alt="x">
+                        <a class="navbar-brand py-0 ml-1 ml-lg-2 mr-2 mr-lg-3" ng-click="gotoPage('settings');" href="#">
+                            <img class="user-avatar rounded-circle border" ng-src="{{user.avatarUrl}}">
                         </a>
                         <!-- 如果用户没登录，就显示商标 -->
                         <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('./index.html');" ng-show="!user">
@@ -230,72 +230,50 @@
                         </li>
 
                         <!-- 如果用户登录了 -->
-                        <li class="nav-item" ng-click="gotoPage('mySocialCircle');" ng-show="user">
+                        <li class="nav-item" ng-click="gotoPage('mySocialCircle');">
                             <a class="nav-link" ng-class="pageLocation==='mySocialCircle'?'text-white bg-secondary':isNavbarBackgroundDark?'text-white':'text-dark'" href="#mySocialCircle">
-                                <span>关注</span>
-                            </a>
-                        </li>
-                        <!-- 如果用户未登录 -->
-                        <li class="nav-item" ng-show="!user">
-                            <a class="nav-link" ng-class="isNavbarBackgroundDark?'text-white':'text-dark'" 
-                               href="javascript:login('./index.html',{'page': 'my-social-circle'});">
-                                <span class="text-muted">关注</span>
+                                <span>mySocialCircle</span>
                             </a>
                         </li>
 
                         <!-- 如果用户登录了 -->
-                        <li class="nav-item" ng-click="gotoPage('cards');" ng-show="user">
+                        <li class="nav-item" ng-click="gotoPage('cards');">
                             <a class="nav-link" ng-class="pageLocation==='cards'?'text-white bg-secondary':isNavbarBackgroundDark?'text-white':'text-dark'" 
                                href="#cards">
-                                <span>我的卡片</span>
-                            </a>
-                        </li>
-                        <!-- 如果用户未登录 -->
-                        <li class="nav-item" ng-show="!user">
-                            <a class="nav-link" ng-class="isNavbarBackgroundDark?'text-white':'text-dark'" 
-                               href="javascript:login('./index.html',{'page': 'my-cards'});">
-                                <span class="text-muted">我的卡片</span>
+                                <span>Cards</span>
                             </a>
                         </li>
 
                         <!-- 如果用户登录了 -->
-                        <li class="nav-item" ng-click="gotoPage('homepage');" ng-show="user">
+                        <li class="nav-item" ng-click="gotoPage('homepage');">
                             <a class="nav-link"
                                ng-class="(['homepage','chat','trans-home-chat','trans-chat-home'].includes(pageLocation)?'text-white bg-secondary':isNavbarBackgroundDark?'text-white':'text-dark')"
                                href="#">
-                                <span>聊天</span>
+                                <span>Chat</span>
                                 <span class="badge badge-info upper" ng-if="total_unread_message_count">
                                     <span ng-bind="total_unread_message_count"></span>
                                 </span>
                             </a>
                         </li>
-                        <!-- 如果用户未登录 -->
-                        <li class="nav-item" ng-show="!user">
-                            <a class="nav-link" ng-class="isNavbarBackgroundDark?'text-white':'text-dark'" 
-                               href="javascript:login('./index.html',{'page': 'homepage'})">
-                                <span class="text-muted">聊天</span>
-                            </a>
-                        </li>
 
                         <!-- 如果用户登录了, 则显示设置(个人中心) tab -->
-                        <!-- 如果用户未登录, 也显示设置(个人中心) tab -->
                         <li class="nav-item" ng-click="gotoPage('settings');">
                             <a class="nav-link" ng-class="pageLocation==='settings'?'text-white bg-secondary':isNavbarBackgroundDark?'text-white':'text-dark'" href="#">
-                                <span>设置</span>
+                                <span>Settings</span>
                             </a>
                         </li>
 
                         <!-- 右侧 -->
-                        <li class="nav-item px-3 d-flex justify-content-center align-items-center ml-auto" ng-show="user"
+                        <li class="nav-item d-flex justify-content-center align-items-center ml-auto"
                             data-style="no-support">
-                            <a class="nav-link py-0" href="#">
-                                <div class="btn btn-sm btn-outline-danger" onclick="logout('./index.html')">
+                            <a class="nav-link py-0 pr-0" href="#">
+                                <div class="btn btn-sm btn-outline-danger">
                                     <span>登出</span>
                                     <i class="fa fa-sign-out"></i>
                                 </div>
                             </a>
                         </li>
-                        <li class="nav-item d-flex justify-content-center align-items-center ml-auto" ng-show="!user"
+                        <li class="nav-item d-flex justify-content-center align-items-center"
                             data-style="no-support">
                             <a class="nav-link py-0 pr-0" href="javascript:login('./index.html');">
                                 <div class="btn btn-sm btn-outline-primary">
@@ -303,7 +281,7 @@
                                 </div>
                             </a>
                         </li>
-                        <li class="nav-item pr-3 d-flex justify-content-center align-items-center" ng-show="!user"
+                        <li class="nav-item pr-3 d-flex justify-content-center align-items-center"
                             data-style="no-support">
                             <a class="nav-link py-0 pr-0" href="./signup.html?target=./index.html">
                                 <div class="btn btn-sm btn-outline-primary">
@@ -334,8 +312,8 @@
                     <ul class="nav navbar navbar-expand-lg px-2 {{isNavbarBackgroundDark ? 'navbar-dark bg-dark' : 'navbar-light alert-secondary'}}" 
                         ng-class="isNavbarMinimized === true ? 'py-0' : 'py-2'">
                         <!-- 如果用户登入了，就显示用户头像 -->
-                        <a class="navbar-brand py-0 ml-1 ml-lg-2 mr-2 mr-lg-3" ng-click="gotoPage('settings');" href="#" ng-show="user">
-                            <img class="user-avatar rounded-circle border" ng-src="{{user.avatarUrl}}" alt="x">
+                        <a class="navbar-brand py-0 ml-1 ml-lg-2 mr-2 mr-lg-3" ng-click="gotoPage('settings');" href="#">
+                            <img class="user-avatar rounded-circle border" ng-src="{{user.avatarUrl}}">
                         </a>
                         <!-- 如果用户没登录，就显示商标 -->
                         <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('./index.html');" ng-show="!user">
@@ -353,28 +331,28 @@
                                         <div class="d-inline-block ml-2">广场</div>
                                     </div>
                                 </a>
-                                <a class="dropdown-item" ng-show="user" href="#mySocialCircle">
+                                <a class="dropdown-item" href="#mySocialCircle">
                                     <div ng-click="gotoPage('mySocialCircle');">
                                         <i class="fa fa-circle" ng-if="pageLocation === 'mySocialCircle'"></i>
                                         <i class="fa fa-circle-o" ng-if="pageLocation !== 'mySocialCircle'"></i>
                                         <div class="d-inline-block ml-2">关注</div>
                                     </div>
                                 </a>
-                                <a class="dropdown-item" ng-show="user" href="#cards">
+                                <a class="dropdown-item" href="#cards">
                                     <div ng-click="gotoPage('cards');">
                                         <i class="fa fa-circle" ng-if="pageLocation === 'cards'"></i>
                                         <i class="fa fa-circle-o" ng-if="pageLocation !== 'cards'"></i>
                                         <div class="d-inline-block ml-2">我的卡片</div>
                                     </div>
                                 </a>
-                                <a class="dropdown-item" ng-show="user" href="#">
+                                <a class="dropdown-item" href="#">
                                     <div ng-click="gotoPage('homepage');">
                                         <i class="fa fa-circle" ng-if="pageLocation === 'homepage'"></i>
                                         <i class="fa fa-circle-o" ng-if="pageLocation !== 'homepage'"></i>
                                         <div class="d-inline-block ml-2">聊天</div>
                                     </div>
                                 </a>
-                                <a class="dropdown-item" ng-show="user" href="#">
+                                <a class="dropdown-item" href="#">
                                     <div ng-click="gotoPage('settings');">
                                         <i class="fa fa-circle" ng-if="pageLocation === 'settings'"></i>
                                         <i class="fa fa-circle-o" ng-if="pageLocation !== 'settings'"></i>
@@ -382,14 +360,14 @@
                                     </div>
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <div class="dropdown-item" ng-show="user">
-                                    <div class="btn btn-sm btn-block btn-outline-danger" onclick="logout('./index.html');">
+                                <div class="dropdown-item">
+                                    <div class="btn btn-sm btn-block btn-outline-danger">
                                         <span>登出</span>
                                         <i class="fa fa-sign-out"></i>
                                     </div>
                                 </div>
                                 <div class="dropdown-item" ng-show="!user">
-                                    <div class="btn btn-sm btn-block btn-outline-primary" onclick="login('./index.html');">
+                                    <div class="btn btn-sm btn-block btn-outline-primary">
                                         <span>登录</span>
                                     </div>
                                 </div>
@@ -597,7 +575,7 @@
                                 <div class="card-body bg-white text-center" style="opacity: .8;">
                                     <h5 class="card-title d-flex align-items-center justify-content-center">
                                         <span class="d-inline-block text-center">
-                                            <img ng-src="{{person.avatarUrl}}" alt="x" class="user-avatar-sm rounded-circle img-thumbnail">
+                                            <img ng-src="{{person.avatarUrl}}" class="user-avatar-sm rounded-circle img-thumbnail">
                                         </span>
                                         <span class="ml-2">{{person.nickname}}</span>
                                     </h5>
@@ -650,7 +628,7 @@
                                 <div class="card-body bg-white text-center" style="opacity: .8;">
                                     <h5 class="card-title d-flex align-items-center justify-content-center">
                                         <span class="d-inline-block text-center">
-                                            <img ng-src="{{person.avatarUrl}}" alt="x" class="user-avatar-sm rounded-circle img-thumbnail">
+                                            <img ng-src="{{person.avatarUrl}}" class="user-avatar-sm rounded-circle img-thumbnail">
                                         </span>
                                         <span class="ml-2">{{person.nickname}}</span>
                                     </h5>
@@ -698,19 +676,8 @@
 
 
             <div class="create-card container-fluid mt-3" ng-show="pageLocation === 'cards'">
-                <!-- 用户未登录 -->
-                <div class="row" ng-show="!user">
-                    <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8">
-                        <div class="alert alert-warning py-5 mt-4">
-                            <div class="display-4 text-center cursor-pointer" onclick="login('./index.html');">
-                                <i class="fa fa-exclamation-triangle"></i>
-                                请先登录
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <!-- 用户登录了 -->
-                <div class="row" ng-show="user">
+                <div class="row">
                     <!-- 标签栏 -->
                     <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8">
                         <div class="row overflow-hidden" onselectstart="return false;">
@@ -1673,7 +1640,7 @@
                                 <li class="list-group-item cursor-pointer" ng-repeat="room in userData.rooms track by $index" ng-click="clickRoom($event.target,room.id)">
                                     <div class="row">
                                         <div class="col-2">
-                                            <img class="user-avatar rounded cursor-pointer" src="{{room.roomImgUrl}}" alt="x">
+                                            <img class="user-avatar rounded cursor-pointer" src="{{room.roomImgUrl}}">
                                         </div>
                                         <div class="col-6 d-flex align-items-center">
                                             <a href="#">
@@ -1847,7 +1814,7 @@
             <div class="settings container-fluid mt-3" ng-show="pageLocation === 'settings'">
                 <div class="row">
                     <!-- User Info -->
-                    <div class="col-12 col-sm-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3 mb-3" ng-show="user">
+                    <div class="col-12 col-sm-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3 mb-3">
                         <div class="card border-radius-0">
                             <div class="card-header">
                                 <i class="fa fa-user-circle mr-1"></i>
@@ -1930,7 +1897,7 @@
                     </div>
 
                     <!-- User Personal Info -->
-                    <div class="col-12 col-sm-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3 mb-3" ng-show="user">
+                    <div class="col-12 col-sm-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3 mb-3">
                         <div class="card border-radius-0">
                             <div class="card-header">
                                 <i class="fa fa-address-book-o mr-1"></i>
@@ -2466,7 +2433,7 @@
                                             <!-- 1 头像 -->
                                             <th class="border-0 d-flex align-items-center p-0 w-4-rem" ng-show="current_room.show_members_info_col[0]">
                                                 <div class="w-100 text-center">
-                                                    <img class="user-avatar-sm rounded-circle img-thumbnail cursor-pointer" ng-src="{{member.avatarUrl}}" alt="x" ng-click="startChatWithRoomMember(member.id)">
+                                                    <img class="user-avatar-sm rounded-circle img-thumbnail cursor-pointer" ng-src="{{member.avatarUrl}}" ng-click="startChatWithRoomMember(member.id)">
                                                 </div>
                                             </th>
                                             <!-- 2 用户名 -->
@@ -2639,7 +2606,7 @@
                             <!-- friend info -->
                             <div class="row w-100 m-0">
                                 <div class="col-3 p-1 text-center break-all">
-                                    <img ng-src="{{current_friend.avatarUrl}}" alt="x" class="user-avatar rounded-circle">
+                                    <img ng-src="{{current_friend.avatarUrl}}" class="user-avatar rounded-circle">
                                 </div>
                                 <div class="col-5 p-0">
                                     <div class="overflow-hidden">
@@ -2728,7 +2695,7 @@
                             <!-- friend info -->
                             <div class="row w-100 m-0">
                                 <div class="col-3 p-1 text-center break-all">
-                                    <img ng-src="{{this_friend.avatarUrl}}" alt="x" class="user-avatar rounded-circle">
+                                    <img ng-src="{{this_friend.avatarUrl}}" class="user-avatar rounded-circle">
                                 </div>
                                 <div class="col-6 p-0 d-flex align-items-center">
                                     <div class="overflow-hidden">
@@ -2795,7 +2762,7 @@
                             <!-- friend info -->
                             <div class="row w-100 m-0">
                                 <div class="col-3 p-1 text-center break-all">
-                                    <img ng-src="{{this_friend.avatarUrl}}" alt="x" class="user-avatar rounded-circle">
+                                    <img ng-src="{{this_friend.avatarUrl}}" class="user-avatar rounded-circle">
                                 </div>
                                 <div class="col-6 p-0 d-flex align-items-center">
                                     <div class="overflow-hidden">
