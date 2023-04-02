@@ -118,32 +118,6 @@
 
 
 
-    $scope.setRenderer = function (renderer) {
-        switch (renderer) {
-            case "primitive":
-                $scope.current_card.isMarkdownEnabled = false;
-                $scope.current_card.scriptIsEnabled = false;
-                $scope.current_card.isHtmlEnabled = false;
-                break;
-            case "wcml":
-                $scope.current_card.isMarkdownEnabled = false;
-                $scope.current_card.scriptIsEnabled = true;
-                $scope.current_card.isHtmlEnabled = false;
-                break;
-            case "markdown":
-                $scope.current_card.isMarkdownEnabled = true;
-                $scope.current_card.scriptIsEnabled = true;
-                $scope.current_card.isHtmlEnabled = false;
-                break;
-            case "html":
-                $scope.current_card.isMarkdownEnabled = false;
-                $scope.current_card.scriptIsEnabled = false;
-                $scope.current_card.isHtmlEnabled = true;
-                break;
-            default:
-                break;
-        }
-    };
 
 
 

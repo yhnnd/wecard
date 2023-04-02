@@ -19,7 +19,7 @@ app.filter('textLengthSet', function () {
 });
 
 
-app.controller("controller", function ($scope, $http, $timeout, $interval, $window, shareCardService) {
+app.controller("controller", function ($scope, $http, $timeout, $interval, $window, $sce, shareCardService, wcTable) {
 
     /* Chat Window */
     $scope.messageToSend = "";
@@ -338,25 +338,20 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     // 监听用户数据更新
     $scope.$watch('pageLocation', function (newValue, oldValue) {
-        if (newValue.startsWith("trans-")) {
-            console.log("$watch: pageLocation '" + oldValue + "' is switching now");
-            $scope.prevPageLocation = oldValue;// 记录之前的页面
-        } else if (oldValue.startsWith("trans-")) {
-            console.log("$watch: pageLocation has switched to '" + newValue + "'");
-        } else {
-            console.log("$watch: pageLocation change from '" + oldValue + "' to '" + newValue + "'");
-            $scope.prevPageLocation = oldValue;// 记录之前的页面
+        console.log("$watch: pageLocation change from '" + oldValue + "' to '" + newValue + "'");
+        // Notice: If page location is animation, record not prevPageLocation.
+        if (!oldValue.startsWith("trans-")) {
+            console.log("$watch: prevPageLocation = '" + oldValue + "'");
+            /** Record previous page location. */
+            $scope.prevPageLocation = oldValue;
         }
     });
 
     $scope.$watch('subPageLocation', function (newValue, oldValue) {
-        if (newValue.startsWith("trans-")) {
-            console.log("$watch: subPageLocation '" + oldValue + "' is switching now");
-            $scope.prevSubPageLocation = oldValue;// 记录之前的页面
-        } else if (oldValue.startsWith("trans-")) {
-            console.log("$watch: subPageLocation has switched to '" + newValue + "'");
-        } else {
-            console.log("$watch: subPageLocation change from '" + oldValue + "' to '" + newValue + "'");
+        console.log("$watch: subPageLocation change from '" + oldValue + "' to '" + newValue + "'");
+        if (!oldValue.startsWith("trans-")) {
+            console.log("$watch: prevSubPageLocation = '" + oldValue + "'");
+            /** Record previous sub page location */
             $scope.prevSubPageLocation = oldValue;
         }
 
@@ -407,12 +402,24 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     // 跳转到指定页面
     $scope.gotoPage = function (pageName, subPageName, chatItemId/* optional */) {
-        // 如果从聊天窗口回到消息列表, 则并不立即跳转, 而是开启动画, 一秒之后再跳转
-        // 注意: 此时并未开始执行页面跳转, 所以我们不应该使用 prevPageLocation
+        // If go to homepage(chat list) from chat window, run animation,
+        // go to homepage 1 second later.
         if (["homepage"].includes(pageName) && ["chat"].includes($scope.pageLocation)) {
-            $scope.gotoPage("trans-chat-home", subPageName);
+            /* Animation Here */
+            $scope.gotoPage("trans-chat-home");
+            /* After Animation */
             $timeout(function() {
                 $scope.gotoPage(pageName, subPageName);
+            }, 1000);
+            return true;
+        } else if (["chat"].includes(pageName) && ["homepage"].includes($scope.pageLocation)) {
+            // If go to chat window from homepage(chat list), run animation,
+            // go to chat window 1 second later.
+            /* Animation Here */
+            $scope.gotoPage("trans-home-chat", "chat");
+            /* After Animation */
+            $timeout(function() {
+                $scope.gotoPage(pageName, subPageName, chatItemId);
             }, 1000);
             return true;
         }
@@ -425,7 +432,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             } else {
                 $scope.subPageLocation = subPageName;
             }
-            $scope.refresh();
+            $scope.refreshCards();
             // 因为卡片广场和我关注的卡片共用同一个卡片数组，所以切换页面的时候不得不刷新
             // 同时，我们不需要在 refreshCurrentPage 函数中刷新卡片
             // 因为该函数调用本函数
@@ -452,8 +459,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             } else {
                 $scope.subPageLocation = "chat";
                 setChatLocation(chatItemId);
-                // 防止因页面切换动画而导致的页面被隐藏的错误
-                $(".chat-window").show();
             }
         } else if (["homepage", "trans-chat-home"].includes(pageName)) {
             if (!subPageName) {
@@ -465,8 +470,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                 // 修复从聊天室返回聊天项列表页面的时候页面滚动到最底部的 bug
                 window.scrollTo(0, 0);
             }
-            // 修复从聊天主页进入聊天室, 未直接回到聊天项列表, 间接回到聊天主页, 聊天主页被隐藏的 bug
-            $(".chat-list").show();
         } else if (["settings"].includes(pageName)) {
         }
 
@@ -476,7 +479,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             $(".chat-list").addClass("remove-to-left-1s");
             $(".chat-window").addClass("show-to-left-1s");
             $timeout(function() {
-                $(".chat-list").removeClass("remove-to-left-1s").hide();
+                $(".chat-list").removeClass("remove-to-left-1s");
                 $(".chat-window").removeClass("show-to-left-1s");
             }, 1000);
         } else if (["trans-chat-home"].includes(pageName)) {
@@ -484,13 +487,18 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             $(".chat-window").addClass("remove-to-right-1s");
             $(".chat-list").addClass("show-to-right-1s");
             $timeout(function() {
-                $(".chat-window").removeClass("remove-to-right-1s").hide();
+                $(".chat-window").removeClass("remove-to-right-1s");
                 $(".chat-list").removeClass("show-to-right-1s");
             }, 1000);
         }
 
-        if (!["chat"].includes(pageName) && $scope.currentChatItemId !== "external") {
-            setChatLocation("external");
+        // If current page is chat window
+        if ($scope.currentChatItemId !== "external") {
+            if (["chat", "trans-home-chat", "trans-chat-home"].includes(pageName) == false) {
+                // If we are leaving the chat window,
+                // set location to 'external'.
+                setChatLocation("external");
+            }
         }
         // 清空所有弹窗
         removeAllTooltips();
@@ -499,7 +507,10 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     // 返回之前的页面
     $scope.goBack = function () {
-        $scope.gotoPage($scope.prevPageLocation, $scope.prevSubPageLocation);
+        /** If current page is animation, disable this function */
+        if ($scope.pageLocation.startsWith("trans-") === false) {
+            $scope.gotoPage($scope.prevPageLocation, $scope.prevSubPageLocation);
+        }
     }
 
 
@@ -556,8 +567,8 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
     // 刷新当前窗口，重新加载所有（热门/最新）卡片
-    $scope.refresh = function () {
-        // let loadingId = startLoading(max.loading.delay.time, "$scope.refresh()");
+    $scope.refreshCards = function () {
+        // let loadingId = startLoading(max.loading.delay.time, "$scope.refreshCards()");
         // $http({
         //     method: 'GET',
         //     url: "http://" + $scope.webRoot + apis.get.cards.allUsers,
@@ -577,7 +588,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //             $scope.has_more_cards = false;
         //             break;
         //         case "card load failed":
-        //             $scope.alert("[ERROR] $scope.refresh(): 加载卡片失败");
+        //             $scope.alert("[ERROR] $scope.refreshCards(): 加载卡片失败");
         //             break;
         //         case "card load success":
         //             // 处理从服务器接收的卡片数组
@@ -590,13 +601,143 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //             $scope.cardGroups = $scope.makeCardGroups(result.data.cards);
         //             break;
         //         default:
-        //             $scope.alert("[ERROR] $scope.refresh(): 加载卡片失败，错误信息：" + result.data.message);
+        //             $scope.alert("[ERROR] $scope.refreshCards(): 加载卡片失败，错误信息：" + result.data.message);
         //             break;
         //     }
         // }, function () {
         //     stopLoading(loadingId);
-        //     $scope.alert("[ERROR] $scope.refresh(): 与服务器连接失败");
+        //     $scope.alert("[ERROR] $scope.refreshCards(): 与服务器连接失败");
         // });
+
+        /* mock data (refreshCards) */
+        const result = {
+            data: {
+                "cards": [{
+                        "id": "uuid_card1",
+                        "status": "exist",
+                        "title": "card title 1",
+                        "user": {
+                            "id": "uuid_user1",
+                            "username": "user1",
+                            "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                        },
+                        "type": "image",
+                        "text": "visit\nhttps://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280 \nhttps://media.discordapp.net/attachments/907832332537434152/945915363768561674/IMG_00023846.png \nhttps://media.discordapp.net/attachments/907832332537434152/952263023731552266/IMG_00023842.png",
+                        "images": [{
+                            "url": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                        },{
+                            "url": "https://media.discordapp.net/attachments/907832332537434152/945915363768561674/IMG_00023846.png"
+                        },{
+                            "url": "https://media.discordapp.net/attachments/907832332537434152/952263023731552266/IMG_00023842.png"
+                        },{
+                            "url": "https://media.discordapp.net/attachments/907832332537434152/958102744860876850/IMG_00037432.png"
+                        },{
+                            "url": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
+                        },{
+                            "url": "https://media.discordapp.net/attachments/907832332537434152/999743166502686751/IMG_293942.png"
+                        }]
+                },{
+                    "id": "uuid_card2",
+                    "status": "exist",
+                    "title": "text card demo",
+                    "type": "text",
+                    "user": {
+                        "id": "uuid_user1",
+                        "username": "user1",
+                        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                    },
+                    "text": `if (result.data.cards.length < $scope.max.get.cards.limit) {
+    $scope.has_more_cards = false;
+} else {
+    $scope.has_more_cards = true;
+}
+$scope.cardLength = result.data.cards.length;
+$scope.cardGroups = $scope.makeCardGroups(result.data.cards);`
+                },{
+                    "id": "uuid_card3",
+                    "status": "exist",
+                    "title": "wcml card demo",
+                    "type": "wcml",
+                    "user": {
+                        "id": "uuid_user1",
+                        "username": "user1",
+                        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                    },
+                    "text": `\`\`\`
+if (result.data.cards.length < $scope.max.get.cards.limit) {
+    $scope.has_more_cards = false;
+} else {
+    $scope.has_more_cards = true;
+}
+$scope.cardLength = result.data.cards.length;
+$scope.cardGroups = $scope.makeCardGroups(result.data.cards);
+\`\`\`
+table 1
+@table(begin)
+table.table-stripped
+thead.t-head : tr : [th = {Col A}, th = {Col B}, th = {Col C}, th = {Col D}]
+tbody.t-body : tr : [td = {:={[]} {}}, td, td = {":={{{[]"}, td = {"text"}]
+tr : [td={![]()}, td={text}, td={![]()}, td={"![]()"}]
+@table(end)
+table 2
+@table(begin)
+table
+thead : tr : [th={col 1}, th={col 2}, th={col3}]
+tbody
+tr : [td = {abc}, td = {abc}, td = {abc}]
+tr : [td = {1}, td = {2}, td = {what ? fine} ]
+tr : [td, td = { x, 1 + 2, {{a}}, {b}, {{1,2,3}} }, td = {hello wcml}]
+@table(end)
+`
+                },{
+                    "id": "uuid_card4",
+                    "status": "exist",
+                    "title": "markdown card demo",
+                    "type": "markdown",
+                    "user": {
+                        "id": "uuid_user1",
+                        "username": "user1",
+                        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                    },
+                    "text": `![](https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280)
+codes:
+\`\`\`
+if (result.data.cards.length < $scope.max.get.cards.limit) {
+    $scope.has_more_cards = false;
+} else {
+    $scope.has_more_cards = true;
+}
+$scope.cardLength = result.data.cards.length;
+$scope.cardGroups = $scope.makeCardGroups(result.data.cards);
+\`\`\`
+                    `
+                },{
+                    "id": "uuid_card5",
+                    "status": "exist",
+                    "title": "html card demo",
+                    "type": "html",
+                    "user": {
+                        "id": "uuid_user1",
+                        "username": "user1",
+                        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                    },
+                    "text": `if (result.data.cards.length < $scope.max.get.cards.limit) {
+    $scope.has_more_cards = false;
+} else {
+    $scope.has_more_cards = true;
+}
+$scope.cardLength = result.data.cards.length;
+$scope.cardGroups = $scope.makeCardGroups(result.data.cards);`
+                }]
+            }
+        };
+        if (result.data.cards.length < $scope.max.get.cards.limit) {
+            $scope.has_more_cards = false;
+        } else {
+            $scope.has_more_cards = true;
+        }
+        $scope.cardLength = result.data.cards.length;
+        $scope.cardGroups = $scope.makeCardGroups(result.data.cards);
     };
 
 
@@ -629,7 +770,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
         /* mock data (userData in refreshUserData) */
         $scope.user = {
-            "id": "1",
+            "id": "uuid_user3",
             "username": "user",
             "nickname": "yhn",
             "grade": "3",
@@ -646,7 +787,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         $scope.userData = {
             mesage: "Refresh success",
             user: {
-                "id": "1",
+                "id": "uuid_user3",
                 "username": "user",
                 "nickname": "yhn",
                 "grade": "3",
@@ -660,44 +801,115 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                 "signature": "fuck ccp",
                 "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
             },
+            rooms: [{
+                "id": "uuid_room1",
+                "roomName": "room 1",
+                "remark": "some room 1",
+                "status": "public",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+            },{
+                "id": "uuid_room2",
+                "roomName": "room 2",
+                "remark": "some room 2",
+                "status": "private",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+            }],
+            groups: [{
+                id: "uuid_c29w7d31j2s3bc435",
+                "friendNum": 2,
+                "groupName": "my friends",
+                "friends": [{
+                    "id": "uuid_user1",
+                    "username": "user1",
+                    "nickname": "someone",
+                    "remark": "my friend 1",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                },{
+                    "id": "uuid_user2",
+                    "username": "user2",
+                    "nickname": "elphie",
+                    "remark": "my friend 2",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                }]
+            }],
             chatList: [{
                 id: "1",
                 type: "room",
                 room: {
+                    "id": "uuid_room1",
                     "roomName": "room 1",
                     "remark": "some room 1",
                     "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                },
+                "unreadNum": 2,
+                "message": {
+                    "user": {
+                        "id": "uuid_user1",
+                        "username": "someone"
+                    },
+                    "type": "text",
+                    "text": "emmmm"
                 }
             },{
                 id: "2",
                 type: "room",
                 room: {
+                    "id": "uuid_room2",
                     "roomName": "room 2",
                     "remark": "some room 2",
                     "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                },
+                "unreadNum": 2,
+                "message": {
+                    "user": {
+                        "id": "uuid_user1",
+                        "username": "someone"
+                    },
+                    "type": "text",
+                    "text": "emmmm"
                 }
             },{
                 id: "3",
                 type: "friend",
                 friend: {
-                    username: "user 1",
-                    remark: "my friend 1",
+                    "id": "uuid_user1",
+                    "username": "someone",
+                    "remark": "my friend 1",
                     "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                },
+                "unreadNum": 2,
+                "message": {
+                    "user": {
+                        "id": "uuid_user1",
+                        "username": "someone"
+                    },
+                    "type": "text",
+                    "text": "emmmm"
                 }
             },{
                 id: "4",
                 type: "friend",
                 friend: {
-                    username: "user 2",
-                    remark: "my friend 2",
+                    "id": "uuid_user2",
+                    "username": "user 2",
+                    "remark": "my friend 2",
                     "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                },
+                "unreadNum": 2,
+                "message": {
+                    "user": {
+                        "id": "uuid_user2",
+                        "username": "user 2"
+                    },
+                    "type": "text",
+                    "text": "emmmm"
                 }
             }],
             allChatItems: [{
                 id: "1",
                 type: "room",
                 room: {
-                    "id": "1",
+                    "id": "uuid_room1",
                     "roomName": "room 1",
                     "remark": "some room 1"
                 }
@@ -705,7 +917,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                 id: "2",
                 type: "room",
                 room: {
-                    "id": "2",
+                    "id": "uuid_room2",
                     "roomName": "room 2",
                     "remark": "some room 2"
                 }
@@ -713,7 +925,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                 id: "3",
                 type: "friend",
                 friend: {
-                    "id": "123",
+                    "id": "uuid_user1",
                     "remark": "friend 1",
                     "username": "user"
                 }
@@ -721,8 +933,8 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                 id: "4",
                 type: "friend",
                 friend: {
-                    "id": "123",
-                    "remark": "friend 1",
+                    "id": "uuid_user2",
+                    "remark": "friend 2",
                     "username": "user"
                 }
             }]
@@ -1423,13 +1635,13 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
     // 解析卡片 markdown 内容
-    function parseCurrentCardMarkdown (card, field) {
+    function parseCardMarkdown (card, field) {
         if (card == undefined || card.text == undefined) {
-            bsAlert("parseCurrentCardMarkdown():", "卡片正文缺失", "alert-danger", -1);
+            bsAlert("parseCardMarkdown():", "卡片正文缺失", "alert-danger", -1);
         } else if (!marked) {
-            bsAlert("parseCurrentCardMarkdown():", "Markdown 插件缺失", "alert-danger", -1);
+            bsAlert("parseCardMarkdown():", "Markdown 插件缺失", "alert-danger", -1);
         } else if (!DOMPurify) {
-            bsAlert("parseCurrentCardMarkdown():", "DOMPurify 插件缺失", "alert-danger", -1);
+            bsAlert("parseCardMarkdown():", "DOMPurify 插件缺失", "alert-danger", -1);
         } else {
             let languages = [];
             marked.setOptions({
@@ -1458,7 +1670,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                 smartypants: false,
                 xhtml: false
             });
-            var dirty = marked(card.text);
+            var dirty = marked.parse(card.text);
             var clean = DOMPurify.sanitize(dirty);
             $(field).html(clean);
             handleMarkdownLinks(field);
@@ -1506,17 +1718,26 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             loadingId = startLoading(max.loading.delay.time,"$scope.viewCard(\"" + card.title + "\")");
         }
 
-        $http({
-            method: 'get',
-            url: "http://" + $scope.webRoot + apis.get.card.byId,
-            params: {
-                cardId: card.id,
-                start: 0,
-                limit: $scope.max.get.card.comments.limit
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
+        // $http({
+        //     method: 'get',
+        //     url: "http://" + $scope.webRoot + apis.get.card.byId,
+        //     params: {
+        //         cardId: card.id,
+        //         start: 0,
+        //         limit: $scope.max.get.card.comments.limit
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+
+        /** Mock Data (viewCard) */
+        const result = {
+            data: {
+                "message": "card load success",
+                "card": card
+            }
+        };
+
             stopLoading(loadingId);
 
             switch (result.data.message) {
@@ -1549,10 +1770,13 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
                         if (result.data.card) {
                             $scope.current_card = result.data.card;
-                            // 解析卡片的 WCML 内容
+                            // 解析卡片的 WCML 内容 (使用 Markdown 的语法插入代码)
                             parseCurrentCardWCML();
-                            // 解析卡片 markdown 内容
-                            parseCurrentCardMarkdown(result.data.card, "#view-card #marked");
+                            // Parse Card markdown content.
+                            parseCardMarkdown(result.data.card, "#view-card #marked");
+                            // Parse Card HTML content.
+                            $("#view-card #html").html($scope.current_card.text);
+
                             // 将服务器返回的卡片评论数组注入到卡片当中
                             if (result.data.comments) {
                                 $scope.current_card.comments = result.data.comments;
@@ -1580,10 +1804,10 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                     bsAlert("[ERROR] $scope.viewCard(): 未知错误：" + result.data.message);
                     break;
             }
-        }, function () {
-            stopLoading(loadingId);
-            bsAlert("[ERROR] $scope.viewCard(): 与服务器连接失败");
-        });
+        // }, function () {
+        //     stopLoading(loadingId);
+        //     bsAlert("[ERROR] $scope.viewCard(): 与服务器连接失败");
+        // });
     };
 
 
@@ -1710,10 +1934,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                     let descEnd = line.indexOf("]");
                     let begin = line.indexOf("(");
                     let end = line.indexOf(")");
-                    // 判断是否是 Markdown 语法 (使用 Markdown 的语法插入代码)
-                    if (line.trim() === "```" || (line.startsWith("*") && line.endsWith("*")) || line.startsWith("#")) {
-                        $scope.current_card.isMarkdownEnabled = true;
-                    }
                     // #1 Spot Markdown Image Link
                     if (line.startsWith("![") && descEnd > 1 && descEnd < begin && begin < end) {
                         let imageRemark = line.substring(begin + 1, end);
@@ -1737,7 +1957,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                         // #2 Spot Wecard Version
                     } else if (line.startsWith("@wecard_version(") && line.indexOf(")") > 15) {
                         console.log("$watch('current_card'): script 'version' was found in card text: '" + line + "', lineNO: " + lineNo);
-                        $scope.current_card.scriptIsEnabled = true;
                         // 将代码所在的行号 push 到 indexList 中
                         scriptIndexList.push(parseInt(lineNo));
                         // 将代码解析的结果存储于 set 中
@@ -1818,7 +2037,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                         });
                         // #4 Spot Text of URL
                     } else if (line.indexOf("http://") === 0 || line.indexOf("https://") === 0) {
-                        $scope.current_card.scriptIsEnabled = true;
                         // 将代码所在的行号 push 到 indexList 中
                         scriptIndexList.push(parseInt(lineNo));
                         // 将代码解析的结果存储于 set 中
@@ -2060,8 +2278,8 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     // 告诉服务器用户端已经进入聊天窗口
     function setChatLocation(location) {
-        // 如果退出聊天窗口，则存储当前浏览的聊天窗口
-        //（但如果当前聊天窗口不存在，就保留之前存储的聊天窗口）
+        // If we are leaving current chat window, then save it as previous chat item.
+        // (If current location is not chat window, do nothing.)
         if (["external"].includes(location) && !["external"].includes($scope.currentChatItemId)) {
             $scope.prevChatItemId = $scope.currentChatItemId;
             $scope.prevChatItemType = $scope.currentChatItemType;
@@ -2073,9 +2291,127 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     }
 
 
+    /* Open Chat Room No Animation */
+    function openChatRoom (chatItem) {
+        /* mock data (messages in openChatRoom) */
+        const data = {
+            messages: [{
+                id: "1",
+                text: "hi",
+                messageCreateTime: "yesterday",
+                user: {
+                    "id": "uuid_user3",
+                    "username": "user",
+                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
+                }
+            },{
+                id: "2",
+                text: "hello",
+                messageCreateTime: "yesterday",
+                user: {
+                    "id": "uuid_user3",
+                    "username": "user",
+                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
+                }
+            },{
+                id: "3",
+                text: "who is this?",
+                messageCreateTime: "just now",
+                user: {
+                    "id": "uuid_user1",
+                    "username": "someone",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                }
+            },{
+                id: "4",
+                text: "your follower",
+                messageCreateTime: "just now",
+                user: {
+                    "id": "uuid_user3",
+                    "username": "user",
+                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
+                }
+            },{
+                id: "5",
+                text: "emmmm",
+                messageCreateTime: "just now",
+                user: {
+                    "id": "uuid_user1",
+                    "username": "someone",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                }
+            },{
+                id: "6",
+                text: "https://yhnnd.wordpress.com",
+                messageCreateTime: "just now",
+                user: {
+                    "id": "uuid_user3",
+                    "username": "user",
+                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
+                }
+            }]
+        };
+
+        $scope.currentChatItemId = chatItem.id;/** Show Portal Bar */
+        $scope.currentChatItemType = chatItem.type;
+        // 好友房间
+        if (chatItem.type === "friend") {
+            // 缓存当前好友的个人信息
+            $scope.current_friend = chatItem.friend;
+            // set friend's name and show it on chat window top bar
+            $scope.currentChatItemName = chatItem.friend.remark + " (" + chatItem.friend.username + ")";
+            $scope.currentChatItemAvatar = chatItem.friend.avatarUrl;
+        } else if (chatItem.type === "room") {
+            // set room's name and show it on chat window top bar
+            $scope.currentChatItemName = chatItem.room.remark + " (" + chatItem.room.roomName + ")";
+            $scope.currentChatItemAvatar = chatItem.room.avatarUrl;
+        } else if (chatItem.type === "system") {
+            $scope.currentChatItemName = "系统消息";
+            $scope.currentChatItemAvatar = "img/icon-system.jpg";
+        } else if (chatItem.type === "inform") {
+            $scope.currentChatItemName = "验证消息";
+            $scope.currentChatItemAvatar = "img/icon-inform.jpg";
+        } else {
+            $scope.currentChatItemName = "未知聊天室";
+            $scope.currentChatItemAvatar = "";
+        }
+        // 显示刚加载的聊天室内的消息（一定是最新的消息）
+        $scope.current.sizeOf.messagesLoadedLimitedUpdate(data.messages.length);
+        $scope.chatMessageList = data.messages;
+        // 遍历每一个消息
+        _.each($scope.chatMessageList, function (msg) {
+            // 将消息中的 URL 网址转换成 a 链接
+            msg.url = append_message_linkable(msg.text);
+        });
+        // 滚动窗口到最新的消息
+        if (["friend", "room"].includes($scope.currentChatItemType)) {
+            setTimeout(() => {
+                $window.gotoMessage('last',false);
+            }, 1000);
+        }
+        // 滚动窗口到最新的请求消息或系统消息
+        if (["system", "inform"].includes($scope.currentChatItemType)) {
+            setTimeout(() => {
+                scrollMessageIntoView($('.chat-window .card:last').get(0), false);
+            }, 1000);
+        }
+        // 将未读消息数设为 0
+        $scope.unread_message_count = 0;
+        $scope.userData.chatList = _.map($scope.userData.chatList, function (e) {
+            if (e.id === chatItem.id) {
+                e.unreadNum = 0;
+            }
+            return e;
+        });
+        $timeout(() => {
+            $scope.$digest();
+            $scope.gotoPage("chat", "chat", chatItem.id);
+        }, 0);
+    }
 
 
-    // 进入聊天室
+
+    /** Enter Chat Room with Animation */
     $scope.openChatRoom = function (chatItem) {
         // var beginTime = new Date().getTime();
         // // 注意: 此时并未开始执行页面跳转, 所以我们不应该使用 prevPageLocation
@@ -2176,102 +2512,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //     $scope.alert("[ERROR] open chat room: 与服务器连接失败");
         // });
 
-
-        if (["homepage"].includes($scope.pageLocation)) {
-            // Start Animation
-            $scope.gotoPage("trans-home-chat");
-        }
-
-        /* mock data (messages in openChatRoom) */
-        data = {
-            messages: [{
-                id: "1",
-                text: "hi",
-                messageCreateTime: "yesterday",
-                user: {
-                    id: "1",
-                    username: "user",
-                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-                }
-            },{
-                id: "2",
-                text: "hello",
-                messageCreateTime: "yesterday",
-                user: {
-                    id: "1",
-                    username: "user",
-                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-                }
-            },{
-                id: "3",
-                text: "who is this?",
-                messageCreateTime: "just now",
-                user: {
-                    id: "2",
-                    username: "someone",
-                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                }
-            },{
-                id: "4",
-                text: "your follower",
-                messageCreateTime: "just now",
-                user: {
-                    id: "1",
-                    username: "user",
-                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-                }
-            },{
-                id: "5",
-                text: "emmmm",
-                messageCreateTime: "just now",
-                user: {
-                    id: "2",
-                    username: "someone",
-                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                }
-            }]
-        };
-
-        $scope.gotoPage("chat", "chat", chatItem.id);
-        $scope.currentChatItemType = chatItem.type;
-        // 好友房间
-        if (chatItem.type === "friend") {
-            // 缓存当前好友的个人信息
-            $scope.current_friend = chatItem.friend;
-            // set friend's name and show it on chat window top bar
-            $scope.currentChatItemName = chatItem.friend.remark + " (" + chatItem.friend.username + ")";
-            $scope.currentChatItemAvatar = chatItem.friend.avatarUrl;
-        } else if (chatItem.type === "room") {
-            // set room's name and show it on chat window top bar
-            $scope.currentChatItemName = chatItem.room.remark + " (" + chatItem.room.roomName + ")";
-            $scope.currentChatItemAvatar = chatItem.room.avatarUrl;
-        } else if (chatItem.type === "system") {
-            $scope.currentChatItemName = "系统消息";
-            $scope.currentChatItemAvatar = "img/icon-system.jpg";
-        } else if (chatItem.type === "inform") {
-            $scope.currentChatItemName = "验证消息";
-            $scope.currentChatItemAvatar = "img/icon-inform.jpg";
-        } else {
-            $scope.currentChatItemName = "未知聊天室";
-            $scope.currentChatItemAvatar = "";
-        }
-        // 显示刚加载的聊天室内的消息（一定是最新的消息）
-        $scope.current.sizeOf.messagesLoadedLimitedUpdate(data.messages.length);
-        $scope.chatMessageList = data.messages;
-        // 遍历每一个消息
-        _.each($scope.chatMessageList, function (msg) {
-            // 将消息中的 URL 网址转换成 a 链接
-            msg.url = append_message_linkable(msg.text);
-        });
-        // 将未读消息数设为 0
-        $scope.unread_message_count = 0;
-        $scope.userData.chatList = _.map($scope.userData.chatList, function (e) {
-            if (e.id === chatItem.id) {
-                e.unreadNum = 0;
-            }
-            return e;
-        });
-        $scope.$apply();
+        openChatRoom(chatItem);
     };
 
 
@@ -3053,49 +3294,98 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
     $scope.show_room_info = function (roomId) {
-        $http({
-            method: 'GET',
-            url: "http://" + $scope.webRoot + apis.get.room.members,
-            params: {
-                "roomId": roomId
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            let data = result.data;
-            if (data.message) {
-                switch (data.message) {
-                    case "Please login":
-                        gotoLogin("index.html");
-                        break;
-                    case "RoomId cannot be empty":
-                        $scope.alert("[ERROR] 房间 ID 不能为空");
-                        break;
-                    case "You are not member":
-                        $scope.alert("[ERROR] 你不是房间成员");
-                        break;
-                    case "Find fail":
-                        $scope.alert("[ERROR] 查询失败");
-                        break;
-                    case "Find success":
-                        $scope.current_room_members = data.roomMembers;
-                        $scope.current_room = _.filter($scope.userData.rooms, function (room) {
-                            return room.id === roomId;
-                        })[0];
-                        $scope.current_room.show_members_info_col = [true, true, true, true, false];
-                        $scope.current_room_my_role = data.myRole;
-                        $("#room-info-modal").modal("show");
-                        break;
-                    default:
-                        $scope.alert("[ERROR] show room info: 未知错误 " + data.message);
-                        break;
-                }
-            } else {
-                $scope.alert("[ERROR] show room info: 发生错误，服务器没有返回数据");
-            }
-        }, function (error) {
-            $scope.alert("[ERROR] show room info: 无法连接服务器，错误代码：" + error.status);
-        });
+        // $http({
+        //     method: 'GET',
+        //     url: "http://" + $scope.webRoot + apis.get.room.members,
+        //     params: {
+        //         "roomId": roomId
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+        //     let data = result.data;
+        //     if (data.message) {
+        //         switch (data.message) {
+        //             case "Please login":
+        //                 gotoLogin("index.html");
+        //                 break;
+        //             case "RoomId cannot be empty":
+        //                 $scope.alert("[ERROR] 房间 ID 不能为空");
+        //                 break;
+        //             case "You are not member":
+        //                 $scope.alert("[ERROR] 你不是房间成员");
+        //                 break;
+        //             case "Find fail":
+        //                 $scope.alert("[ERROR] 查询失败");
+        //                 break;
+        //             case "Find success":
+        //                 $scope.current_room_members = data.roomMembers;
+        //                 $scope.current_room = _.filter($scope.userData.rooms, function (room) {
+        //                     return room.id === roomId;
+        //                 })[0];
+        //                 $scope.current_room.show_members_info_col = [true, true, true, true, false];
+        //                 $scope.current_room_my_role = data.myRole;
+        //                 $("#room-info-modal").modal("show");
+        //                 break;
+        //             default:
+        //                 $scope.alert("[ERROR] show room info: 未知错误 " + data.message);
+        //                 break;
+        //         }
+        //     } else {
+        //         $scope.alert("[ERROR] show room info: 发生错误，服务器没有返回数据");
+        //     }
+        // }, function (error) {
+        //     $scope.alert("[ERROR] show room info: 无法连接服务器，错误代码：" + error.status);
+        // });
+
+        /* mock data (show_room_info) */
+        const data = {
+            myRole: "owner",
+            roomMembers: [{
+                "id": "uuid_user1",
+                "username": "user1",
+                "nickname": "someone",
+                "roomRemark": "it's me",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280",
+                "role": "owner"
+            },{
+                "id": "uuid_user2",
+                "username": "user2",
+                "nickname": "elphie",
+                "roomRemark": "it's elphie",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280",
+                "role": "admin"
+            },{
+                "id": "uuid_user3",
+                "username": "user",
+                "nickname": "yhn",
+                "roomRemark": "fuck ccp",
+                "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg",
+                "role": "member"
+            },{
+                "id": "uuid_user4",
+                "username": "user4",
+                "nickname": "roman",
+                "roomRemark": "Roman",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280",
+                "role": "member"
+            },{
+                "id": "uuid_user5",
+                "username": "winnie",
+                "nickname": "winnie",
+                "roomRemark": "winnie the pooh",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280",
+                "role": "member"
+            }]
+        };
+
+        $scope.current_room_members = data.roomMembers;
+        $scope.current_room = _.filter($scope.userData.rooms, function (room) {
+            return room.id === roomId;
+        })[0];
+        $scope.current_room.show_members_info_col = [true, true, true, true, false];
+        $scope.current_room_my_role = data.myRole;
+        $("#room-info-modal").modal("show");
     }
 
 
@@ -4519,32 +4809,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.allCodeHighlightStyles = [];
 
 
-    $scope.setRenderer = function (renderer) {
-        switch (renderer) {
-            case "primitive":
-                $scope.current_card.isMarkdownEnabled = false;
-                $scope.current_card.scriptIsEnabled = false;
-                $scope.current_card.isHtmlEnabled = false;
-                break;
-            case "wcml":
-                $scope.current_card.isMarkdownEnabled = false;
-                $scope.current_card.scriptIsEnabled = true;
-                $scope.current_card.isHtmlEnabled = false;
-                break;
-            case "markdown":
-                $scope.current_card.isMarkdownEnabled = true;
-                $scope.current_card.scriptIsEnabled = true;
-                $scope.current_card.isHtmlEnabled = false;
-                break;
-            case "html":
-                $scope.current_card.isMarkdownEnabled = false;
-                $scope.current_card.scriptIsEnabled = false;
-                $scope.current_card.isHtmlEnabled = true;
-                break;
-            default:
-                break;
-        }
-    };
 
 
 
@@ -4584,9 +4848,15 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
     $scope.getTable = function (data) {
-        let table = $window.parseTable(data.tableContentLines).addClass("table table-sm border-bottom mb-0");
+        let table = wcTable.parseTable(data.tableContentLines).addClass("table table-sm border-bottom mb-0");
         return $sce.trustAsHtml(table.get(0).outerHTML);
     };
+
+
+
+
+
+
 
     function getCard(current_card, msg) {
         let target_card = current_card;
