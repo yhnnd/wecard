@@ -5,7 +5,7 @@ function inspect_image(imageUrl) {
         .css({ height: "100%" });
     // 初始化图片
     $("<img>")
-        .addClass('img-fluid')
+        .addClass(["img-fluid","restrict-height"])
         .attr("src", imageUrl)
         .appendTo(field);
     // 初始化前景

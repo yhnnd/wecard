@@ -23,8 +23,8 @@
 
 
 
-    $timeout(function() {
-        let card = {
+    this.$onInit = function() {
+        const card = {
           id: $window.getParameter("card-id")
         };
         $scope.viewCard(card);
@@ -36,7 +36,7 @@
           defaultStyleName = "Default";
         }
         $scope.selectCodeHighlightStyle({styleName: defaultStyleName});
-    }, 100);
+    };
 
 
 
@@ -74,7 +74,7 @@
 
 
     $scope.getTable = function (data) {
-        let table = $window.parseTable(data.tableContentLines).addClass("table table-sm border-bottom mb-0");
+        let table = $window.wcTable.parseTable(data.tableContentLines).addClass("table table-sm border-bottom mb-0");
         return $sce.trustAsHtml(table.get(0).outerHTML);
     };
 
@@ -528,7 +528,7 @@
             smartypants: false,
             xhtml: false
           });
-          $(field).html(marked(card.text));
+          $(field).html(marked.parse(card.text));
           handleMarkdownLinks(field);
           handleMarkdownImages(field);
           $(field).find("pre").each(function(index, elem) {
@@ -571,19 +571,51 @@
         }
       }
 
-      $http({
-        method: "get",
-        url: "http://" + $scope.webRoot + apis.get.card.byId,
-        params: {
-          cardId: card.id,
-          start: 0,
-          limit: $scope.max.get.card.comments.limit
-        },
-        crossDomain: true,
-        withCredentials: true
-      }).then(
-        function(result) {
-          switch (result.data.message) {
+    //   $http({
+    //     method: "get",
+    //     url: "http://" + $scope.webRoot + apis.get.card.byId,
+    //     params: {
+    //       cardId: card.id,
+    //       start: 0,
+    //       limit: $scope.max.get.card.comments.limit
+    //     },
+    //     crossDomain: true,
+    //     withCredentials: true
+    //   }).then(
+    //     function(result) {
+        /** Mock Data */
+        const result = {
+            data: {
+                "message": "card load success",
+                "card": {
+                    "id": "uuid_card1",
+                    "status": "exist",
+                    "title": "card title 1",
+                    "user": {
+                        "id": "uuid_user1",
+                        "username": "user1",
+                        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                    },
+                    "type": "image",
+                    "text": "visit\nhttps://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280 \nhttps://media.discordapp.net/attachments/907832332537434152/945915363768561674/IMG_00023846.png \nhttps://media.discordapp.net/attachments/907832332537434152/952263023731552266/IMG_00023842.png",
+                    "images": [{
+                        "url": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                    },{
+                        "url": "https://media.discordapp.net/attachments/907832332537434152/945915363768561674/IMG_00023846.png"
+                    },{
+                        "url": "https://media.discordapp.net/attachments/907832332537434152/952263023731552266/IMG_00023842.png"
+                    },{
+                        "url": "https://media.discordapp.net/attachments/907832332537434152/958102744860876850/IMG_00037432.png"
+                    },{
+                        "url": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
+                    },{
+                        "url": "https://media.discordapp.net/attachments/907832332537434152/999743166502686751/IMG_293942.png"
+                    }]
+                }
+            }
+        };
+
+        switch (result.data.message) {
             case "card load failed":
               bsAlert("$scope.viewCard():", "卡片加载失败", "alert-danger", -1);
               break;
@@ -650,11 +682,11 @@
               bsAlert("$scope.viewCard():", "未知错误：" + result.data.message, "alert-danger", -1);
               break;
           }
-        },
-        function() {
-          bsAlert("$scope.viewCard():", "与服务器连接失败", "alert-danger", -1);
-        }
-      );
+    //     },
+    //     function() {
+    //       bsAlert("$scope.viewCard():", "与服务器连接失败", "alert-danger", -1);
+    //     }
+    //   );
     };
   });
 })()

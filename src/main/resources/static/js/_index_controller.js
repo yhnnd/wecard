@@ -19,7 +19,7 @@ app.filter('textLengthSet', function () {
 });
 
 
-app.controller("controller", function ($scope, $http, $timeout, $interval, $window, $sce, shareCardService, wcTable) {
+app.controller("controller", function ($scope, $http, $timeout, $interval, $window, $sce, shareCardService) {
 
     /* Chat Window */
     $scope.messageToSend = "";
@@ -710,7 +710,21 @@ if (result.data.cards.length < $scope.max.get.cards.limit) {
 $scope.cardLength = result.data.cards.length;
 $scope.cardGroups = $scope.makeCardGroups(result.data.cards);
 \`\`\`
-                    `
+card:
+\`\`\`
+{
+    "id": "uuid_card4",
+    "status": "exist",
+    "title": "markdown card demo",
+    "type": "markdown",
+    "user": {
+        "id": "uuid_user1",
+        "username": "user1",
+        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+    },
+    "text": "![](https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280)"
+}
+\`\`\``
                 },{
                     "id": "uuid_card5",
                     "status": "exist",
@@ -1766,7 +1780,12 @@ $scope.cardGroups = $scope.makeCardGroups(result.data.cards);`
                         let cardView = $(".modal#view-card");
                         // 关闭之前打开的回复评论输入框 collapse
                         cardView.find(".collapse.border.show").removeClass("show");
-                        cardView.modal("show");
+                        // Open Card View Modal.
+                        cardView.addClass(["small","transition"]).modal("show");
+                        cardView.removeClass("small").addClass("big");
+                        $timeout(() => {
+                            cardView.removeClass(["transition","small","big"]);
+                        }, 100);
 
                         if (result.data.card) {
                             $scope.current_card = result.data.card;
@@ -2861,7 +2880,7 @@ $scope.cardGroups = $scope.makeCardGroups(result.data.cards);`
         wrapper.append("<span>" + friend.nickname +
             ($scope.debugMode.isEnabled ? "<small>(" + friend.username + ")</small>" : "") +
             " 的个人信息</span>");
-        let button = $("<i>").addClass("fa fa-lg fa-times-circle mb-1 text-muted float-right").attr("onclick", "hidePopover($(this).closest('.popover'))").appendTo(wrapper);
+        let button = $("<i>").addClass("fa fa-lg fa-times-circle mb-1 text-muted float-right cursor-pointer").attr("onclick", "hidePopover($(this).closest('.popover'))").appendTo(wrapper);
         return wrapper.html();
     }
 
@@ -4848,7 +4867,7 @@ $scope.cardGroups = $scope.makeCardGroups(result.data.cards);`
 
 
     $scope.getTable = function (data) {
-        let table = wcTable.parseTable(data.tableContentLines).addClass("table table-sm border-bottom mb-0");
+        let table = $window.wcTable.parseTable(data.tableContentLines).addClass("table table-sm border-bottom mb-0");
         return $sce.trustAsHtml(table.get(0).outerHTML);
     };
 

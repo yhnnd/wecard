@@ -105,7 +105,7 @@
 
 
         $scope.getTable = function (data) {
-            let table = $window.parseTable(data.tableContentLines).addClass("table table-sm border-bottom mb-0");
+            let table = $window.wcTable.parseTable(data.tableContentLines).addClass("table table-sm border-bottom mb-0");
             return $sce.trustAsHtml(table.get(0).outerHTML);
         };
 

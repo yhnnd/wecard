@@ -65,6 +65,10 @@ body {
   cursor: pointer;
 }
 
+.img-fluid.restrict-height {
+  max-height: 100%!important;
+}
+
 .btn-group-justified {
   display: table;
   width: 100%;
@@ -418,11 +422,47 @@ textarea.card-comment-editor {
     }
 }
 
-.overflow-hidden {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
+
+
+
+/* Markdown Settings */
+.markdown-settings {
+  transition: transform ease-out .2s, max-width ease-out .2s;
 }
+
+.markdown-settings.float-right {
+  transform: translate(778px, -400px);
+  outline: 6px double deepskyblue;
+  outline-offset: 2px;
+  max-width: 386px;
+}
+
+.markdown-settings:not(.open) .collapsed {
+  display: none;
+}
+
+.markdown-settings.open #open {
+  display: none;
+}
+
+.markdown-settings:not(.float-right) #put-back {
+  display: none;
+}
+
+.markdown-settings.float-right #float-right {
+  display: none;
+}
+
+.markdown-settings.float-right .list-group {
+  max-height: 400px;
+  overflow: scroll;
+}
+
+.markdown-settings.float-right .list-group > .list-group-item {
+  padding-top: 0!important;
+  padding-bottom: 0!important;
+}
+
 
 .message-body:hover {
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5) inset;
@@ -857,6 +897,18 @@ pre.line.dme.dme-i {
 
 .transition-all-1s {
   transition: all ease 1s;
+}
+
+.modal#view-card.transition {
+  transition: transform ease-out .1s!important;
+}
+
+.modal#view-card.small {
+  transform: scale(0.5)!important;
+}
+
+.modal#view-card.big {
+  transform: scale(1)!important;
 }
 
 .modal#view-card .card-image.card-image-wrapper,
