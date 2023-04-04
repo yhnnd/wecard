@@ -1,4 +1,3 @@
-window.mock.data.roommembers =
 {
     "myRole": "owner",
     "roomMembers": [

@@ -1,4 +1,3 @@
-window.mock.data.userdata =
 {
     "mesage": "Refresh success",
     "user": {
