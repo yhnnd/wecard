@@ -1,0 +1,13 @@
+window.mock.data.card =
+{
+    "id": "uuid_card4",
+    "status": "exist",
+    "title": "markdown card demo",
+    "type": "markdown",
+    "user": {
+        "id": "uuid_user1",
+        "username": "user1",
+        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+    },
+    "text": "![](https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280)\ncodes:\n```\nif (result.data.cards.length < $scope.max.get.cards.limit) {\n    $scope.has_more_cards = false;\n} else {\n    $scope.has_more_cards = true;\n}\n$scope.cardLength = result.data.cards.length;\n$scope.cardGroups = $scope.makeCardGroups(result.data.cards);\n```"
+}

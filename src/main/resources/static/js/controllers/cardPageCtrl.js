@@ -17,6 +17,63 @@
 
 
 
+    $scope.login = function() {
+        $scope.user = $window.mock.data.userdata.user;
+    };
+
+
+
+    $scope.submitComment = function() {
+        console.log("submitComment:");
+    }
+
+
+    $scope.replyComment = function (parentId) {
+        let replyInput = $("textarea[data-parent-id='" + parentId + "']");
+        let replyText = $(replyInput).val();
+
+        console.log("replyComment(): 正在给卡片 " + $scope.current_card.id + " 下的评论 " + parentId + " 添加回复 " + replyText);
+
+        if (!$scope.current_card.id) {
+            bsAlert("reply comment", "卡片 ID 不能为空", "alert-danger");
+            return;
+        }
+        if (!parentId) {
+            bsAlert("reply comment", "parent ID 不能为空", "alert-danger");
+            return;
+        }
+        if (!replyText) {
+            bsAlert("reply comment", "评论不能为空", "alert-danger");
+            return;
+        }
+        const reply = {
+            "cardId": $scope.current_card.id,
+            "parentId": parentId,
+            "text": replyText,
+            "status": "exist",
+            "user": $scope.user
+        };
+        // 清空回复评论输入框
+        $(replyInput).attr("value", "");
+        $(replyInput).val("");
+        // 刷新当前卡片的所有评论
+        $scope.current_card.comments = _.map($scope.current_card.comments, function (comment) {
+            // 如果当前遍历到的一级评论就是被回复的评论
+            if (comment.id === parentId) {
+                // 如果这个评论有被回复
+                if (comment.children) {
+                    // comment.children.unshift(reply);
+                    comment.children.push(reply);
+                } else {// 如果这个评论没有被回复过
+                    comment.children = [reply];
+                }
+            }
+            return comment;
+        });
+    };
+
+
+
     function getRandomString() {
         return ("" + Math.random() * 10).split(".").join("");
     }
@@ -587,31 +644,7 @@
         const result = {
             data: {
                 "message": "card load success",
-                "card": {
-                    "id": "uuid_card1",
-                    "status": "exist",
-                    "title": "card title 1",
-                    "user": {
-                        "id": "uuid_user1",
-                        "username": "user1",
-                        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                    },
-                    "type": "image",
-                    "text": "visit\nhttps://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280 \nhttps://media.discordapp.net/attachments/907832332537434152/945915363768561674/IMG_00023846.png \nhttps://media.discordapp.net/attachments/907832332537434152/952263023731552266/IMG_00023842.png",
-                    "images": [{
-                        "url": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                    },{
-                        "url": "https://media.discordapp.net/attachments/907832332537434152/945915363768561674/IMG_00023846.png"
-                    },{
-                        "url": "https://media.discordapp.net/attachments/907832332537434152/952263023731552266/IMG_00023842.png"
-                    },{
-                        "url": "https://media.discordapp.net/attachments/907832332537434152/958102744860876850/IMG_00037432.png"
-                    },{
-                        "url": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-                    },{
-                        "url": "https://media.discordapp.net/attachments/907832332537434152/999743166502686751/IMG_293942.png"
-                    }]
-                }
+                "card": $window.mock.data.card
             }
         };
 
@@ -634,11 +667,6 @@
               if (isViewShared) {
                 if ($scope.current_card && result.data.card) {
                   $scope.current_card.share = result.data.card;
-                  if (result.data.comments) {
-                    $scope.current_card.share.comments = result.data.comments;
-                  } else {
-                    $scope.current_card.share.comments = null;
-                  }
                 }
               } else {
                 // 正在查看的卡片不是【被转发的卡片】
@@ -652,12 +680,6 @@
                   parseCurrentCardWCML();
                   // 解析卡片 markdown 内容
                   parseCurrentCardMarkdown(result.data.card, "#view-card #marked");
-                  // 将服务器返回的卡片评论数组注入到卡片当中
-                  if (result.data.comments) {
-                    $scope.current_card.comments = result.data.comments;
-                  } else {
-                    $scope.current_card.comments = null;
-                  }
 
                   // 如果当前卡片是 share 类型的卡片
                   if (

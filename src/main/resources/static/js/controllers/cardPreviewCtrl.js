@@ -7,7 +7,7 @@
     /* @ngInject */
     function cardPreviewController($scope) {
         this.$onInit = function() {
-            console.log("cardPreviewController: card =", JSON.stringify($scope.card));
+            console.log("cardPreviewController: card.id = ", $scope.card.id);
         };
     }
 

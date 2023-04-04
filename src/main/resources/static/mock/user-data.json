@@ -1,0 +1,174 @@
+window.mock.data.userdata =
+{
+    "mesage": "Refresh success",
+    "user": {
+        "id": "uuid_user3",
+        "username": "user",
+        "nickname": "yhn",
+        "grade": "3",
+        "lastLoginTime": "just now",
+        "followNum": "2",
+        "fansNum": "23",
+        "cardsNum": "0",
+        "gender": "male",
+        "city": "New York",
+        "phone": "124 5322 3296",
+        "signature": "fuck ccp",
+        "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
+    },
+    "rooms": [
+        {
+            "id": "uuid_room1",
+            "roomName": "room 1",
+            "remark": "some room 1",
+            "status": "public",
+            "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+        },
+        {
+            "id": "uuid_room2",
+            "roomName": "room 2",
+            "remark": "some room 2",
+            "status": "private",
+            "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+        }
+    ],
+    "groups": [
+        {
+            "id": "uuid_c29w7d31j2s3bc435",
+            "friendNum": 2,
+            "groupName": "my friends",
+            "friends": [
+                {
+                    "id": "uuid_user1",
+                    "username": "user1",
+                    "nickname": "someone",
+                    "remark": "my friend 1",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                },
+                {
+                    "id": "uuid_user2",
+                    "username": "user2",
+                    "nickname": "elphie",
+                    "remark": "my friend 2",
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+                }
+            ]
+        }
+    ],
+    "chatList": [
+        {
+            "id": "1",
+            "type": "room",
+            "room": {
+                "id": "uuid_room1",
+                "roomName": "room 1",
+                "remark": "some room 1",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+            },
+            "unreadNum": 2,
+            "message": {
+                "user": {
+                    "id": "uuid_user1",
+                    "username": "someone"
+                },
+                "type": "text",
+                "text": "emmmm"
+            }
+        },
+        {
+            "id": "2",
+            "type": "room",
+            "room": {
+                "id": "uuid_room2",
+                "roomName": "room 2",
+                "remark": "some room 2",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+            },
+            "unreadNum": 2,
+            "message": {
+                "user": {
+                    "id": "uuid_user1",
+                    "username": "someone"
+                },
+                "type": "text",
+                "text": "emmmm"
+            }
+        },
+        {
+            "id": "3",
+            "type": "friend",
+            "friend": {
+                "id": "uuid_user1",
+                "username": "someone",
+                "remark": "my friend 1",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+            },
+            "unreadNum": 2,
+            "message": {
+                "user": {
+                    "id": "uuid_user1",
+                    "username": "someone"
+                },
+                "type": "text",
+                "text": "emmmm"
+            }
+        },
+        {
+            "id": "4",
+            "type": "friend",
+            "friend": {
+                "id": "uuid_user2",
+                "username": "user 2",
+                "remark": "my friend 2",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+            },
+            "unreadNum": 2,
+            "message": {
+                "user": {
+                    "id": "uuid_user2",
+                    "username": "user 2"
+                },
+                "type": "text",
+                "text": "emmmm"
+            }
+        }
+    ],
+    "allChatItems": [
+        {
+            "id": "1",
+            "type": "room",
+            "room": {
+                "id": "uuid_room1",
+                "roomName": "room 1",
+                "remark": "some room 1"
+            }
+        },
+        {
+            "id": "2",
+            "type": "room",
+            "room": {
+                "id": "uuid_room2",
+                "roomName": "room 2",
+                "remark": "some room 2"
+            }
+        },
+        {
+            "id": "3",
+            "type": "friend",
+            "friend": {
+                "id": "uuid_user1",
+                "remark": "friend 1",
+                "username": "user"
+            }
+        },
+        {
+            "id": "4",
+            "type": "friend",
+            "friend": {
+                "id": "uuid_user2",
+                "remark": "friend 2",
+                "username": "user"
+            }
+        }
+    ]
+}

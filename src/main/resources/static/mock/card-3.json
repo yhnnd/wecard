@@ -1,0 +1,37 @@
+window.mock.data.card =
+{
+    "id": "uuid_card3",
+    "status": "exist",
+    "title": "wcml card demo",
+    "type": "wcml",
+    "user": {
+        "id": "uuid_user1",
+        "username": "user1",
+        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+    },
+    "text": "```\nif (result.data.cards.length < $scope.max.get.cards.limit) {\n    $scope.has_more_cards = false;\n} else {\n    $scope.has_more_cards = true;\n}\n$scope.cardLength = result.data.cards.length;\n$scope.cardGroups = $scope.makeCardGroups(result.data.cards);\n```\ntable 1\n@table(begin)\ntable.table-stripped\nthead.t-head : tr : [th = {Col A}, th = {Col B}, th = {Col C}, th = {Col D}]\ntbody.t-body : tr : [td = {:={[]} {}}, td, td = {\":={{{[]\"}, td = {\"text\"}]\ntr : [td={![]()}, td={text}, td={![]()}, td={\"![]()\"}]\n@table(end)\ntable 2\n@table(begin)\ntable\nthead : tr : [th={col 1}, th={col 2}, th={col3}]\ntbody\ntr : [td = {abc}, td = {abc}, td = {abc}]\ntr : [td = {1}, td = {2}, td = {what ? fine} ]\ntr : [td, td = { x, 1 + 2, {{a}}, {b}, {{1,2,3}} }, td = {hello wcml}]\n@table(end)",
+    "comments": [
+        {
+            "id": "uuid_comment0",
+            "createdTime": "just now",
+            "status": "exist",
+            "user": {
+                "id": "uuid_user1",
+                "username": "user1",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+            },
+            "text": "nice"
+        },
+        {
+            "id": "uuid_comment1",
+            "createdTime": "minutes ago",
+            "status": "exist",
+            "user": {
+                "id": "uuid_user2",
+                "username": "user2",
+                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+            },
+            "text": "this comment is longer than any other comments here."
+        }
+    ]
+}

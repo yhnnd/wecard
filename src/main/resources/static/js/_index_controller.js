@@ -52,6 +52,8 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     };
     
     this.$onInit = function() {
+        $scope.refreshCards();
+        $scope.refreshUserData();
         /* Chat Window */
         var theme = $window.localStorage.getItem("chat_window_background_color");
         if (theme && typeof theme === "string") {
@@ -406,7 +408,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // go to homepage 1 second later.
         if (["homepage"].includes(pageName) && ["chat"].includes($scope.pageLocation)) {
             /* Animation Here */
-            $scope.gotoPage("trans-chat-home");
+            $scope.gotoPage("trans-chat-home", $scope.prevSubPageLocation);
             /* After Animation */
             $timeout(function() {
                 $scope.gotoPage(pageName, subPageName);
@@ -612,137 +614,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         /* mock data (refreshCards) */
         const result = {
             data: {
-                "cards": [{
-                        "id": "uuid_card1",
-                        "status": "exist",
-                        "title": "card title 1",
-                        "user": {
-                            "id": "uuid_user1",
-                            "username": "user1",
-                            "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                        },
-                        "type": "image",
-                        "text": "visit\nhttps://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280 \nhttps://media.discordapp.net/attachments/907832332537434152/945915363768561674/IMG_00023846.png \nhttps://media.discordapp.net/attachments/907832332537434152/952263023731552266/IMG_00023842.png",
-                        "images": [{
-                            "url": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                        },{
-                            "url": "https://media.discordapp.net/attachments/907832332537434152/945915363768561674/IMG_00023846.png"
-                        },{
-                            "url": "https://media.discordapp.net/attachments/907832332537434152/952263023731552266/IMG_00023842.png"
-                        },{
-                            "url": "https://media.discordapp.net/attachments/907832332537434152/958102744860876850/IMG_00037432.png"
-                        },{
-                            "url": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-                        },{
-                            "url": "https://media.discordapp.net/attachments/907832332537434152/999743166502686751/IMG_293942.png"
-                        }]
-                },{
-                    "id": "uuid_card2",
-                    "status": "exist",
-                    "title": "text card demo",
-                    "type": "text",
-                    "user": {
-                        "id": "uuid_user1",
-                        "username": "user1",
-                        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                    },
-                    "text": `if (result.data.cards.length < $scope.max.get.cards.limit) {
-    $scope.has_more_cards = false;
-} else {
-    $scope.has_more_cards = true;
-}
-$scope.cardLength = result.data.cards.length;
-$scope.cardGroups = $scope.makeCardGroups(result.data.cards);`
-                },{
-                    "id": "uuid_card3",
-                    "status": "exist",
-                    "title": "wcml card demo",
-                    "type": "wcml",
-                    "user": {
-                        "id": "uuid_user1",
-                        "username": "user1",
-                        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                    },
-                    "text": `\`\`\`
-if (result.data.cards.length < $scope.max.get.cards.limit) {
-    $scope.has_more_cards = false;
-} else {
-    $scope.has_more_cards = true;
-}
-$scope.cardLength = result.data.cards.length;
-$scope.cardGroups = $scope.makeCardGroups(result.data.cards);
-\`\`\`
-table 1
-@table(begin)
-table.table-stripped
-thead.t-head : tr : [th = {Col A}, th = {Col B}, th = {Col C}, th = {Col D}]
-tbody.t-body : tr : [td = {:={[]} {}}, td, td = {":={{{[]"}, td = {"text"}]
-tr : [td={![]()}, td={text}, td={![]()}, td={"![]()"}]
-@table(end)
-table 2
-@table(begin)
-table
-thead : tr : [th={col 1}, th={col 2}, th={col3}]
-tbody
-tr : [td = {abc}, td = {abc}, td = {abc}]
-tr : [td = {1}, td = {2}, td = {what ? fine} ]
-tr : [td, td = { x, 1 + 2, {{a}}, {b}, {{1,2,3}} }, td = {hello wcml}]
-@table(end)
-`
-                },{
-                    "id": "uuid_card4",
-                    "status": "exist",
-                    "title": "markdown card demo",
-                    "type": "markdown",
-                    "user": {
-                        "id": "uuid_user1",
-                        "username": "user1",
-                        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                    },
-                    "text": `![](https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280)
-codes:
-\`\`\`
-if (result.data.cards.length < $scope.max.get.cards.limit) {
-    $scope.has_more_cards = false;
-} else {
-    $scope.has_more_cards = true;
-}
-$scope.cardLength = result.data.cards.length;
-$scope.cardGroups = $scope.makeCardGroups(result.data.cards);
-\`\`\`
-card:
-\`\`\`
-{
-    "id": "uuid_card4",
-    "status": "exist",
-    "title": "markdown card demo",
-    "type": "markdown",
-    "user": {
-        "id": "uuid_user1",
-        "username": "user1",
-        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-    },
-    "text": "![](https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280)"
-}
-\`\`\``
-                },{
-                    "id": "uuid_card5",
-                    "status": "exist",
-                    "title": "html card demo",
-                    "type": "html",
-                    "user": {
-                        "id": "uuid_user1",
-                        "username": "user1",
-                        "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                    },
-                    "text": `if (result.data.cards.length < $scope.max.get.cards.limit) {
-    $scope.has_more_cards = false;
-} else {
-    $scope.has_more_cards = true;
-}
-$scope.cardLength = result.data.cards.length;
-$scope.cardGroups = $scope.makeCardGroups(result.data.cards);`
-                }]
+                "cards": $window.mock.data.cards
             }
         };
         if (result.data.cards.length < $scope.max.get.cards.limit) {
@@ -783,176 +655,8 @@ $scope.cardGroups = $scope.makeCardGroups(result.data.cards);`
         // });
 
         /* mock data (userData in refreshUserData) */
-        $scope.user = {
-            "id": "uuid_user3",
-            "username": "user",
-            "nickname": "yhn",
-            "grade": "3",
-            "lastLoginTime": "just now",
-            "followNum": "2",
-            "fansNum": "23",
-            "cardsNum": "0",
-            "gender": "male",
-            "city": "New York",
-            "phone": "124 5322 3296",
-            "signature": "fuck ccp",
-            "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-        };
-        $scope.userData = {
-            mesage: "Refresh success",
-            user: {
-                "id": "uuid_user3",
-                "username": "user",
-                "nickname": "yhn",
-                "grade": "3",
-                "lastLoginTime": "just now",
-                "followNum": "2",
-                "fansNum": "23",
-                "cardsNum": "0",
-                "gender": "male",
-                "city": "New York",
-                "phone": "124 5322 3296",
-                "signature": "fuck ccp",
-                "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-            },
-            rooms: [{
-                "id": "uuid_room1",
-                "roomName": "room 1",
-                "remark": "some room 1",
-                "status": "public",
-                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-            },{
-                "id": "uuid_room2",
-                "roomName": "room 2",
-                "remark": "some room 2",
-                "status": "private",
-                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-            }],
-            groups: [{
-                id: "uuid_c29w7d31j2s3bc435",
-                "friendNum": 2,
-                "groupName": "my friends",
-                "friends": [{
-                    "id": "uuid_user1",
-                    "username": "user1",
-                    "nickname": "someone",
-                    "remark": "my friend 1",
-                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                },{
-                    "id": "uuid_user2",
-                    "username": "user2",
-                    "nickname": "elphie",
-                    "remark": "my friend 2",
-                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                }]
-            }],
-            chatList: [{
-                id: "1",
-                type: "room",
-                room: {
-                    "id": "uuid_room1",
-                    "roomName": "room 1",
-                    "remark": "some room 1",
-                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                },
-                "unreadNum": 2,
-                "message": {
-                    "user": {
-                        "id": "uuid_user1",
-                        "username": "someone"
-                    },
-                    "type": "text",
-                    "text": "emmmm"
-                }
-            },{
-                id: "2",
-                type: "room",
-                room: {
-                    "id": "uuid_room2",
-                    "roomName": "room 2",
-                    "remark": "some room 2",
-                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                },
-                "unreadNum": 2,
-                "message": {
-                    "user": {
-                        "id": "uuid_user1",
-                        "username": "someone"
-                    },
-                    "type": "text",
-                    "text": "emmmm"
-                }
-            },{
-                id: "3",
-                type: "friend",
-                friend: {
-                    "id": "uuid_user1",
-                    "username": "someone",
-                    "remark": "my friend 1",
-                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                },
-                "unreadNum": 2,
-                "message": {
-                    "user": {
-                        "id": "uuid_user1",
-                        "username": "someone"
-                    },
-                    "type": "text",
-                    "text": "emmmm"
-                }
-            },{
-                id: "4",
-                type: "friend",
-                friend: {
-                    "id": "uuid_user2",
-                    "username": "user 2",
-                    "remark": "my friend 2",
-                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                },
-                "unreadNum": 2,
-                "message": {
-                    "user": {
-                        "id": "uuid_user2",
-                        "username": "user 2"
-                    },
-                    "type": "text",
-                    "text": "emmmm"
-                }
-            }],
-            allChatItems: [{
-                id: "1",
-                type: "room",
-                room: {
-                    "id": "uuid_room1",
-                    "roomName": "room 1",
-                    "remark": "some room 1"
-                }
-            },{
-                id: "2",
-                type: "room",
-                room: {
-                    "id": "uuid_room2",
-                    "roomName": "room 2",
-                    "remark": "some room 2"
-                }
-            },{
-                id: "3",
-                type: "friend",
-                friend: {
-                    "id": "uuid_user1",
-                    "remark": "friend 1",
-                    "username": "user"
-                }
-            },{
-                id: "4",
-                type: "friend",
-                friend: {
-                    "id": "uuid_user2",
-                    "remark": "friend 2",
-                    "username": "user"
-                }
-            }]
-        };
+        $scope.userData = $window.mock.data.userdata;
+        $scope.user = $scope.userData.user;
     };
 
     // 加载更多卡片
@@ -2314,61 +2018,7 @@ $scope.cardGroups = $scope.makeCardGroups(result.data.cards);`
     function openChatRoom (chatItem) {
         /* mock data (messages in openChatRoom) */
         const data = {
-            messages: [{
-                id: "1",
-                text: "hi",
-                messageCreateTime: "yesterday",
-                user: {
-                    "id": "uuid_user3",
-                    "username": "user",
-                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-                }
-            },{
-                id: "2",
-                text: "hello",
-                messageCreateTime: "yesterday",
-                user: {
-                    "id": "uuid_user3",
-                    "username": "user",
-                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-                }
-            },{
-                id: "3",
-                text: "who is this?",
-                messageCreateTime: "just now",
-                user: {
-                    "id": "uuid_user1",
-                    "username": "someone",
-                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                }
-            },{
-                id: "4",
-                text: "your follower",
-                messageCreateTime: "just now",
-                user: {
-                    "id": "uuid_user3",
-                    "username": "user",
-                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-                }
-            },{
-                id: "5",
-                text: "emmmm",
-                messageCreateTime: "just now",
-                user: {
-                    "id": "uuid_user1",
-                    "username": "someone",
-                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
-                }
-            },{
-                id: "6",
-                text: "https://yhnnd.wordpress.com",
-                messageCreateTime: "just now",
-                user: {
-                    "id": "uuid_user3",
-                    "username": "user",
-                    "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg"
-                }
-            }]
+            messages: $window.mock.data.messages
         };
 
         $scope.currentChatItemId = chatItem.id;/** Show Portal Bar */
@@ -3358,45 +3008,7 @@ $scope.cardGroups = $scope.makeCardGroups(result.data.cards);`
         // });
 
         /* mock data (show_room_info) */
-        const data = {
-            myRole: "owner",
-            roomMembers: [{
-                "id": "uuid_user1",
-                "username": "user1",
-                "nickname": "someone",
-                "roomRemark": "it's me",
-                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280",
-                "role": "owner"
-            },{
-                "id": "uuid_user2",
-                "username": "user2",
-                "nickname": "elphie",
-                "roomRemark": "it's elphie",
-                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280",
-                "role": "admin"
-            },{
-                "id": "uuid_user3",
-                "username": "user",
-                "nickname": "yhn",
-                "roomRemark": "fuck ccp",
-                "avatarUrl": "https://media.discordapp.net/attachments/907832332537434152/993550228315701358/00096489135.jpg",
-                "role": "member"
-            },{
-                "id": "uuid_user4",
-                "username": "user4",
-                "nickname": "roman",
-                "roomRemark": "Roman",
-                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280",
-                "role": "member"
-            },{
-                "id": "uuid_user5",
-                "username": "winnie",
-                "nickname": "winnie",
-                "roomRemark": "winnie the pooh",
-                "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280",
-                "role": "member"
-            }]
-        };
+        const data = $window.mock.data.roommembers;
 
         $scope.current_room_members = data.roomMembers;
         $scope.current_room = _.filter($scope.userData.rooms, function (room) {

@@ -408,7 +408,7 @@
 <body>
     <!-- module index (card) -->
     <div ng-app="module-index" ng-cloak="ng-cloak">
-        <div ng-controller="controller" ng-init="refreshCards();refreshUserData();">
+        <div ng-controller="controller">
             <!-- data for cards -->
             <input id="user" style="display:none;" ng-model="user">
             <input id="card-groups" style="display:none;" ng-model="cardGroups">
@@ -433,7 +433,7 @@
                         <!-- 左侧 -->
                         <!-- 如果用户登入了，就显示用户头像 -->
                         <a class="navbar-brand py-0 ml-1 ml-lg-2 mr-2 mr-lg-3" ng-click="gotoPage('settings');" href="#">
-                            <img class="user-avatar rounded-circle border" ng-src="{{user.avatarUrl}}">
+                            <img class="user-avatar rounded-circle border" ng-src="{{userData.user.avatarUrl}}">
                         </a>
                         <!-- 如果用户没登录，就显示商标 -->
                         <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('./index.html');" >
@@ -529,7 +529,7 @@
                         ng-class="isNavbarMinimized === true ? 'py-0' : 'py-2'">
                         <!-- 如果用户登入了，就显示用户头像 -->
                         <a class="navbar-brand py-0 ml-1 ml-lg-2 mr-2 mr-lg-3" ng-click="gotoPage('settings');" href="#">
-                            <img class="user-avatar rounded-circle border" ng-src="{{user.avatarUrl}}">
+                            <img class="user-avatar rounded-circle border" ng-src="{{userData.user.avatarUrl}}">
                         </a>
                         <!-- 如果用户没登录，就显示商标 -->
                         <a class="navbar-brand py-0 d-flex align-items-center text-color-animated ml-1 ml-lg-2" href="javascript:login('./index.html');" >
@@ -1852,7 +1852,7 @@
                                                                             <div ng-switch-when="true">
                                                                                 <!-- 默认隐藏此用户的头像图标, 因为未登录的用户无法查看此用户的信息, 也就无法加载用户头像 -->
                                                                                 <div class="iconify-user" data-icon-id="{{current_card.scriptSet['line-' + index].iconId}}">
-                                                                                    <img src="" alt="x" class="user-avatar-xs rounded-circle" style="display: none;">
+                                                                                    <img src=""  class="user-avatar-xs rounded-circle" style="display: none;">
                                                                                     <div class="original-script" data-toggle="tooltip" title="该用户不存在">
                                                                                         {{word}}
                                                                                     </div>
@@ -2289,15 +2289,10 @@
                                                                                         </div>
                                                                                         <!-- 【被转发的卡片】如果用户没有登录 -->
                                                                                         <div class="input-group my-2 ml-5 mr-auto" style="width: 300px;" ng-show="!user">
-                                                                                            <!-- 【被转发的卡片】回复评论输入框，禁用状态 -->
+                                                                                            <!-- 【被转发的卡片】【如果用户没有登录】回复评论输入框，禁用状态 -->
                                                                                             <input type="text" class="form-control form-control-sm border-radius-0" disabled>
-                                                                                            <!-- 【被转发的卡片】回复按钮，禁用状态 -->
+                                                                                            <!-- 【被转发的卡片】【如果用户没有登录】回复按钮，禁用状态 -->
                                                                                             <div class="input-group-append">
-                                                                                                <button class="btn btn-sm btn-outline-secondary border-radius-0" onclick="replyComment($(this).parent().prev())" title="回复评论"
-                                                                                                        ng-show="user">
-                                                                                                    回复
-                                                                                                </button>
-                                                                                                <!-- 【被转发的卡片】如果用户没有登录 -->
                                                                                                 <button class="btn btn-sm btn-outline-secondary" onclick="login('./index.html');" ng-show="!user">
                                                                                                     请先登录
                                                                                                 </button>
@@ -5423,6 +5418,12 @@
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.0.0/dist/purify.min.js" type="text/javascript"></script>
     <!-- Quill library -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <!-- Mock Data -->
+    <script src="./mock/mock.js"></script>
+    <script src="./mock/cards.json"></script>
+    <script src="./mock/user-data.json"></script>
+    <script src="./mock/messages.json"></script>
+    <script src="./mock/room-members.json"></script>
 </body>
 
 </html>
