@@ -39,7 +39,7 @@ var v2_7 = {
         }
     },
     getScope: function () {
-        let model = document.getElementById('user-data');
+        let model = document.querySelector('[ng-controller="controller"]');
         let scope = angular.element(model).scope();
         if (!scope) {
             model = document.getElementById('card-groups');

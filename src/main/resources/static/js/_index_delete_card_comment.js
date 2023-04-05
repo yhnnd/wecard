@@ -5,7 +5,7 @@ function deleteComment(cardId, commentId) {
     let deleteCommentConfirm = function (cardId, commentId) {
         let loadingId = startLoading();
 
-        let model = document.getElementById('card-groups');
+        const model = document.querySelector('[ng-controller="controller"]');
         let $scope = angular.element(model).scope();
         let formData = new FormData();
         formData.append("commentId", commentId);

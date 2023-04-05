@@ -52,8 +52,17 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     };
     
     this.$onInit = function() {
-        $scope.refreshCards();
-        $scope.refreshUserData();
+        $window.mock = new Mock();
+        $window.mock.loadData("cards", "cards.json").then(function() {
+            $scope.refreshCards();
+            $scope.$digest();
+        });
+        $window.mock.loadData("userdata", "user-data.json").then(function() {
+            $scope.refreshUserData();
+            $scope.$digest();
+        });
+        $window.mock.loadData("messages", "messages.json");
+        $window.mock.loadData("roommembers", "room-members.json");
         /* Chat Window */
         var theme = $window.localStorage.getItem("chat_window_background_color");
         if (theme && typeof theme === "string") {
@@ -1470,11 +1479,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                     if (isViewShared) {
                         if ($scope.current_card && result.data.card) {
                             $scope.current_card.share = result.data.card;
-                            if (result.data.comments) {
-                                $scope.current_card.share.comments = result.data.comments;
-                            } else {
-                                $scope.current_card.share.comments = null;
-                            }
                         }
                     } else {
                         // 正在查看的卡片不是【被转发的卡片】
@@ -1499,13 +1503,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                             parseCardMarkdown(result.data.card, "#view-card #marked");
                             // Parse Card HTML content.
                             $("#view-card #html").html($scope.current_card.text);
-
-                            // 将服务器返回的卡片评论数组注入到卡片当中
-                            if (result.data.comments) {
-                                $scope.current_card.comments = result.data.comments;
-                            } else {
-                                $scope.current_card.comments = null;
-                            }
 
                             // 如果当前卡片是 share 类型的卡片
                             if (card.type === "share" && $scope.current_card.type === "share") {
@@ -1564,6 +1561,50 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     $scope.deleteComment = function (cardId, commentId) {
         $window.deleteComment(cardId, commentId);
+    };
+
+    $scope.replyComment = function (parentId) {
+        let replyInput = $("textarea[data-parent-id='" + parentId + "']");
+        let replyText = $(replyInput).val();
+
+        console.log("replyComment(): 正在给卡片 " + $scope.current_card.id + " 下的评论 " + parentId + " 添加回复 " + replyText);
+
+        if (!$scope.current_card.id) {
+            bsAlert("reply comment", "卡片 ID 不能为空", "alert-danger");
+            return;
+        }
+        if (!parentId) {
+            bsAlert("reply comment", "parent ID 不能为空", "alert-danger");
+            return;
+        }
+        if (!replyText) {
+            bsAlert("reply comment", "评论不能为空", "alert-danger");
+            return;
+        }
+        const reply = {
+            "cardId": $scope.current_card.id,
+            "parentId": parentId,
+            "text": replyText,
+            "status": "exist",
+            "user": $scope.user
+        };
+        // 清空回复评论输入框
+        $(replyInput).attr("value", "");
+        $(replyInput).val("");
+        // 刷新当前卡片的所有评论
+        $scope.current_card.comments = _.map($scope.current_card.comments, function (comment) {
+            // 如果当前遍历到的一级评论就是被回复的评论
+            if (comment.id === parentId) {
+                // 如果这个评论有被回复
+                if (comment.children) {
+                    // comment.children.unshift(reply);
+                    comment.children.push(reply);
+                } else {// 如果这个评论没有被回复过
+                    comment.children = [reply];
+                }
+            }
+            return comment;
+        });
     };
 
     $scope.likeCard = function (cardId) {

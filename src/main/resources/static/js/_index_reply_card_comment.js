@@ -4,7 +4,7 @@ function replyComment(replyInput) {
     let parentId = $(replyInput).attr("data-parent-id");
     let replyText = $(replyInput).val();
 
-    let model = document.getElementById('card-groups');
+    const model = document.querySelector('[ng-controller="controller"]');
     let $scope = angular.element(model).scope();
 
     console.log("replyComment(): 正在给卡片 " + $scope.current_card.id + " 下的评论 " + parentId + " 添加回复 " + replyText);

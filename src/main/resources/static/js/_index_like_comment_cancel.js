@@ -1,6 +1,6 @@
 // 取消点赞某个评论
 function cancelLikeComment(commentId) {
-    let model = document.getElementById('card-groups');
+    const model = document.querySelector('[ng-controller="controller"]');
     let $scope = angular.element(model).scope();
 
     let formData = new FormData();

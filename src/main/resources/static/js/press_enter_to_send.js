@@ -53,7 +53,7 @@ setTimeout(listenPressEnter, 2000);
 var nightMode = {
     isEnabled: undefined,
     getScope: function () {
-        let model = document.getElementById('user-data');
+        let model = document.querySelector('[ng-controller="controller"]');
         let scope = angular.element(model).scope();
         if (!scope) {
             model = document.getElementById('card-groups');
@@ -98,7 +98,7 @@ var nightMode = {
 var debugMode = {
     isEnabled: undefined,
     getScope: function () {
-        let model = document.getElementById('user-data');
+        let model = document.querySelector('[ng-controller="controller"]');
         let scope = angular.element(model).scope();
         if (!scope) {
             model = document.getElementById('card-groups');
@@ -107,7 +107,7 @@ var debugMode = {
         return scope;
     },
     notifyScope: function () {
-        let scope = this.getScope();
+        const scope = this.getScope();
         if (scope) {
             scope.debugMode = this;
             scope.$apply();

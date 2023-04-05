@@ -1,5 +1,5 @@
 function cancelLikeCard(cardId) {
-    let model = document.getElementById('card-groups');
+    const model = document.querySelector('[ng-controller="controller"]');
     let $scope = angular.element(model).scope();
     let formData = new FormData();
     formData.append("cardId", cardId);

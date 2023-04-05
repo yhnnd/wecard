@@ -92,7 +92,7 @@ function createCard() {
 
 
 function getScopeAndCardToCreate() {
-    let model = document.getElementById('card-groups');
+    const model = document.querySelector('[ng-controller="controller"]');
     let $scope = angular.element(model).scope();
     if (!$scope) {
         console.log("[ERROR] getScopeAndCardToCreate(): 找不到 $scope, 请联系开发人员检查代码");

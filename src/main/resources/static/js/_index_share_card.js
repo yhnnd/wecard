@@ -2,7 +2,7 @@
 function shareCardSubmit(cardId, shareText) {
     console.log("shareCard(" + cardId + "): sending request ...");
 
-    let model = document.getElementById('card-groups');
+    const model = document.querySelector('[ng-controller="controller"]');
     let $scope = angular.element(model).scope();
 
     let formData = new FormData();
