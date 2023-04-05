@@ -13,7 +13,7 @@ function createQuillCard($scope, card) {
 	}
 
 	$.ajax({
-		url: "http://" + window.getWebRoot() + apis.create.card.quill,
+		url: window.getHttpRoot() + apis.create.card.quill,
 		type: 'POST',
 		data: formData,
 		crossDomain: true,

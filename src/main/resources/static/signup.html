@@ -305,7 +305,7 @@
         let app = angular.module('module-signup', []);
 
         app.controller('signup-controller', function ($scope, dateFilter, $http, $interval, $timeout) {
-            $scope.webRoot = getWebRoot();
+            $scope.httpRoot = getHttpRoot();
             $scope.input = {
                 "username": {
                     "value": "",
@@ -330,7 +330,7 @@
                             let that = this;
                             $http({
                                 method: 'GET',
-                                url: "http://" + $scope.webRoot + "/register/checkUsername",
+                                url: $scope.httpRoot + "/register/checkUsername",
                                 params: {
                                     "username": this.value
                                 },
@@ -451,7 +451,7 @@
                             let that = this;
                             $http({
                                 method: 'GET',
-                                url: "http://" + $scope.webRoot + "/register/checkPhoneNumber",
+                                url: $scope.httpRoot + "/register/checkPhoneNumber",
                                 params: {
                                     "phoneNumber": this.value
                                 },
@@ -493,7 +493,7 @@
                         let that = this;
                         $http({
                             method: 'GET',
-                            url: "http://" + $scope.webRoot + "/register/sendVerCode",
+                            url: $scope.httpRoot + "/register/sendVerCode",
                             params: {
                                 "phoneNumber": this.value
                             },
@@ -593,7 +593,7 @@
             $scope.signup = function () {
                 $http({
                     method: 'GET',
-                    url: "http://" + $scope.webRoot + "/register",
+                    url: $scope.httpRoot + "/register",
                     params: {
                         "username": $scope.input.username.value,
                         "password": $scope.input.password.value,

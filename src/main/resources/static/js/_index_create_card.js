@@ -36,7 +36,7 @@ function createCard() {
     }
 
     $.ajax({
-        url: "http://" + $scope.webRoot + apis.create.card.text,
+        url: $scope.httpRoot + apis.create.card.text,
         type: 'POST',
         data: formData,
         crossDomain: true,
@@ -152,30 +152,78 @@ function createCardAlert(errorMsg) {
 
 
 
+function getDraftCardIds () {
+    let ids = window.localStorage.getItem("draft_card_ids");
+    if (ids !== undefined && typeof ids === "string") {
+        ids = JSON.parse(ids);
+    }
+    if (ids instanceof Array === false) {
+        ids = [];
+    }
+    return ids;
+}
+
+function saveDraftCardIds (ids) {
+    if (ids instanceof Array) {
+        return window.localStorage.setItem("draft_card_ids", JSON.stringify(ids));
+    } else {
+        console.error("saveDraftCardIds: invalid parameter type for 'ids'", ids);
+    }
+}
+
+function getDraftCreateTime (draft) {
+    const time = draft["time"];
+    if (time) {
+        const date = new Date();
+        date.setTime(time);
+        return date;
+    } else {
+        return "no record";
+    }
+}
+
+function getDraft (draftId) {
+    const draftStr = window.localStorage.getItem("draft_card_" + draftId);
+    if (draftStr !== undefined && typeof draftStr === "string") {
+        const draft = JSON.parse(draftStr);
+        draft.getCreateTime = function () {
+            return getDraftCreateTime(draft);
+        }
+        return draft;
+    } else {
+        console.error("getDraft: no draft with id " + draftId);
+    }
+}
+
+function saveDraft (draftId, user, card) {
+    return window.localStorage.setItem("draft_card_" + draftId, JSON.stringify({
+        "time": draftId,
+        "user": {
+            "id": user.id
+        },
+        "card": card
+    }));
+}
+
+function removeDraft (draftId) {
+    saveDraftCardIds(getDraftCardIds().filter(elem => elem !== draftId));
+    window.localStorage.removeItem("draft_card_" + draftId);
+}
+
 function saveCardAsDraft(user, card, cardType) {
     if (user && user.id) {
         card.type = cardType;
-        // 生成草稿 id
-        let draftId = Date.now();
-        // 保存草稿
-        window.localStorage.setItem("draft_card_" + draftId, JSON.stringify({
-            "time": draftId,
-            "user": {
-                "id": user.id
-            },
-            "card": card
-        }));
-        // 获取草稿 id 列表
-        let ids = window.localStorage.getItem("draft_card_ids");
-        if (ids != null && ids instanceof Array) {
-        } else {
-            ids = [];
-        }
-        // 将当前草稿 id 加入草稿 id 列表
+        // generate draft id
+        const draftId = "" + Date.now();
+        // save draft
+        saveDraft(draftId, user, card);
+        // get draft id list
+        let ids = getDraftCardIds();
+        // push the id of current draft to draft id list
         ids.push(draftId);
-        // 保存草稿 id 列表
-        window.localStorage.setItem("draft_card_ids", JSON.stringify(ids));
+        // save new draft id list
+        saveDraftCardIds(ids);
     } else {
-        console.log("saveCardAsDraft: 保存卡片失败, 用户未登录");
+        console.log("saveCardAsDraft: save draft failed, no user logged in.");
     }
 }

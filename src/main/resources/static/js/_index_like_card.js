@@ -8,7 +8,7 @@ function likeCard(cardId) {
     console.log("likeCard(" + cardId + ") sending request ...");
     
     $.ajax({
-        url: "http://" + $scope.webRoot + apis.like.card,
+        url: $scope.httpRoot + apis.like.card,
         type: 'POST',
         data: formData,
         crossDomain: true,

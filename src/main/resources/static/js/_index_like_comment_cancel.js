@@ -7,7 +7,7 @@ function cancelLikeComment(commentId) {
     formData.append("commentId", commentId);
 
     $.ajax({
-        url: "http://" + $scope.webRoot + apis.cancel.like.comment,
+        url: $scope.httpRoot + apis.cancel.like.comment,
         type: 'POST',
         data: formData,
         crossDomain: true,

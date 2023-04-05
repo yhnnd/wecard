@@ -2,7 +2,7 @@
 function loadNewMessage(messageId) {
     $.ajax({
         type: "get",
-        url: "http://" + getWebRoot() + apis.get.message,
+        url: window.getHttpRoot() + apis.get.message,
         data: {
             "messageId": messageId
         },

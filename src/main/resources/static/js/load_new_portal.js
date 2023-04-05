@@ -2,7 +2,7 @@
 function loadNewChatItem(chatItemId) {
     $.ajax({
         type: "get",
-        url: "http://" + getWebRoot() + apis.getPortal,
+        url: window.getHttpRoot() + apis.getPortal,
         data: {
             "chatItemId": chatItemId
         },

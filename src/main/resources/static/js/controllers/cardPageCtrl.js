@@ -3,7 +3,7 @@
 
     app.controller("controller", function ($scope, $http, $timeout, $interval, $window, $sce) {
 
-        $scope.webRoot = getWebRoot();
+        $scope.httpRoot = $window.getHttpRoot();
         $scope.max = $window.max;
         $scope.$window = $window;
         // 用户个人信息
@@ -177,7 +177,7 @@
         $scope.getUsers = function (user, callback, errorCallback) {
             $http({
                 method: 'GET',
-                url: "http://" + $scope.webRoot + apis.search.users,
+                url: $scope.httpRoot + apis.search.users,
                 params: {
                     "username": user.username
                 },
@@ -655,7 +655,7 @@
 
             //   $http({
             //     method: "get",
-            //     url: "http://" + $scope.webRoot + apis.get.card.byId,
+            //     url: $scope.httpRoot + apis.get.card.byId,
             //     params: {
             //       cardId: card.id,
             //       start: 0,

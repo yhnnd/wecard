@@ -10,7 +10,7 @@ function shareCardSubmit(cardId, shareText) {
     formData.append("text", shareText);
 
     $.ajax({
-        url: "http://" + $scope.webRoot + apis.share.card,
+        url: $scope.httpRoot + apis.share.card,
         type: 'POST',
         data: formData,
         crossDomain: true,
@@ -126,7 +126,7 @@ function getChatItemByFriendId($scope, friendId) {
 function shareCardToFriendSendMessage(cardId, chatItem, shareText, callback) {
     $.ajax({
         type: 'GET',
-        url: "http://" + getWebRoot() + apis.sendMessage,
+        url: window.getHttpRoot() + apis.sendMessage,
         data: {
             "text": shareText + "\n@shareCard " + cardId,
             "chatItemId": chatItem.id
@@ -168,7 +168,7 @@ function shareCardToFriendSendMessage(cardId, chatItem, shareText, callback) {
 function setChatLocation(location, callback) {
     $.ajax({
         type: 'GET',
-        url: "http://" + getWebRoot() + apis.set.chat.location,
+        url: window.getHttpRoot() + apis.set.chat.location,
         data: {
             "location": location
         },

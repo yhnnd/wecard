@@ -3,7 +3,7 @@ function refuseAddFriendRequest(request, button) {
     if (request && request.id) {
         $.ajax({
             type: "get",
-            url: "http://" + getWebRoot() + apis.addFriend.refuse,
+            url: window.getHttpRoot() + apis.addFriend.refuse,
             data: {
                 "requestId": request.id
             },

@@ -9,7 +9,7 @@ function sendAddFriendRequest(friend, button) {
     // alert(requestMessage + "\n" + remark + "\n" + groupId + "\n" + receiverUsername);
     $.ajax({
         type: "get",
-        url: "http://" + getWebRoot() + apis.addFriend.send,
+        url: window.getHttpRoot() + apis.addFriend.send,
         data: {
             "username": receiverUsername,
             "groupId": groupId,

@@ -2,7 +2,7 @@
 function loadNewChatRoom(roomId) {
     $.ajax({
         type: "get",
-        url: "http://" + getWebRoot() + apis.getRoom,
+        url: window.getHttpRoot() + apis.getRoom,
         data: {
             "roomId": roomId
         },

@@ -8,7 +8,7 @@ function agreeAddFriendRequest(request, button) {
         if (groupId) {
             $.ajax({
                 type: "get",
-                url: "http://" + getWebRoot() + apis.addFriend.agree,
+                url: window.getHttpRoot() + apis.addFriend.agree,
                 data: {
                     "requestId": request.id,
                     "groupId": groupId,

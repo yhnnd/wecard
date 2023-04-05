@@ -24,7 +24,7 @@ function gotoLogin(targetPage) {
 function logout(page, targetPage) {
     $.ajax({
         type: "get",
-        url: "http://" + getWebRoot() + "/logout",
+        url: window.getHttpRoot() + "/logout",
         crossDomain: true,
         xhrFields: {
             withCredentials: true

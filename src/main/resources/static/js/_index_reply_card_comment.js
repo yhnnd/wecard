@@ -27,7 +27,7 @@ function replyComment(replyInput) {
     formData.append("parentId", parentId);
     formData.append("text", replyText);
     $.ajax({
-        url: "http://" + $scope.webRoot + apis.create.card.comment,
+        url: $scope.httpRoot + apis.create.card.comment,
         type: 'POST',
         data: formData,
         crossDomain: true,

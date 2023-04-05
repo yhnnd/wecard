@@ -1346,12 +1346,12 @@
                                             <span>图片</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item display-none">
+                                    <li class="nav-item">
                                         <a class="nav-link" data-toggle="tab" href="#create-video-card" ng-click="writeCard_editorType = 'v2.7'">
                                             <span>视频</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item display-none">
+                                    <li class="nav-item">
                                         <a class="nav-link" data-toggle="tab" href="#create-audio-card" ng-click="writeCard_editorType = 'v2.7'">
                                             <span>音频</span><span class="visible hidden-sm">卡片</span>
                                         </a>
@@ -1371,7 +1371,7 @@
                                     </div>
                                     <!-- 卡片标题 -->
                                     <div class="form-group">
-                                        <input type="text" class="form-control" ng-model="card_to_create.title" placeholder="卡片标题">
+                                        <input type="text" class="form-control" ng-model="card_to_create.title" placeholder="Card Title">
                                     </div>
                                     <!-- 卡片正文 Quill 编辑器 -->
                                     <div class="form-group" ng-show="writeCard_editorType === 'quill'">
@@ -2732,7 +2732,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <wc-card-info current-card="current_card" ng-if="debugMode.isEnabled"></wc-card-info>
+                            <div id="wc-card-info" ng-if="debugMode.isEnabled" ng-bind-html="get_card_info_html(current_card)"></div>
                         </div>
                         <!-- Modal Body End -->
                         <div class="modal-footer justify-content-end">

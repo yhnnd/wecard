@@ -13,7 +13,7 @@ function deleteComment(cardId, commentId) {
         console.log("deleteComment(" + commentId + "): sending request ...");
 
         $.ajax({
-            url: "http://" + $scope.webRoot + apis.recall.card.comment,
+            url: $scope.httpRoot + apis.recall.card.comment,
             type: 'POST',
             data: formData,
             crossDomain: true,

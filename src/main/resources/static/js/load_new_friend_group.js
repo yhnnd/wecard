@@ -2,7 +2,7 @@
 function loadNewFriendGroup(groupId) {
     $.ajax({
         type: "get",
-        url: "http://" + getWebRoot() + apis.getFriendGroup,
+        url: window.getHttpRoot() + apis.getFriendGroup,
         data: {
             "groupId": groupId
         },

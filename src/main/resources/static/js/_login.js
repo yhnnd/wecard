@@ -13,7 +13,7 @@ function getParameter(parameterName) {
 
 // 跳转到 QQ 登录
 function qqLogin() {
-  window.location = "http://" + getWebRoot() + "/qqLogin";
+  window.location = getHttpRoot() + "/qqLogin";
 }
 
 // 显示登录错误信息
@@ -28,7 +28,7 @@ function printError(message, status, textStatus) {
 function checkIsLoggedIn() {
   $.ajax({
     type: "get",
-    url: "http://" + getWebRoot() + "/refresh",
+    url: window.getHttpRoot() + "/refresh",
     crossDomain: true,
     xhrFields: {
       withCredentials: true
@@ -78,7 +78,7 @@ function loginSuccess() {
 function loginSubmit() {
   $.ajax({
     type: "get",
-    url: "http://" + getWebRoot() + "/login",
+    url: window.getHttpRoot() + "/login",
     data: {
       username: $("#login-username").val(),
       password: $("#login-password").val()

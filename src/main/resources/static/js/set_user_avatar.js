@@ -6,7 +6,7 @@ function uploadFile(apiName, parameterName, fileInput) {
     var formData = new FormData();
     formData.append(parameterName, file);
     $.ajax({
-        url: "http://" + getWebRoot() + apiName,
+        url: window.getHttpRoot() + apiName,
         type: 'POST',
         data: formData,
         crossDomain: true,

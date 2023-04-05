@@ -19,7 +19,7 @@ function submitComment() {
     // formData.append("cardId", $scope.current_card.id);
     // formData.append("text", $scope.my_comment);
     // $.ajax({
-    //     url: "http://" + $scope.webRoot + apis.create.card.comment,
+    //     url: $scope.httpRoot + apis.create.card.comment,
     //     type: 'POST',
     //     data: formData,
     //     crossDomain: true,

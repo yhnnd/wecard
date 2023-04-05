@@ -20,12 +20,14 @@ app.filter('textLengthSet', function () {
 
 
 app.controller("controller", function ($scope, $http, $timeout, $interval, $window, $sce, shareCardService) {
-
+    $scope.httpRoot = $window.getHttpRoot();
     /* Chat Window */
     $scope.messageToSend = "";
+
     $scope.isCardLink = function(line) {
         return line.startsWith('@shareCard');
     };
+
     $scope.getCardId = function(line) {
         let beginIndex = line.indexOf(" ");
         if (beginIndex > 0) {
@@ -33,24 +35,26 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         }
         return false;
     };
+
     $scope.getCardLink = function(line) {
         let cardId = $scope.getCardId(line);
         if (cardId) {
-            return "http://" + getWebRoot() + "/card-page.html?card-id=" + cardId;
+            return $scope.httpRoot + "/card-page.html?card-id=" + cardId;
         }
         return "javascript:void(0);";
     };
+
     $scope.viewCardByLink = function(line) {
         $scope.viewCard({ id: $scope.getCardId(line) });
     };
-    
+
     const chatWindowOriginalClasses = "chat-window container-fluid mt-0";
-    
+
     $scope.setChatWindowBackgroundColor = function (theme) {
         $('.chat-window').attr('class', chatWindowOriginalClasses + ' chat-window-bg-' + theme);
         $window.localStorage.setItem("chat_window_background_color", theme);
     };
-    
+
     this.$onInit = function() {
         $window.mock = new Mock();
         $window.mock.loadData("cards", "cards.json").then(function() {
@@ -185,9 +189,8 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         $window.localStorage.setItem("is_navbar_minimized", $scope.isNavbarMinimized);
     };
 
-    $scope.userAgent = window.navigator.userAgent;
-    $scope.platform  = window.navigator.platform;
-    $scope.webRoot = getWebRoot();
+    $scope.userAgent = $window.navigator.userAgent;
+    $scope.platform  = $window.navigator.platform;
     $scope.special_ids = special_ids;
 
     $scope.pageLocation = "marketplace";
@@ -371,41 +374,54 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         }
     });
 
-    // 检查是否有草稿待继续编辑
+
+    // check if there are drafts and ask for continue editing.
     function checkDraftCard() {
-        let ids = $window.localStorage.getItem("draft_card_ids");
-        if (ids != null) {
-            try {
-                ids = JSON.parse(ids);
-            } catch (e) {
-                return;
-            }
+        if ($scope.card_to_create.title === ""
+        && $scope.card_to_create.text === ""
+        && JSON.stringify($scope.card_to_create.topics) === "[]") {
+            const ids = $window.getDraftCardIds();
             if (ids instanceof Array) {
-                for (id of ids) {
-                    let draft = $window.localStorage.getItem("draft_card_" + id);
-                    if (draft != null) {
-                        try {
-                            draft = JSON.parse(draft);
-                        } catch (e) {
-                            return;
-                        }
-                        let draftCard = draft.card;
-                        let draftUser = draft.user;
-                        if ($scope.card_to_create.title === "" 
-                        && $scope.card_to_create.text === ""
-                        && JSON.stringify($scope.card_to_create.topics) === "[]"
-                        && $scope.user.id === draftUser.id
-                        && $window.confirm("发现草稿, 是否继续编辑?" + 
-                                "\n\n详细信息:" +
-                                "\n\n卡片标题: " + draftCard.title + 
-                                "\n卡片正文: " + draftCard.text)) {
+                checkEachDraftCard(ids);
+            }
+        }
+    }
+
+    function checkEachDraftCard(ids) {
+        const id = ids.pop();
+        if (id !== undefined) {
+            let draft = $window.getDraft(id);
+            if (draft !== undefined) {
+                const draftCard = draft.card;
+                const draftUser = draft.user;
+                if (_.isEmpty(draftCard) === false && $scope.user.id === draftUser.id) {
+                    /* Only the draft's author can view or delete the draft */
+                    const contentLines = [
+                        "draft info:",
+                        "create time: " + draft.getCreateTime(),
+                        "card title: " + draftCard.title,
+                        "card text:<br>" + draftCard.text.replaceAll("\n","<br>")
+                    ];
+                    $scope.confirm({
+                        "title": "<h2>Draft found. Continue editing?</h2>",
+                        "content": contentLines.join("<br><br>"),
+                        "alertClass": "alert-primary",
+                        "confirmCallback": function() {
+                            $window.bsConfirmCloseModal();
                             $scope.card_to_create.title  = draftCard.title;
                             $scope.card_to_create.text   = draftCard.text;
                             $scope.card_to_create.type   = draftCard.type;
                             $scope.card_to_create.topics = draftCard.topics;
-                            break;
+                            $scope.$digest();
+                        },
+                        "rejectCallback": function() {
+                            $window.bsConfirmCloseModal();
+                            removeDraft(id);
+                            if (ids.length) {
+                                checkEachDraftCard(ids);
+                            }
                         }
-                    }
+                    });
                 }
             }
         }
@@ -479,7 +495,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             }
             if ($scope.subPageLocation === "chatItemList") {
                 // 修复从聊天室返回聊天项列表页面的时候页面滚动到最底部的 bug
-                window.scrollTo(0, 0);
+                $window.scrollTo(0, 0);
             }
         } else if (["settings"].includes(pageName)) {
         }
@@ -582,7 +598,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // let loadingId = startLoading(max.loading.delay.time, "$scope.refreshCards()");
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + apis.get.cards.allUsers,
+        //     url: $scope.httpRoot + apis.get.cards.allUsers,
         //     params: {
         //         "sortKey": $scope.keyOf[$scope.subPageLocation],
         //         "start": 0,
@@ -642,7 +658,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // let loadingId = startLoading(max.loading.delay.time, "$scope.refreshUserData()");
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + apis.get.user.data,
+        //     url: $scope.httpRoot + apis.get.user.data,
         //     crossDomain: true,
         //     withCredentials: true
         // }).then(function (result) {
@@ -673,7 +689,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // let loadingId = startLoading(max.loading.delay.time, "$scope.load_more_cards()");
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + apis.get.cards.allUsers,
+        //     url: $scope.httpRoot + apis.get.cards.allUsers,
         //     params: {
         //         "sortKey": $scope.keyOf[$scope.subPageLocation],
         //         "start": $scope.cardLength,
@@ -739,7 +755,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // let loadingId = startLoading(max.loading.delay.time, "$scope.refreshFollowingCards()");
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + apis.get.cards.following,
+        //     url: $scope.httpRoot + apis.get.cards.following,
         //     params: {
         //         "start": 0,
         //         "limit": $scope.max.get.cards.limit
@@ -787,7 +803,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // let loadingId = startLoading(max.loading.delay.time, "$scope.load_more_following_cards()");
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + apis.get.cards.following,
+        //     url: $scope.httpRoot + apis.get.cards.following,
         //     params: {
         //         "start": $scope.cardLength,
         //         "limit": $scope.max.get.cards.limit
@@ -860,7 +876,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + api,
+        //     url: $scope.httpRoot + api,
         //     params: {
         //         "sortKey": "time",
         //         "start": 0,
@@ -915,7 +931,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // let loadingId = startLoading(max.loading.delay.time, "$scope.load_more_my_cards()");
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + api,
+        //     url: $scope.httpRoot + api,
         //     params: {
         //         "sortKey": "time",
         //         "start": $scope.myCardLength,
@@ -982,14 +998,14 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.search = function () {
         if ($scope.keyword !== "") {
 
-            window.scrollTo(0,0);
+            $window.scrollTo(0,0);
             $scope.isSearching = true;
             $scope.isSearchingLoading = true;
             $window.keyword = $scope.keyword;
 
             $http({
                 method: 'GET',
-                url: "http://" + $scope.webRoot + apis.search.cards,
+                url: $scope.httpRoot + apis.search.cards,
                 params: {
                     "key": "content",
                     "value": $scope.keyword
@@ -1057,7 +1073,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         let loadingId = startLoading(max.loading.delay.time, "$scope.searchTopic()");
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.search.cards,
+            url: $scope.httpRoot + apis.search.cards,
             params: {
                 "key": "topic",
                 "value": topicName
@@ -1068,7 +1084,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             stopLoading(loadingId);
 
             $('[data-dismiss="modal"],[data-dismiss=\'modal\']').click();
-            window.scrollTo(0,0);
+            $window.scrollTo(0,0);
 
             let data = result.data;
             switch (data.message) {
@@ -1133,7 +1149,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // let loadingId = startLoading(max.loading.delay.time,"$scope.loadUserFollowing()");
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + apis.get.user.following,
+        //     url: $scope.httpRoot + apis.get.user.following,
         //     crossDomain: true,
         //     withCredentials: true
         // }).then(function (result) {
@@ -1160,7 +1176,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // let loadingId = startLoading(max.loading.delay.time,"$scope.loadUserFans()");
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + apis.get.user.fans,
+        //     url: $scope.httpRoot + apis.get.user.fans,
         //     crossDomain: true,
         //     withCredentials: true
         // }).then(function (result) {
@@ -1203,7 +1219,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.followUser = function (user) {
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.follow.user,
+            url: $scope.httpRoot + apis.follow.user,
             params: {
                 "followingId": user.id
             },
@@ -1247,7 +1263,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.unfollowUser = function (user) {
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.unfollow.user,
+            url: $scope.httpRoot + apis.unfollow.user,
             params: {
                 "followingId": user.id
             },
@@ -1419,6 +1435,115 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
 
+    $scope.get_card_info_html = function (card) {
+        const str =`
+<!-- 卡片统计信息 -->
+<div class="border-top">
+    <!-- 卡片 ID -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Card ID:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.id}</small>
+        </div>
+    </div>
+    <!-- 卡片类型 -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Card Type:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.type}</small>
+        </div>
+    </div>
+    <!-- Card Status -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Card Status:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.status}</small>
+        </div>
+    </div>
+    <!-- 正文字数 -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Text Char Count:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.text.length}</small>
+        </div>
+    </div>
+    <!-- 正文行数 -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Text Line Count:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.contentLines.length}</small>
+        </div>
+    </div>
+    <!-- 卡片热度 -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Card Hot:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.cardHot}</small>
+        </div>
+    </div>
+    <!-- 评论数量 -->
+    <div class="row" ng-if="current_card.commentNum && current_card.comments && current_card.comments.length">
+        <div class="col-6 text-right">
+            <small>Comment Count:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.commentNum}</small>
+        </div>
+    </div>
+    <!-- 转发数量 -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Share Count:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.shareNum}</small>
+        </div>
+    </div>
+    <!-- Author ID -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Author ID:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.user.id}</small>
+        </div>
+    </div>
+    <!-- Author Username -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Author Username:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.user.username}</small>
+        </div>
+    </div>
+    <!-- Author Nickname -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Author Nickname:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${$scope.current_card.user.nickname}</small>
+        </div>
+    </div>
+</div>`;
+        return $sce.trustAsHtml(str);
+    };
+
+
+
     $scope.viewCard = function (card) {
         if (!card || !card.id) {
             bsAlert("$scope.viewCard():","ERR-1 parameter 'card' was not provided","alert-danger");
@@ -1447,7 +1572,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
         // $http({
         //     method: 'get',
-        //     url: "http://" + $scope.webRoot + apis.get.card.byId,
+        //     url: $scope.httpRoot + apis.get.card.byId,
         //     params: {
         //         cardId: card.id,
         //         start: 0,
@@ -1461,7 +1586,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         const result = {
             data: {
                 "message": "card load success",
-                "card": card
+                "card": $window.mock.data.cards.find(e=>e.id==card.id)
             }
         };
 
@@ -1658,7 +1783,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.getUsers = function (user, callback, errorCallback) {
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.search.users,
+            url: $scope.httpRoot + apis.search.users,
             params: {
                 "username": user.username
             },
@@ -2133,7 +2258,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // let loadingId = startLoading(max.loading.delay.time, "$scope.openChatRoom(\"" + chatItem.id + "\")");
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + apis.get.messages.limited,
+        //     url: $scope.httpRoot + apis.get.messages.limited,
         //     params: {
         //         "chatItemId": chatItem.id,
         //         "offset": 0,
@@ -2237,7 +2362,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         let chatItem = $scope.get_current_chat_item();
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.get.messages.limited,
+            url: $scope.httpRoot + apis.get.messages.limited,
             params: {
                 "chatItemId": chatItem.id,
                 "offset": $scope.chatMessageList.length,
@@ -2310,7 +2435,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + apis.sendMessage,
+        //     url: $scope.httpRoot + apis.sendMessage,
         //     params: {
         //         "text": messageText,
         //         "chatItemId": $scope.currentChatItemId
@@ -2365,7 +2490,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.removeChatItem = function (chatItemId) {
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.removePortal,
+            url: $scope.httpRoot + apis.removePortal,
             params: {
                 "chatItemId": chatItemId
             },
@@ -2411,7 +2536,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.createGroup = function () {
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.createFriendGroup,
+            url: $scope.httpRoot + apis.createFriendGroup,
             params: {
                 "groupName": $scope.addGroup.groupName
             },
@@ -2467,7 +2592,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.removeGroup = function (groupId) {
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.removeFriendGroup,
+            url: $scope.httpRoot + apis.removeFriendGroup,
             params: {
                 "groupId": groupId
             },
@@ -2513,7 +2638,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.createRoomSubmit = function () {
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.createRoom,
+            url: $scope.httpRoot + apis.createRoom,
             params: {
                 "roomName": $scope.createRoom.roomName
             },
@@ -2889,11 +3014,11 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         $scope.stopSearch();// 停止搜索卡片
         $scope.stopSearchRooms();// 停止搜索房间
         if ($scope.searchUserKeyword !== "") {
-            window.scrollTo(0,0);
+            $window.scrollTo(0,0);
             $scope.isSearchingUserLoading = true;
             $http({
                 method: 'GET',
-                url: "http://" + $scope.webRoot + apis.search.users,
+                url: $scope.httpRoot + apis.search.users,
                 params: {
                     "username": $scope.searchUserKeyword
                 },
@@ -2946,11 +3071,11 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         $scope.stopSearch();// 停止搜索卡片
         $scope.stopSearchUser();// 停止搜索用户
         if ($scope.searchRoomKeyword !== "") {
-            window.scrollTo(0,0);
+            $window.scrollTo(0,0);
             $scope.isSearchingRoomLoading = true;
             $http({
                 method: 'GET',
-                url: "http://" + $scope.webRoot + apis.search.rooms,
+                url: $scope.httpRoot + apis.search.rooms,
                 params: {
                     "roomName": $scope.searchRoomKeyword
                 },
@@ -3006,7 +3131,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.show_room_info = function (roomId) {
         // $http({
         //     method: 'GET',
-        //     url: "http://" + $scope.webRoot + apis.get.room.members,
+        //     url: $scope.httpRoot + apis.get.room.members,
         //     params: {
         //         "roomId": roomId
         //     },
@@ -3145,7 +3270,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         removeAllTooltips();
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.setRoomAdmin,
+            url: $scope.httpRoot + apis.setRoomAdmin,
             params: {
                 "roomId": roomId,
                 "memberId": memberId
@@ -3204,7 +3329,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         removeAllTooltips();
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.disableRoomAdmin,
+            url: $scope.httpRoot + apis.disableRoomAdmin,
             params: {
                 "roomId": roomId,
                 "adminId": memberId
@@ -3312,7 +3437,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         if (confirm("是否要删除该成员？") === false) return;
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.remove.room.member,
+            url: $scope.httpRoot + apis.remove.room.member,
             params: {
                 "roomId": roomId,
                 "memberId": memberId
@@ -3384,7 +3509,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         let remark = $('[ng-blur="set_room_member_remark()"]').val();
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.room.set.remark,
+            url: $scope.httpRoot + apis.room.set.remark,
             params: {
                 "roomId": $scope.current_room.id,
                 "remark": remark
@@ -3444,7 +3569,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         $scope.allow.set.room.name = false;
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.room.set.name,
+            url: $scope.httpRoot + apis.room.set.name,
             params: {
                 "roomId": $scope.current_room.id,
                 "roomName": $scope.current_room.roomName
@@ -3514,7 +3639,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         if (confirm("是否要解散群？") === false) return;
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.removeRoom,
+            url: $scope.httpRoot + apis.removeRoom,
             params: {
                 "roomId": roomId
             },
@@ -3574,7 +3699,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         if (confirm("是否要退出聊天室？") === false) return;
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.quitRoom,
+            url: $scope.httpRoot + apis.quitRoom,
             params: {
                 "roomId": roomId
             },
@@ -3644,7 +3769,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         console.log("set_friend_group_name(): group = " + JSON.stringify(group));
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.set.group.name,
+            url: $scope.httpRoot + apis.set.group.name,
             params: {
                 "groupId": group.id,
                 "groupName": group.groupName
@@ -3739,7 +3864,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         console.log("move_friend_to_group(friend: " + friend.username + ", group: " + group.groupName + "): sending request ...");
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.friend.set.group,
+            url: $scope.httpRoot + apis.friend.set.group,
             params: {
                 "friendId": friend.id,
                 "groupId": group.id
@@ -3887,7 +4012,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         $scope.allow.edit.user.gender = false;
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.user.set.gender,
+            url: $scope.httpRoot + apis.user.set.gender,
             params: {
                 "gender": $scope.userData.user.gender
             },
@@ -3941,7 +4066,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         $scope.allow.edit.user.nickname = false;
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.user.set.nickname,
+            url: $scope.httpRoot + apis.user.set.nickname,
             params: {
                 "nickname": $scope.userData.user.nickname
             },
@@ -3997,7 +4122,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         $scope.allow.edit.user.signature = false;
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.user.set.signature,
+            url: $scope.httpRoot + apis.user.set.signature,
             params: {
                 "signature": $scope.userData.user.signature
             },
@@ -4069,7 +4194,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         console.log("set_user_city(): city = '" + $scope.userData.user.city + "'");
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.user.set.city,
+            url: $scope.httpRoot + apis.user.set.city,
             params: {
                 "city": $scope.userData.user.city
             },
@@ -4134,7 +4259,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         }
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.friend.set.remark,
+            url: $scope.httpRoot + apis.friend.set.remark,
             params: {
                 "friendId": this_friend.id,
                 "remark": this_friend.remark
@@ -4235,7 +4360,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         if (confirm("是否要删除该好友？") === false) return;
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.removeFriend,
+            url: $scope.httpRoot + apis.removeFriend,
             params: {
                 "friendId": friendId
             },
@@ -4300,7 +4425,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         console.log("remove_message(): messageId = '" + messageId + "'");
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.remove[$scope.currentChatItemType].message,
+            url: $scope.httpRoot + apis.remove[$scope.currentChatItemType].message,
             params: {
                 "messageId": messageId
             },
@@ -4352,7 +4477,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         console.log("recall_friend_room_message(messageId:'" + messageId + "'): sending request ...");
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.recall[$scope.currentChatItemType].message,
+            url: $scope.httpRoot + apis.recall[$scope.currentChatItemType].message,
             params: {
                 "messageId": messageId,
                 "friendId": $scope.get_current_chat_item().friend.id
@@ -4410,7 +4535,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         console.log("recall_chat_room_message(messageId:'" + messageId + "'): sending request ...");
         $http({
             method: 'GET',
-            url: "http://" + $scope.webRoot + apis.recall[$scope.currentChatItemType].message,
+            url: $scope.httpRoot + apis.recall[$scope.currentChatItemType].message,
             params: {
                 "messageId": messageId,
                 "roomId": $scope.get_current_chat_item().room.id

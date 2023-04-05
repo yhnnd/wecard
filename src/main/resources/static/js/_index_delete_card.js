@@ -10,7 +10,7 @@ function deleteCard(card) {
         console.log("deleteCard(" + card.id + "): sending request ...");
 
         $.ajax({
-            url: "http://" + $scope.webRoot + apis.remove.card.byId,
+            url: $scope.httpRoot + apis.remove.card.byId,
             type: 'post',
             data: {
                 "cardId": card.id

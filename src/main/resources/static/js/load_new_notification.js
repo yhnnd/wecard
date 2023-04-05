@@ -1,7 +1,7 @@
 function loadNewNotification(id) {
     $.ajax({
         type: "get",
-        url: "http://" + getWebRoot() + apis.getNotification,
+        url: window.getHttpRoot() + apis.getNotification,
         data: {
             "id": id
         },

@@ -3,7 +3,7 @@ function agreeJoinRoomRequest(request, button) {
     if (request && request.id) {
         $.ajax({
             type: "get",
-            url: "http://" + getWebRoot() + apis.joinRoom.agree,
+            url: window.getHttpRoot() + apis.joinRoom.agree,
             data: {
                 "requestId": request.id
             },

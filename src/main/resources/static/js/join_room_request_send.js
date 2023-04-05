@@ -5,7 +5,7 @@ function sendJoinRoomRequest(room, button) {
     let requestMessage = rows.eq(0).find("textarea").val();
     $.ajax({
         type: "get",
-        url: "http://" + getWebRoot() + apis.joinRoom.send,
+        url: window.getHttpRoot() + apis.joinRoom.send,
         data: {
             "roomId": room.id,
             "requestMessage": requestMessage

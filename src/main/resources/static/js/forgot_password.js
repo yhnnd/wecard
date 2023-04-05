@@ -3,7 +3,7 @@ const forgotPassword = {
         console.log("confirm account: account is " + account);// debug
         // $.ajax({
         //     type: "get",
-        //     url: "http://" + getWebRoot() + apis.forgotPassword.confirmAccount,
+        //     url: window.getHttpRoot() + apis.forgotPassword.confirmAccount,
         //     data: {
         //         "account": account
         //     },
@@ -43,7 +43,7 @@ const forgotPassword = {
         console.log("send verCode: request sent");// debug
         // $.ajax({
         //     type: "get",
-        //     url: "http://" + getWebRoot() + apis.forgotPassword.sendVercode,
+        //     url: window.getHttpRoot() + apis.forgotPassword.sendVercode,
         //     data: {
         //     },
         //     crossDomain: true,
@@ -76,7 +76,7 @@ const forgotPassword = {
         console.log("verify verCode: verCode = " + $("#verCode").val());// debug
         // $.ajax({
         //     type: "get",
-        //     url: "http://" + getWebRoot() + apis.forgotPassword.verifyVercode,
+        //     url: window.getHttpRoot() + apis.forgotPassword.verifyVercode,
         //     data: {
         //         "verCode": $("#verCode").val()
         //     },
@@ -122,7 +122,7 @@ const forgotPassword = {
         console.log("set password: password = " + $("#password").val());// debug
         // $.ajax({
         //     type: "get",
-        //     url: "http://" + getWebRoot() + apis.forgotPassword.setPassword,
+        //     url: window.getHttpRoot() + apis.forgotPassword.setPassword,
         //     data: {
         //         "password": $("#password").val()
         //     },

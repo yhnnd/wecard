@@ -4,11 +4,22 @@ var appVersion = {
     "build-version": "0",
     "version": "2.8.0"
 };
+
 let servers = ["www.impte.com", "127.0.0.1:8000"];
 let choice = window.location.origin.includes("impte.com") ? 0 : 1;
 
 function getWebRoot() {
     return servers[choice];
+}
+
+function getFileRoot() {
+    let a = window.location.href.split("/");
+    return a.pop(), a.join("/");
+}
+
+function getHttpRoot() {
+    return getFileRoot();
+    // return "http://" + getWebRoot();
 }
 
 var special_ids = {

@@ -29,7 +29,7 @@ function createImageCard($scope, card) {
         }
         // 开始上传卡片
         $.ajax({
-            url: "http://" + $scope.webRoot + apis.create.card.image,
+            url: $scope.httpRoot + apis.create.card.image,
             type: 'POST',
             data: formData,
             crossDomain: true,

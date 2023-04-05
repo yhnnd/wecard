@@ -7,7 +7,7 @@ function likeComment(commentId) {
     formData.append("commentId", commentId);
 
     $.ajax({
-        url: "http://" + $scope.webRoot + apis.like.comment,
+        url: $scope.httpRoot + apis.like.comment,
         type: 'POST',
         data: formData,
         crossDomain: true,

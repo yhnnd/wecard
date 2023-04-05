@@ -1,7 +1,7 @@
 function updateRequest(requestId) {
     $.ajax({
         type: "get",
-        url: "http://" + getWebRoot() + apis.getRequest,
+        url: window.getHttpRoot() + apis.getRequest,
         data: {
             "requestId": requestId
         },

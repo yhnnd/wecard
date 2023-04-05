@@ -7,7 +7,7 @@ function cancelLikeCard(cardId) {
     console.log("cancelLikeCard(" + cardId + "): sending request ...");
 
     $.ajax({
-        url: "http://" + $scope.webRoot + apis.cancel.like.card,
+        url: $scope.httpRoot + apis.cancel.like.card,
         type: 'POST',
         data: formData,
         crossDomain: true,
