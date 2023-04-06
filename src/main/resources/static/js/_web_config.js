@@ -227,6 +227,11 @@ var max = {
         },
         audios: {
             length: 1
+        },
+        "comment": {
+            "text": {
+                "length": 300
+            }
         }
     }
 };

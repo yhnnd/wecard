@@ -26,7 +26,7 @@ function loadNewMessage(messageId) {
                     // 观察用户是否在浏览最新消息（必须在载入新消息之前调用）
                     let is_viewing_last_message = isViewingLastMessage();
 
-                    let model = document.getElementById('chat-message-list');
+                    let model = document.querySelector('[ng-controller="controller"]');
                     let $scope = angular.element(model).scope();
                     if ($scope.userData.user) {
                         // bsAlert("load new message: " + JSON.stringify(data));

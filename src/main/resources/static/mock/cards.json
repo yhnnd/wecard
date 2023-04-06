@@ -34,6 +34,7 @@
             {
                 "id": "uuid_comment0",
                 "createdTime": "just now",
+                "commentHot": 12,
                 "status": "exist",
                 "user": {
                     "id": "uuid_user1",
@@ -45,6 +46,7 @@
             {
                 "id": "uuid_comment1",
                 "createdTime": "minutes ago",
+                "commentHot": 2,
                 "status": "exist",
                 "user": {
                     "id": "uuid_user2",

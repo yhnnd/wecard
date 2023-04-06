@@ -12,7 +12,7 @@ function loadNewRequest(requestId) {
         success: function (data) {
             console.log("load new request: " + JSON.stringify(data));
             if (data.request && data.request.id) {
-                var model = document.getElementById('chat-message-list');
+                var model = document.querySelector('[ng-controller="controller"]');
                 let scope = angular.element(model).scope();
                 scope.chatMessageList.push(data.request);
                 scope.$apply();

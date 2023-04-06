@@ -25,7 +25,7 @@ function gotoMessage(FirstOrLast, isSmooth) {
 
 // 设置 scroll control 中的 badge 显示的未读消息数
 function setUnreadMessageCount(count) {
-    const model = document.getElementById('chat-message-list');
+    const model = document.querySelector('[ng-controller="controller"]');
     const $scope = angular.element(model).scope();
     $scope.unread_message_count = count;
     setTimeout(() => {

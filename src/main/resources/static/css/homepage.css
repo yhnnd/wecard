@@ -2,6 +2,10 @@ body {
   background-color: #f5f5f5;
 }
 
+.w-fit-content {
+  width: fit-content;
+}
+
 .container {
   background-color: white;
   border-radius: 5px;
@@ -926,6 +930,121 @@ pre.line.dme.dme-i {
   height: auto;
 }
 
+.modal#view-card .comments-wrapper {
+  background: url(https://media.tenor.com/VMNUYdNQwCkAAAAd/cyber-punk-cyberpunk2077.gif) center/cover no-repeat fixed !important;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.modal#view-card .comments-wrapper .comments {
+  backdrop-filter: blur(2px);
+  background-color: rgba(255, 255, 255, .85);
+}
+
+.modal#view-card .comment-username {
+  margin-top: -.25rem;
+}
+
+.modal#view-card .comment-bubble {
+  display: block;
+  margin-left: .5rem;
+  margin-right: 2rem;/* For displaying delete button */
+  background: #fff;
+  color: #000;
+  border-radius: .25rem;
+  width: fit-content;
+  max-width: 100%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.modal#view-card .comment.comment-xs .comment-bubble {
+  padding: .25rem .3rem .32rem .3rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.modal#view-card .comment.comment-sm .comment-bubble {
+  padding: .3rem .4rem .38rem .4rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.modal#view-card .comment.comment-md .comment-bubble {
+  padding: .3rem .55rem .405rem .55rem;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.modal#view-card .comment.comment-lg .comment-bubble {
+  padding: .35rem .75rem .465rem .75rem;
+  font-size: 1.1rem;
+  line-height: 1.25;
+}
+
+.modal#view-card .comment.comment-xl .comment-bubble {
+  padding: .55rem .95rem .67rem .95rem;
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.modal#view-card .comment.comment-xs .comment-bubble.reply-bubble {
+  padding: .15rem .3rem .34rem .3rem;
+}
+
+.modal#view-card .comment.comment-sm .comment-bubble.reply-bubble {
+  padding: .22rem .4rem .395rem .4rem;
+}
+
+.modal#view-card .comment.comment-md .comment-bubble.reply-bubble {
+  padding: .28rem .55rem .45rem .55rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.modal#view-card .comment.comment-lg .comment-bubble.reply-bubble {
+  padding: .35rem .65rem .52rem .65rem;
+  font-size: 1.07rem;
+  line-height: 1;
+}
+
+.modal#view-card .comment.comment-xl .comment-bubble.reply-bubble {
+  padding: .4rem .92rem .585rem .92rem;
+  font-size: 1.15rem;
+  line-height: 1.06;
+}
+
+.modal#view-card .delete-button-wrapper.outer {
+  position: relative;
+}
+
+.modal#view-card .delete-button-wrapper.inner {
+  position: absolute;
+  top: -.25rem;
+  right: 0;
+}
+
+.modal#view-card .delete-button-wrapper.inner.delete-reply {
+  top: .25rem;
+  right: .3rem;
+}
+
+.modal#view-card .message-content-wrapper {
+  border-width: 1px;
+  border-style: solid;
+  border-color: transparent;
+  outline-width: .25rem;
+  outline-style: solid;
+  outline-color: transparent;
+  transition: border-color linear .05s, outline-color linear .1s;
+}
+
+.modal#view-card .message-content-wrapper:has(.button:hover) {
+  border-color: rgba(64, 168, 255, .75);
+  outline-color: rgba(16, 133, 255, 0.33);
+}
+
 .card-image-preview-wrapper {
   display: inline-block;
   width: 160px;
@@ -1128,4 +1247,8 @@ pre.line.dme.dme-i {
   to {
     opacity: 0;
   }
+}
+
+#web-browser-logo {
+  display: block;
 }

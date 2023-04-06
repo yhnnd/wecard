@@ -22,7 +22,7 @@ function updateMessage(messageId) {
                     bsAlert("update new message: 消息 ID 不能为空");
                     break;
                 case "Find success":
-                    var model = document.getElementById('chat-message-list');
+                    var model = document.querySelector('[ng-controller="controller"]');
                     let scope = angular.element(model).scope();
                     scope.chatMessageList = _.map(scope.chatMessageList, function (message) {
                         return message.id === messageId ? data.message : message;

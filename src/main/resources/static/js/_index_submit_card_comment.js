@@ -2,7 +2,7 @@
 function submitComment() {
     // let loadingId = startLoading(max.loading.delay.time);
     const model = document.querySelector('[ng-controller="controller"]');
-    let $scope = angular.element(model).scope();
+    const $scope = angular.element(model).scope();
     /* Mock Data */
     const result = {
         data: {
@@ -46,6 +46,9 @@ function submitComment() {
     //             case "comment create success":
                     if (result.data.comment) {
                         $scope.my_comment = "";// 清空评论输入框
+                        if ($scope.current_card.comments === undefined) {
+                            $scope.current_card.comments = [];
+                        }
                         // $scope.current_card.comments.push(result.data.comment);
                         $scope.current_card.comments.unshift(result.data.comment);
                     } else {

@@ -13,7 +13,7 @@ function updateRequest(requestId) {
             if (data.message === "Find success") {
                 console.log("update request: " + JSON.stringify(data));
                 if (data.request && data.request.id) {
-                    var model = document.getElementById('chat-message-list');
+                    var model = document.querySelector('[ng-controller="controller"]');
                     let scope = angular.element(model).scope();
                     scope.chatMessageList = _.map(scope.chatMessageList, function (request) {
                         return request.id !== data.request.id ? request : data.request;

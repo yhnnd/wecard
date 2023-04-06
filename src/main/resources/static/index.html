@@ -381,6 +381,7 @@
     <!-- Warning: Bootstrap 4.3.1 and higher versions cannot support popper. -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.0/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/underscore@1.13.6/underscore-min.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Buttons/2.0.0/js/buttons.min.js"></script>
 
     <script src="./js/vendor/loading.js"></script>
     <script src="./js/vendor/inspect_image.js"></script>
@@ -409,21 +410,6 @@
     <!-- module index (card) -->
     <div ng-app="module-index" ng-cloak="ng-cloak">
         <div ng-controller="controller">
-            <!-- data for cards -->
-            <input id="user" style="display:none;" ng-model="user">
-            <input id="card-groups" style="display:none;" ng-model="cardGroups">
-            <input id="my-card-groups" style="display:none;" ng-model="myCardGroups">
-            <input id="current-card" style="display:none;" ng-model="current_card">
-            <input id="cards-view-mode" style="display:none;" ng-model="cardsViewMode">
-
-            <!-- data for chat -->
-            <input id="user-data" style="display:none;" ng-model="userData">
-            <input id="data-groups" style="display:none;" ng-model="userData.groups">
-            <input id="chat-message-list" style="display:none;" ng-model="chatMessageList">
-
-
-
-
             <div class="fixed-top navbar-wrapper">
                 <!-- desktop client navbar -->
                 <div class="navbar-inner-wrapper desktop-client-navbar">
@@ -1711,7 +1697,7 @@
                             </button>
                         </div>
                         <!-- Modal Body -->
-                        <div class="modal-body">
+                        <div class="modal-body pb-0">
                             <!-- card content -->
                             <div class="row">
                                 <div class="col-12 col-md-10 mb-0 mx-md-auto">
@@ -2451,288 +2437,306 @@
                                     </div>
                                 </div>
                             </div>
-            
-                            <hr class="mt-0">
-            
+
                             <!-- 评论显示区域 -->
-                            <div class="row">
-                                <div class="col-12 mb-3">
-                                    <!-- 如果用户已经登录 -->
-                                    <div ng-show="user">
-                                        <!-- 评论输入框 -->
-                                        <div class="w-100 mb-2">
-                                            <textarea class="form-control border-radius-0 py-0 card-comment-editor" rows="3"
-                                                      ng-model="my_comment" placeholder="我的评论" maxlength="140">
-                                            </textarea>
+                            <div class="comments-wrapper">
+                                <div class="row comments py-2">
+                                    <div class="col-12 mx-md-auto col-md-10 pt-1">
+                                        <!-- 如果用户已经登录 -->
+                                        <div ng-show="user">
+                                            <!-- 评论输入框 -->
+                                            <div class="w-100 my-2">
+                                                <textarea class="form-control border-radius-0 py-0 card-comment-editor" rows="3"
+                                                          ng-model="my_comment" placeholder="我的评论" maxlength="{{max.card.comment.text.length}}">
+                                                </textarea>
+                                            </div>
+                                            <!-- 发表评论按钮 -->
+                                            <div class="w-100 d-flex justify-content-end">
+                                                <button class="btn btn-success border-radius-0 ml-auto"
+                                                        ng-click="submitComment()" title="提交评论">
+                                                    发表评论
+                                                </button>
+                                            </div>
                                         </div>
-                                        <!-- 发表评论按钮 -->
-                                        <div class="w-100 d-flex justify-content-end">
-                                            <button class="btn btn-success border-radius-0 ml-auto"
-                                                    ng-click="submitComment()" title="提交评论">
-                                                发表评论
-                                            </button>
+                                        <!-- 如果用户没有登录 -->
+                                        <div ng-show="!user">
+                                            <!-- 评论输入框，不可用 -->
+                                            <div class="w-100 my-2">
+                                                <textarea class="form-control border-radius-0 py-0 card-comment-editor" rows="3" placeholder="我的评论" disabled>
+                                                </textarea>
+                                            </div>
+                                            <!-- 发表评论按钮，变成登录按钮 -->
+                                            <div class="w-100 d-flex justify-content-end">
+                                                <button class="btn btn-success border-radius-0 ml-auto"
+                                                        onclick="login('./index.html');" title="登录才能评论">
+                                                    登录以评论
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <!-- 如果用户没有登录 -->
-                                    <div ng-show="!user">
-                                        <!-- 评论输入框，不可用 -->
-                                        <div class="w-100 mb-2">
-                                            <textarea class="form-control border-radius-0 py-0 card-comment-editor" rows="3"
-                                                      ng-model="my_comment" placeholder="我的评论" maxlength="140"
-                                                      disabled>
-                                            </textarea>
-                                        </div>
-                                        <!-- 发表评论按钮，变成登录按钮 -->
-                                        <div class="w-100 d-flex justify-content-end">
-                                            <button class="btn btn-success border-radius-0 ml-auto"
-                                                    onclick="login('./index.html');" title="登录才能评论">
-                                                登录以评论
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12 mb-2 mx-md-auto col-md-10 mb-md-0">
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <!-- no comment -->
-                                            <div ng-if="!current_card.comments||!current_card.comments.length">
-                                                <div class="text-center">
-                                                    <small class="text-muted">
-                                                        没有评论
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <div class="mb-3" ng-if="current_card.comments && current_card.comments.length">
-                                                <label title="size of comment">
-                                                    <span>评论气泡尺寸</span>
-                                                </label>
-                                                <label>
-                                                    <input type="radio" ng-model="comment_size" value="xs">
-                                                    <span>extra small</span>
-                                                </label>
-                                                <label>
-                                                    <input type="radio" ng-model="comment_size" value="sm">
-                                                    <span>small</span>
-                                                </label>
-                                                <label>
-                                                    <input type="radio" ng-model="comment_size" value="md">
-                                                    <span>middle</span>
-                                                </label>
-                                                <label>
-                                                    <input type="radio" ng-model="comment_size" value="lg">
-                                                    <span>large</span>
-                                                </label>
-                                            </div>
-                                            <!-- 遍历当前卡片的所有一级评论 -->
-                                            <div class="cursor-pointer" ng-repeat="comment in current_card.comments track by $index">
-                                                <!-- wc card comment (comment_size === 'xs','sm','md','lg') -->
-                                                <div class="py-3 border-top">
-                                                    <div class="message-content-wrapper">
-                                                        <div class="row" ng-class="{'half-hidden' : comment.status !== 'exist'}">
-                                                            <div class="col-12 col-sm-1 pr-0 d-flex justify-content-start justify-content-sm-end">
-                                                                <!-- 1 他的头像 -->
-                                                                <div class="avatar-wrapper d-inline-block mr-1">
-                                                                    <img src="{{comment.user.avatarUrl}}" alt="" class="user-avatar rounded-circle border" data-toggle="tooltip" title="{{comment.user.nickname}}">
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-12 col-sm-11 pl-0 pr-4">
-                                                                <!-- 2 评论气泡 -->
-                                                                <div class="bg-white px-2 w-100 mt-1" ng-if="comment.text" style="line-height: 1.25; font-size: 1.25rem;">
-                                                                    <!-- 删除评论按钮 -->
-                                                                    <div style="position:relative" ng-show="user && comment.user.id === user.id && comment.status === 'exist'">
-                                                                        <small style="position:absolute;top: -.65rem;right: -.8rem;">
-                                                                            <i class="fa fa-2x fa-times-circle text-muted" ng-click="deleteComment(current_card.id,comment.id)"></i>
-                                                                        </small>
-                                                                    </div>
-                                                                    <!-- 评论内容 -->
-                                                                    <small class="{{comment.status === 'exist'? 'text-dark' : 'text-muted'}} break-all">
-                                                                        {{comment.user.username}}: {{comment.text}}
-                                                                    </small>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-12 d-flex justify-content-end pr-4">
-                                                                <!-- 3 评论的其他信息 -->
-                                                                <div class="d-inline-block bg-white" ng-if="comment.status === 'exist'">
-                                                                    <!-- 回复评论 -->
-                                                                    <div class="d-inline-block ml-2" data-toggle="tooltip" title="回复评论">
-                                                                        <a href="#comment-{{comment.id}}" ng-click="blink($event)">
-                                                                            <i class="fa fa-lg fa-comment" style="color: deepskyblue;"
-                                                                                ng-click="comment.isReplyInputShown = true;">
-                                                                            </i>
-                                                                        </a>
-                                                                    </div>
-                                                                    <!-- 点赞评论 -->
-                                                                    <div class="d-inline-block ml-1">
-                                                                        <i class="fa fa-lg fa-thumbs-up text-primary"
-                                                                            data-toggle="tooltip" title="赞"
-                                                                            ng-click="likeComment(comment)">
-                                                                        </i>
-                                                                        <small class="text-muted" data-toggle="tooltip" title="获赞数">
-                                                                            {{comment.commentHot}}
-                                                                        </small>
-                                                                    </div>
-                                                                    <!-- 评论时间 -->
-                                                                    <div class="d-inline-block ml-1">
-                                                                        <small class="text-muted" data-toggle="tooltip" title="评论时间">
-                                                                            {{comment.createdTime}}
-                                                                        </small>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- 3 评论的其他信息 (已删除) -->
-                                                                <div class="d-inline-block bg-white" ng-if="comment.status !== 'exist'">
-                                                                    <!-- 回复评论 -->
-                                                                    <div class="d-inline-block ml-2">
-                                                                        <i class="fa fa-lg fa-comment" style="color: deepskyblue;"></i>
-                                                                    </div>
-                                                                    <!-- 点赞评论 -->
-                                                                    <div class="d-inline-block ml-1">
-                                                                        <i class="fa fa-lg fa-thumbs-up text-primary"></i>
-                                                                        <small class="text-muted">
-                                                                            {{comment.commentHot}}
-                                                                        </small>
-                                                                    </div>
-                                                                    <!-- 评论时间 -->
-                                                                    <div class="d-inline-block ml-1">
-                                                                        <small class="text-muted">
-                                                                            {{comment.createdTime}}
-                                                                        </small>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                    <div class="col-12 mx-md-auto col-md-10 pb-1">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <!-- no comment -->
+                                                <div ng-if="!current_card.comments||!current_card.comments.length">
+                                                    <div class="text-center">
+                                                        <span class="text-muted">没有评论</span>
                                                     </div>
-                                                
-                                                    <!-- 该评论的所有回复（二级评论） -->
-                                                    <div class="w-100 pl-3 {{comment.children && comment.children.length ? 'pt-2' : ''}}">
-                                                        <!-- 二级评论 -->
-                                                        <div class="mb-1" ng-repeat="reply in comment.children track by $index">
-                                                            <div class="message-content-wrapper">
-                                                                <div class="row" ng-class="{'half-hidden' : reply.status !== 'exist'}">
-                                                                    <div class="col-12 col-sm-1 pr-0 d-flex justify-content-start justify-content-sm-end">
-                                                                        <!-- 1 他的头像 -->
-                                                                        <div class="avatar-wrapper d-inline-block mr-1">
-                                                                            <img src="{{reply.user.avatarUrl}}" alt="" class="user-avatar rounded-circle border">
+                                                </div>
+                                                <div class="mt-2" ng-if="current_card.comments && current_card.comments.length">
+                                                    <label title="size of comment">
+                                                        <span>评论气泡尺寸</span>
+                                                    </label>
+                                                    <select ng-model="comment_size.selected">
+                                                        <option value="xs">extra small</option>
+                                                        <option value="sm">small</option>
+                                                        <option value="md">middle</option>
+                                                        <option value="lg">large</option>
+                                                        <option value="xl">extra large</option>
+                                                    </select>
+                                                    <label>
+                                                        <input type="radio" ng-model="comment_size.selected" value="xs">
+                                                        <span>extra small</span>
+                                                    </label>
+                                                    <label>
+                                                        <input type="radio" ng-model="comment_size.selected" value="sm">
+                                                        <span>small</span>
+                                                    </label>
+                                                    <label>
+                                                        <input type="radio" ng-model="comment_size.selected" value="md">
+                                                        <span>middle</span>
+                                                    </label>
+                                                    <label>
+                                                        <input type="radio" ng-model="comment_size.selected" value="lg">
+                                                        <span>large</span>
+                                                    </label>
+                                                    <label>
+                                                        <input type="radio" ng-model="comment_size.selected" value="xl">
+                                                        <span>extra large</span>
+                                                    </label>
+                                                </div>
+                                                <!-- 遍历当前卡片的所有一级评论 -->
+                                                <div class="comment comment-{{comment_size.selected}}" ng-repeat="comment in current_card.comments track by $index">
+                                                    <!-- wc card comment (comment_size === 'xs','sm','md','lg') -->
+                                                    <div class="py-3 border-top">
+                                                        <div class="message-content-wrapper">
+                                                            <div class="row" ng-class="{'half-hidden' : comment.status !== 'exist'}">
+                                                                <div class="col-12 col-sm-1 d-flex align-items-start">
+                                                                    <div class="d-flex flex-column align-items-center">
+                                                                        <!-- 1 Comment's User Avatar -->
+                                                                        <div class="avatar-wrapper">
+                                                                            <img src="{{comment.user.avatarUrl}}" alt="" class="user-avatar rounded-circle border" data-toggle="tooltip" title="{{comment.user.nickname}}">
+                                                                        </div>
+                                                                        <div class="comment-username badge badge-info">{{comment.user.username}}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-12 col-sm-11 pl-0 pr-4">
+                                                                    <!-- 2 评论气泡 -->
+                                                                    <div class="w-100 h-100" ng-if="comment.text">
+                                                                        <!-- button delete comment -->
+                                                                        <div class="delete-button-wrapper outer" ng-show="user && comment.user.id === user.id && comment.status === 'exist'">
+                                                                            <div class="delete-button-wrapper inner">
+                                                                                <button class="button button-3d button-box button-small" ng-click="deleteComment(current_card.id,comment.id)">
+                                                                                    <i class="fa fa-2x fa-times"></i>
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                        <!-- comment bubble -->
+                                                                        <div class="w-fit-content h-100 d-flex">
+                                                                            <div class="comment-bubble align-self-center">
+                                                                                <span class="comment-text {{comment.status === 'exist'? 'text-dark' : 'text-muted'}} break-all">
+                                                                                    {{comment.text}}
+                                                                                </span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="col-12 col-sm-11 pl-0 pr-4">
-                                                                        <!-- 2 二级评论气泡 -->
-                                                                        <div class="bg-white px-2 w-100 mt-1" ng-if="comment.text" style="line-height: 1.25; font-size: 1.25rem;">
-                                                                            <!-- 删除二级评论按钮 -->
-                                                                            <div style="position:relative" ng-show="user && reply.user.id === user.id && reply.status === 'exist'">
-                                                                                <small style="position:absolute;top: -.65rem;right: -.8rem;">
-                                                                                    <i class="fa fa-2x fa-times-circle text-muted" ng-click="deleteComment(current_card.id,reply.id)"></i>
-                                                                                </small>
-                                                                            </div>
-                                                                            <!-- 二级评论内容 -->
-                                                                            <small class="{{reply.status === 'exist'? 'text-dark' : 'text-muted'}} break-all">
-                                                                                {{reply.text}}
+                                                                </div>
+                                                                <div class="col-12 d-flex justify-content-end pr-4">
+                                                                    <!-- 3 评论的其他信息 -->
+                                                                    <div class="d-inline-block" ng-if="comment.status === 'exist'">
+                                                                        <!-- 回复评论 -->
+                                                                        <div class="d-inline-block ml-2" data-toggle="tooltip" title="回复评论">
+                                                                            <button class="button button-primary button-3d button-box button-small" ng-click="comment.isReplyInputShown = true;blink('#reply-comment-parent-id-'+comment.id);">
+                                                                                <i class="fa fa-lg fa-comment"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                        <!-- 点赞评论 -->
+                                                                        <div class="d-inline-block ml-1">
+                                                                            <button class="button button-primary button-3d button-box button-small" ng-click="likeComment(comment)" data-toggle="tooltip" title="like">
+                                                                                <i class="fa fa-lg fa-thumbs-up"></i>
+                                                                            </button>
+                                                                            <small class="text-muted" data-toggle="tooltip" title="获赞数">
+                                                                                {{comment.commentHot}}
+                                                                            </small>
+                                                                        </div>
+                                                                        <!-- 评论时间 -->
+                                                                        <div class="d-inline-block ml-1">
+                                                                            <small class="text-muted" data-toggle="tooltip" title="评论时间">
+                                                                                {{comment.createdTime}}
                                                                             </small>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="col-12 d-flex justify-content-end pr-4">
-                                                                        <!-- 3 二级评论的更多信息 -->
-                                                                        <div class="d-inline-block" ng-if="reply.status === 'exist'">
-                                                                            <!-- 点赞二级评论 -->
-                                                                            <div class="d-inline-block ml-1">
-                                                                                <i class="fa fa-lg fa-thumbs-up text-primary"
-                                                                                    data-toggle="tooltip" title="赞"
-                                                                                    ng-click="likeComment(reply)">
-                                                                                </i>
-                                                                                <small class="text-muted" data-toggle="tooltip" title="获赞数">
-                                                                                    {{reply.commentHot}}
-                                                                                </small>
-                                                                            </div>
-                                                                            <!-- 二级评论的提交时间 -->
-                                                                            <div class="d-inline-block ml-1">
-                                                                                <small class="text-muted" data-toggle="tooltip" title="评论时间">
-                                                                                    {{reply.createdTime}}
-                                                                                </small>
-                                                                            </div>
+                                                                    <!-- 3 评论的其他信息 (已删除) -->
+                                                                    <div class="d-inline-block" ng-if="comment.status !== 'exist'">
+                                                                        <!-- 回复评论 -->
+                                                                        <div class="d-inline-block ml-2">
+                                                                            <i class="fa fa-lg fa-comment" style="color: deepskyblue;"></i>
                                                                         </div>
-                                                                        <!-- 3 二级评论的更多信息 (已删除) -->
-                                                                        <div class="d-inline-block" ng-if="reply.status !== 'exist'">
-                                                                            <!-- 点赞二级评论 -->
-                                                                            <div class="d-inline-block ml-1">
-                                                                                <i class="fa fa-lg fa-thumbs-up text-primary">
-                                                                                </i>
-                                                                                <small class="text-muted">
-                                                                                    {{reply.commentHot}}
-                                                                                </small>
-                                                                            </div>
-                                                                            <!-- 二级评论的提交时间 -->
-                                                                            <div class="d-inline-block ml-1">
-                                                                                <small class="text-muted">
-                                                                                    {{reply.createdTime}}
-                                                                                </small>
-                                                                            </div>
+                                                                        <!-- 点赞评论 -->
+                                                                        <div class="d-inline-block ml-1">
+                                                                            <i class="fa fa-lg fa-thumbs-up text-primary"></i>
+                                                                            <small class="text-muted">
+                                                                                {{comment.commentHot}}
+                                                                            </small>
+                                                                        </div>
+                                                                        <!-- 评论时间 -->
+                                                                        <div class="d-inline-block ml-1">
+                                                                            <small class="text-muted">
+                                                                                {{comment.createdTime}}
+                                                                            </small>
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <!-- 回复评论输入框 reply comment input area -->
-                                                        <!-- 此组件的用户体验不好, 将被评论专用的模态窗替换 -->
-                                                        <div class="reply-comment-input-area py-3 pr-1 mr-2"
-                                                                ng-show="comment.status === 'exist' && comment.isReplyInputShown === true">
-                                                            <div style="position: relative;">
-                                                                <div style="position: absolute;top: -100px;visibility: hidden;"
-                                                                        id="comment-{{comment.id}}"></div>
-                                                                <i class="fa fa-times-circle fa-2x"
-                                                                    style="position: absolute;top: -0.5rem;right: -0.5rem;opacity: .5;z-index: 1100;"
-                                                                    ng-click="comment.isReplyInputShown = false;">
-                                                                </i>
+                                                    
+                                                        <!-- 该评论的所有回复（二级评论） -->
+                                                        <div class="w-100 pl-3 {{comment.children && comment.children.length ? 'pt-2' : ''}}">
+                                                            <!-- 二级评论 -->
+                                                            <div class="comment comment-{{comment_size.selected}} mb-1" ng-repeat="reply in comment.children track by $index">
+                                                                <div class="message-content-wrapper">
+                                                                    <div class="row" ng-class="{'half-hidden' : reply.status !== 'exist'}">
+                                                                        <div class="col-12 col-sm-1 pr-0 d-flex justify-content-start justify-content-sm-end">
+                                                                            <!-- 1 他的头像 -->
+                                                                            <div class="avatar-wrapper d-inline-block mr-1" data-toggle="tooltip" title="{{reply.user.username}}">
+                                                                                <img src="{{reply.user.avatarUrl}}" alt="" class="user-avatar rounded-circle border">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-12 col-sm-11 pl-0 pr-4">
+                                                                            <!-- 2 二级评论气泡 -->
+                                                                            <div class="w-100 h-100" ng-if="reply.text">
+                                                                                <!-- 删除二级评论按钮 -->
+                                                                                <div class="delete-button-wrapper outer" ng-show="user && reply.user.id === user.id && reply.status === 'exist'">
+                                                                                    <div class="delete-button-wrapper inner delete-reply">
+                                                                                        <button class="button button-3d button-box button-tiny" ng-click="deleteComment(current_card.id,reply.id)">
+                                                                                            <i class="fa fa-2x fa-times"></i>
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <!-- 二级评论内容 -->
+                                                                                <div class="w-fit-content h-100 d-flex">
+                                                                                    <div class="comment-bubble reply-bubble align-self-center">
+                                                                                        <small class="comment-text {{reply.status === 'exist'? 'text-dark' : 'text-muted'}} break-all">
+                                                                                            {{reply.text}}
+                                                                                        </small>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-12 d-flex justify-content-end pr-4">
+                                                                            <!-- 3 二级评论的更多信息 -->
+                                                                            <div class="d-inline-block" ng-if="reply.status === 'exist'">
+                                                                                <!-- 点赞二级评论 -->
+                                                                                <div class="d-inline-block ml-1">
+                                                                                    <button class="button button-primary button-3d button-box button-small" ng-click="likeComment(reply)" data-toggle="tooltip" title="like">
+                                                                                        <i class="fa fa-lg fa-thumbs-up"></i>
+                                                                                    </button>
+                                                                                    <small class="text-muted" data-toggle="tooltip" title="获赞数">
+                                                                                        {{reply.commentHot}}
+                                                                                    </small>
+                                                                                </div>
+                                                                                <!-- 二级评论的提交时间 -->
+                                                                                <div class="d-inline-block ml-1">
+                                                                                    <small class="text-muted" data-toggle="tooltip" title="评论时间">
+                                                                                        {{reply.createdTime}}
+                                                                                    </small>
+                                                                                </div>
+                                                                            </div>
+                                                                            <!-- 3 二级评论的更多信息 (已删除) -->
+                                                                            <div class="d-inline-block" ng-if="reply.status !== 'exist'">
+                                                                                <!-- 点赞二级评论 -->
+                                                                                <div class="d-inline-block ml-1">
+                                                                                    <i class="fa fa-lg fa-thumbs-up text-primary">
+                                                                                    </i>
+                                                                                    <small class="text-muted">
+                                                                                        {{reply.commentHot}}
+                                                                                    </small>
+                                                                                </div>
+                                                                                <!-- 二级评论的提交时间 -->
+                                                                                <div class="d-inline-block ml-1">
+                                                                                    <small class="text-muted">
+                                                                                        {{reply.createdTime}}
+                                                                                    </small>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <!-- 如果用户已经登录 -->
-                                                            <div class="row" ng-show="user">
-                                                                <div class="col-12 col-sm-1 pr-0 d-flex justify-content-start justify-content-sm-end">
-                                                                    <!-- 1 当前用户头像 -->
-                                                                    <div class="avatar-wrapper d-inline-block mr-1">
-                                                                        <img src="{{userData.user.avatarUrl}}" alt="" class="user-avatar rounded-circle border">
+                                                            <!-- 回复评论输入框 reply comment input area -->
+                                                            <!-- 此组件的用户体验不好, 将被评论专用的模态窗替换 -->
+                                                            <div class="reply-comment-input-area py-3 pr-1 mr-2" id="reply-comment-parent-id-{{comment.id}}"
+                                                                    ng-show="comment.status === 'exist' && comment.isReplyInputShown === true">
+                                                                <div style="position: relative;">
+                                                                    <i class="fa fa-times-circle fa-2x"
+                                                                        style="position: absolute;top: -0.5rem;right: -0.5rem;opacity: .5;z-index: 1100;"
+                                                                        ng-click="comment.isReplyInputShown = false;">
+                                                                    </i>
+                                                                </div>
+                                                                <!-- 如果用户已经登录 -->
+                                                                <div class="row" ng-show="user">
+                                                                    <div class="col-12 col-sm-1 pr-0 d-flex justify-content-start justify-content-sm-end">
+                                                                        <!-- 1 当前用户头像 -->
+                                                                        <div class="avatar-wrapper d-inline-block mr-1">
+                                                                            <img src="{{userData.user.avatarUrl}}" alt="" class="user-avatar rounded-circle border">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-12 col-sm-11 pl-0">
+                                                                        <!-- 2 回复评论气泡 -->
+                                                                        <div class="px-2 w-100 mt-1">
+                                                                            <!-- 回复评论输入框 -->
+                                                                            <textarea class="form-control form-control-sm border-radius-0"
+                                                                                        rows="3"
+                                                                                        style="background: transparent;"
+                                                                                        data-parent-id="{{comment.id}}"></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <!-- 回复按钮 -->
+                                                                    <div class="col-12">
+                                                                        <div class="w-100 mt-2 d-flex justify-content-end">
+                                                                            <button class="btn btn-primary border-radius-0" ng-click="replyComment(comment.id)" title="回复评论">
+                                                                                <div class="mx-2">回复</div>
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="col-12 col-sm-11 pl-0">
-                                                                    <!-- 2 回复评论气泡 -->
-                                                                    <div class="px-2 w-100 mt-1">
-                                                                        <!-- 回复评论输入框 -->
-                                                                        <textarea class="form-control form-control-sm border-radius-0"
-                                                                                    rows="3"
-                                                                                    style="background: transparent;"
-                                                                                    data-parent-id="{{comment.id}}"></textarea>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- 回复按钮 -->
-                                                                <div class="col-12">
-                                                                    <div class="w-100 mt-2 d-flex justify-content-end">
-                                                                        <button class="btn btn-primary border-radius-0" ng-click="replyComment(comment.id)" title="回复评论">
-                                                                            <div class="mx-2">回复</div>
-                                                                        </button>
+                                                                <!-- 如果用户没有登录 -->
+                                                                <div ng-show="!user">
+                                                                    <div class="alert alert-warning border-radius-0 mb-0">
+                                                                        <div>您尚未登录</div>
+                                                                        <div class="mt-2 d-flex justify-content-end">
+                                                                            <button class="btn btn-sm btn-outline-secondary border-radius-0 px-4"
+                                                                                    ng-click="login();">
+                                                                                登录
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <!-- 如果用户没有登录 -->
-                                                            <div ng-show="!user">
-                                                                <div class="alert alert-warning border-radius-0 mb-0">
-                                                                    <div>您尚未登录</div>
-                                                                    <div class="mt-2 d-flex justify-content-end">
-                                                                        <button class="btn btn-sm btn-outline-secondary border-radius-0 px-4"
-                                                                                ng-click="login();">
-                                                                            登录
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                            <!-- 回复评论输入框 reply comment input area END -->
                                                         </div>
-                                                        <!-- 回复评论输入框 reply comment input area END -->
+                                                        <!-- 该评论的所有回复（二级评论）END -->
                                                     </div>
-                                                    <!-- 该评论的所有回复（二级评论）END -->
                                                 </div>
+                                                <!-- 遍历当前卡片的所有一级评论 END -->
                                             </div>
-                                            <!-- 遍历当前卡片的所有一级评论 END -->
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div id="wc-card-info" ng-if="debugMode.isEnabled" ng-bind-html="get_card_info_html(current_card)"></div>
+
+                            <!-- Card Info -->
+                            <div id="wc-card-info" ng-if="current_card && debugMode.isEnabled" ng-bind-html="get_card_info_html(current_card)"></div>
                         </div>
                         <!-- Modal Body End -->
                         <div class="modal-footer justify-content-end">
@@ -4465,12 +4469,13 @@
                             <!-- 1. browser info -->
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <i class="fa fa-internet-explorer mr-1"></i>
-                                    <span>当前浏览器</span>
+                                    <i id="web-browser-icon" class="fa mr-1"></i>
+                                    <span>Current Web Browser</span>
                                 </h5>
                                 <p class="card-text">
                                     {{userAgent}}
                                 </p>
+                                <div id="web-browser-logo" class="w-fit-content rounded-circle img-thumbnail cursor-pointer"></div>
                             </div>
 
                             <ul class="list-group list-group-flush">
@@ -4518,7 +4523,9 @@
                                 <li class="list-group-item">
                                     <div class="row">
                                         <div class="col-6 d-flex align-items-center">
-                                            <span>一次加载消息数量最大限度</span>
+                                            <span data-toggle="tooltip" title="一次加载消息数量最大限度" class="cursor-pointer">
+                                                Max Get Messages Limit
+                                            </span>
                                         </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
                                             <input type="number" class="form-control form-control-sm border-radius-0" ng-model="max.get.messages.limit" data-default-value="15">
@@ -4529,7 +4536,9 @@
                                 <li class="list-group-item">
                                     <div class="row">
                                         <div class="col-6 d-flex align-items-center">
-                                            <span>一次加载卡片数量最大限度</span>
+                                            <span data-toggle="tooltip" title="一次加载卡片数量最大限度" class="cursor-pointer">
+                                                Max Get Cards Limit
+                                            </span>
                                         </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
                                             <input type="number" class="form-control form-control-sm border-radius-0" ng-model="max.get.cards.limit" data-default-value="10">
@@ -4540,10 +4549,280 @@
                                 <li class="list-group-item">
                                     <div class="row">
                                         <div class="col-6 d-flex align-items-center">
-                                            <span>一次加载卡片评论数量最大限度</span>
+                                            <span data-toggle="tooltip" title="一次加载卡片评论数量最大限度" class="cursor-pointer">
+                                                Max Get Card Comments Limit
+                                            </span>
                                         </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
                                             <input type="number" class="form-control form-control-sm border-radius-0" ng-model="max.get.card.comments.limit" data-default-value="10">
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- 8. Card-Comment Text Max Length -->
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <span data-toggle="tooltip" title="卡片评论字数最大值" class="cursor-pointer">
+                                                Max Card Comment Text Length
+                                            </span>
+                                        </div>
+                                        <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                            <input type="number" class="form-control form-control-sm border-radius-0" ng-model="max.card.comment.text.length" data-default-value="10">
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- 9. data for cards -->
+                                <li class="list-group-item list-group-item-success">
+                                    User Info
+                                </li>
+                                <li class="list-group-item" ng-repeat="(key, value) in user track by $index">
+                                    <div class="row">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <span data-toggle="tooltip" title="user[&quot;{{key}}&quot;]" class="cursor-pointer">
+                                                {{$index}} {{key}}
+                                            </span>
+                                        </div>
+                                        <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                            <input id="user-{{key}}" class="form-control form-control-sm border-radius-0" ng-model="value">
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- 10. cards groups -->
+                                <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
+                                    Card Groups
+                                    <button data-toggle="collapse" data-target=".collapse-card-groups" class="button button-action button-3d button-rounded mb-1">open card groups</button>
+                                </li>
+                                <!-- 10.1 card groups length -->
+                                <li class="list-group-item collapse collapse-card-groups">
+                                    <div class="row">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <span data-toggle="tooltip" title="cardGroups.length" class="cursor-pointer">
+                                                Card Groups Length
+                                            </span>
+                                        </div>
+                                        <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                            <input id="card-groups-length" type="number" class="form-control form-control-sm border-radius-0" ng-model="cardGroups.length" disabled>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- 10.2 all card groups -->
+                                <li class="list-group-item collapse collapse-card-groups" ng-repeat="(groupIndex, cardGroup) in cardGroups track by $index">
+                                    <div class="alert alert-success d-flex justify-content-between align-items-center">
+                                        <span>cardGroups[<span ng-bind="groupIndex"></span>]</span>
+                                        <button data-toggle="collapse" data-target="#collapse-card-group-{{groupIndex}}" class="button button-primary button-3d button-small button-rounded button-capitalize mb-1">
+                                            open card group <span ng-bind="groupIndex"></span>
+                                        </button>
+                                    </div>
+                                    <!-- all cards in this group -->
+                                    <div class="collapse" id="collapse-card-group-{{groupIndex}}">
+                                        <div ng-repeat="(cardIndex, card) in cardGroup track by $index">
+                                            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                                                <span>cardGroups[<span ng-bind="groupIndex"></span>].card[<span ng-bind="cardIndex"></span>]</span>
+                                                <button data-toggle="collapse" data-target="#collapse-card-{{card.id}}" class="button button-primary button-3d button-small button-rounded button-capitalize mb-1">view</button>
+                                            </div>
+                                            <!-- all card data -->
+                                            <div class="collapse" id="collapse-card-{{card.id}}">
+                                                <div ng-repeat="(key, value) in card track by $index">
+                                                    <!-- If card data is not card.text, print one line -->
+                                                    <div class="row" ng-if="['text'].includes(key) === false">
+                                                        <div class="col-6 d-flex align-items-center">
+                                                            <span data-toggle="tooltip" title="cards[&quot;{{cardIndex}}&quot;][&quot;{{key}}&quot;]" class="cursor-pointer">
+                                                                {{$index}} {{key}}
+                                                            </span>
+                                                        </div>
+                                                        <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                                            <input id="card-{{card.id}}-{{key}}" class="form-control form-control-sm border-radius-0" ng-model="value">
+                                                        </div>
+                                                    </div>
+                                                    <!-- If card data is card.text, print multiple lines -->
+                                                    <div class="row" ng-if="['text'].includes(key) === true">
+                                                        <div class="col-12 d-flex align-items-center">
+                                                            <span data-toggle="tooltip" title="cards[&quot;{{cardIndex}}&quot;][&quot;{{key}}&quot;]" class="cursor-pointer">
+                                                                {{$index}} {{key}}
+                                                            </span>
+                                                        </div>
+                                                        <div class="col-12 d-flex align-items-center justify-content-center">
+                                                            <textarea id="card-{{card.id}}-{{key}}" cols="30" rows="{{card.text.length/30}}" class="form-control border-radius-0" ng-model="value"></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <!-- 11. my cards groups -->
+                                <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
+                                    My Card Groups
+                                    <button data-toggle="collapse" data-target=".collapse-my-card-groups" class="button button-primary button-3d button-small button-rounded mb-1">open</button>
+                                </li>
+                                <!-- 11.1 my card groups length -->
+                                <li class="list-group-item collapse collapse-my-card-groups">
+                                    <div class="row">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <span data-toggle="tooltip" title="myCardGroups.length" class="cursor-pointer">
+                                                My Card Groups Length
+                                            </span>
+                                        </div>
+                                        <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                            <input id="my-card-groups-length" type="number" class="form-control form-control-sm border-radius-0" ng-model="myCardGroups.length" disabled>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- 11.2 all my card groups -->
+                                <li class="list-group-item collapse collapse-my-card-groups" ng-repeat="(groupIndex, cardGroup) in myCardGroups track by $index">
+                                    <div class="alert alert-success">cardGroups[<span ng-bind="groupIndex"></span>]</div>
+                                    <!-- all cards in this group -->
+                                    <div ng-repeat="(cardIndex, card) in cardGroup track by $index">
+                                        <div class="alert alert-info">cardGroups[<span ng-bind="groupIndex"></span>].card[<span ng-bind="cardIndex"></span>]</div>
+                                        <!-- all card data -->
+                                        <div ng-repeat="(key, value) in card track by $index">
+                                            <!-- If card data is not card.text, print one line -->
+                                            <div class="row" ng-if="['text'].includes(key) === false">
+                                                <div class="col-6 d-flex align-items-center">
+                                                    <span data-toggle="tooltip" title="cards[&quot;{{cardIndex}}&quot;][&quot;{{key}}&quot;]" class="cursor-pointer">
+                                                        {{$index}} {{key}}
+                                                    </span>
+                                                </div>
+                                                <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                                    <input id="card-{{card.id}}-{{key}}" class="form-control form-control-sm border-radius-0" ng-model="value">
+                                                </div>
+                                            </div>
+                                            <!-- If card data is card.text, print multiple lines -->
+                                            <div class="row" ng-if="['text'].includes(key) === true">
+                                                <div class="col-12 d-flex align-items-center">
+                                                    <span data-toggle="tooltip" title="cards[&quot;{{cardIndex}}&quot;][&quot;{{key}}&quot;]" class="cursor-pointer">
+                                                        {{$index}} {{key}}
+                                                    </span>
+                                                </div>
+                                                <div class="col-12 d-flex align-items-center justify-content-center">
+                                                    <textarea id="card-{{card.id}}-{{key}}" cols="30" rows="{{card.text.length/30}}" class="form-control border-radius-0" ng-model="value"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- 12. current card -->
+                                <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
+                                    Current Card
+                                    <button data-toggle="collapse" data-target="#current-card" class="button button-primary button-3d button-small button-rounded button-capitalize mb-1">
+                                        open current card
+                                    </button>
+                                </li>
+                                <li class="list-group-item collapse" id="current-card">
+                                    <div class="row" ng-repeat="(key, value) in current_card track by $index">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <span data-toggle="tooltip" title="current_card[&quot;{{key}}&quot;]" class="cursor-pointer">
+                                                {{$index}} {{key}}
+                                            </span>
+                                        </div>
+                                        <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                            <input id="current-card-{{key}}" class="form-control form-control-sm border-radius-0" ng-model="value">
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- 13. cards view mode -->
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <div class="col-6 col-xl-4 d-flex align-items-center">
+                                            <span>卡片显示模式</span>
+                                        </div>
+                                        <div class="col-6 col-xl-4 d-flex align-items-center justify-content-center">
+                                            <div class="cursor-pointer" ng-click="cardsViewMode = 'classic'">
+                                                <i class="fa" ng-class="['classic'].includes(cardsViewMode)?'fa-check-circle-o':'fa-circle-o'"></i>
+                                                <span>经典</span>
+                                            </div>
+                                            <div class="cursor-pointer ml-2" ng-click="cardsViewMode = 'list'">
+                                                <i class="fa" ng-class="['list'].includes(cardsViewMode)?'fa-check-circle-o':'fa-circle-o'"></i>
+                                                <span>列表</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-xl-4 d-flex align-items-center">
+                                            <input id="cards-view-mode" class="form-control form-control-sm border-radius-0" ng-model="cardsViewMode" disabled>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- data for chat -->
+                                <!-- 14. user data -->
+                                <li class="list-group-item list-group-item-success">
+                                    User Data
+                                </li>
+                                <li class="list-group-item" ng-repeat="(key, value) in userData track by $index">
+                                    <div class="row">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <span data-toggle="tooltip" title="user[&quot;{{key}}&quot;]" class="cursor-pointer">
+                                                {{$index}} {{key}}
+                                            </span>
+                                        </div>
+                                        <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                            <input id="user-data-{{key}}" class="form-control form-control-sm border-radius-0" ng-model="value">
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- 18. friend groups -->
+                                <li class="list-group-item list-group-item-success">
+                                    User Data Friend Groups
+                                </li>
+                                <li class="list-group-item" ng-repeat="(groupIndex, group) in userData.groups track by $index">
+                                    <div class="alert alert-success">group {{groupIndex}}</div>
+                                    <div>
+                                        <div class="row" ng-repeat="(key, value) in group track by $index">
+                                            <div class="col-6 d-flex align-items-center">
+                                                <span data-toggle="tooltip" title="groups[{{groupIndex}}][&quot;{{key}}&quot;]" class="cursor-pointer">
+                                                    {{$index}} {{key}}
+                                                </span>
+                                            </div>
+                                            <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                                <input id="group-{{groupIndex}}-{{key}}" class="form-control form-control-sm border-radius-0" ng-model="value">
+                                            </div>
+                                        </div>
+                                        <div ng-repeat="(friendIndex, friend) in group.friends track by $index">
+                                            <div class="alert alert-info">group {{groupIndex}} -> friend {{friendIndex}}</div>
+                                            <div>
+                                                <div class="row" ng-repeat="(key, value) in friend track by $index">
+                                                    <div class="col-6 d-flex align-items-center">
+                                                        <span data-toggle="tooltip" title="groups[{{groupIndex}}].friends[{{friendIndex}}][&quot;{{key}}&quot;]" class="cursor-pointer">
+                                                            {{$index}} {{key}}
+                                                        </span>
+                                                    </div>
+                                                    <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                                        <input id="group-{{groupIndex}}-friends-{{friendIndex}}-{{key}}" class="form-control form-control-sm border-radius-0" ng-model="value">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- Chat Message List -->
+                                <li class="list-group-item list-group-item-success">
+                                    Chat Message List
+                                </li>
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <span data-toggle="tooltip" title="chatMessageList.length" class="cursor-pointer">
+                                                Chat Message List Length
+                                            </span>
+                                        </div>
+                                        <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                            <input id="chat-message-list-length" class="form-control form-control-sm border-radius-0" ng-model="chatMessageList.length" disabled>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="list-group-item" ng-repeat="(messageIndex, message) in chatMessageList track by $index">
+                                    <div class="alert alert-success">
+                                        Chat Message {{messageIndex}}
+                                    </div>
+                                    <div>
+                                        <div class="row" ng-repeat="(key, value) in message track by $index">
+                                            <div class="col-6 d-flex align-items-center">
+                                                <span data-toggle="tooltip" title="user[&quot;{{key}}&quot;]" class="cursor-pointer">
+                                                    {{$index}} {{key}}
+                                                </span>
+                                            </div>
+                                            <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                                <input id="chat-message-{{messageIndex}}-{{key}}" class="form-control form-control-sm border-radius-0" ng-model="value">
+                                            </div>
                                         </div>
                                     </div>
                                 </li>
@@ -5140,20 +5419,11 @@
                     </li>
                 </ul>
                 <ul class="col-12 col-lg-4 py-2 py-lg-5 px-1">
-                    <li>卡片显示模式</li>
                     <li>
-                        <div class="a cursor-pointer" ng-click="cardsViewMode = 'classic'">
-                            <i class="fa fa-check-circle-o" ng-show="['classic'].includes(cardsViewMode)"></i>
-                            <i class="fa fa-circle-o" ng-show="!['classic'].includes(cardsViewMode)"></i>
-                            <span>经典</span>
-                        </div>
+                        <span>designed by yhn in 2018</span>
                     </li>
                     <li>
-                        <div class="a cursor-pointer" ng-click="cardsViewMode = 'list'">
-                            <i class="fa fa-check-circle-o" ng-show="['list'].includes(cardsViewMode)"></i>
-                            <i class="fa fa-circle-o" ng-show="!['list'].includes(cardsViewMode)"></i>
-                            <span>列表</span>
-                        </div>
+                        <span>updated in 2023</span>
                     </li>
                 </ul>
             </div>

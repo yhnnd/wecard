@@ -21,6 +21,7 @@ app.filter('textLengthSet', function () {
 
 app.controller("controller", function ($scope, $http, $timeout, $interval, $window, $sce, shareCardService) {
     $scope.httpRoot = $window.getHttpRoot();
+    $scope.webBrowserName = $window.getBrowserName();
     /* Chat Window */
     $scope.messageToSend = "";
 
@@ -90,6 +91,15 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             defaultStyleName = "Default";
         }
         $scope.selectCodeHighlightStyle({styleName: defaultStyleName});
+
+        $("#web-browser-icon").addClass((function(browser) {
+            const browserNames = ["firefox", "chrome", "safari", "edge"];
+            if (browserNames.indexOf(browser) !== -1) {
+                $($window.getBrowserLogo(browser)).appendTo("#web-browser-logo");
+                return "fa-" + browser;
+            }
+            return "fa-internet-explorer";
+        })($scope.webBrowserName));
     };
 
 
@@ -1550,7 +1560,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             return false;
         }
         if ($scope.alwaysViewCardInAnotherPage) {
-            $window.open("/card-page.html?card-id=" + card.id, "_blank");
+            $window.open($scope.httpRoot + "/card-page.html?card-id=" + card.id, "_blank");
             return true;
         }
         let loadingId = null;
@@ -1731,6 +1741,22 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             return comment;
         });
     };
+
+
+    $scope.blink = function (comment) {
+        comment = $(comment);
+        if (comment.length) {
+            let inputArea = $(comment).closest('.reply-comment-input-area');
+            let i = 0;
+            let timer = $interval(function () {
+                inputArea.toggleClass('alert-info');
+                if (++i === 4) {
+                    $interval.cancel(timer);
+                }
+            }, 100);
+        }
+    }
+
 
     $scope.likeCard = function (cardId) {
         $window.likeCard(cardId);
@@ -4601,7 +4627,9 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.noPrevCard = false;
     $scope.noNextCard = false;
     // 卡片评论显示尺寸
-    $scope.comment_size = "md";
+    $scope.comment_size = {
+        selected: "md"
+    };
     // 所有的代码高亮样式选项的数组
     $scope.allCodeHighlightStyles = [];
 

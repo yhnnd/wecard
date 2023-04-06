@@ -5,7 +5,7 @@ function deleteCard(card) {
     let deleteCardConfirm = function(card) {
         let loadingId = startLoading();
 
-        let $scope = angular.element("#card-groups").scope();
+        let $scope = angular.element('[ng-controller="controller"]').scope();
 
         console.log("deleteCard(" + card.id + "): sending request ...");
 
