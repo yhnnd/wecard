@@ -57,17 +57,20 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     };
 
     this.$onInit = function() {
+        // Loading mock data from Github
         $window.mock = new Mock();
         $window.mock.loadData("cards", "cards.json").then(function() {
             $scope.refreshCards();
             $scope.$digest();
         });
+        // Mock User Data
         $window.mock.loadData("userdata", "user-data.json").then(function() {
             $scope.refreshUserData();
             $scope.$digest();
         });
         $window.mock.loadData("messages", "messages.json");
         $window.mock.loadData("roommembers", "room-members.json");
+        // $window.mock.loadData("cardsofmine", "cards-mine.json");
         /* Chat Window */
         var theme = $window.localStorage.getItem("chat_window_background_color");
         if (theme && typeof theme === "string") {
@@ -417,7 +420,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                         "content": contentLines.join("<br><br>"),
                         "alertClass": "alert-primary",
                         "confirmCallback": function() {
-                            $window.bsConfirmCloseModal();
                             $scope.card_to_create.title  = draftCard.title;
                             $scope.card_to_create.text   = draftCard.text;
                             $scope.card_to_create.type   = draftCard.type;
@@ -425,7 +427,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                             $scope.$digest();
                         },
                         "rejectCallback": function() {
-                            $window.bsConfirmCloseModal();
                             removeDraft(id);
                             if (ids.length) {
                                 checkEachDraftCard(ids);
@@ -875,6 +876,11 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     // 重新加载我的所有卡片
     $scope.refreshMyCards = function () {
+        const result = {
+            data: {
+                cards: $window.mock.data.cardsofmine
+            }
+        };
         // let api = apis.get.cards.mine;
         // if ($scope.subPageLocation === "myLikes") {
         //     api = apis.get.cards.liked;
@@ -909,14 +915,14 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //             $scope.alert("[ERROR] $scope.refreshMyCards(): 加载卡片失败");
         //             break;
         //         case "card load success":
-        //             // 处理从服务器接收的卡片数组
-        //             if (result.data.cards.length < $scope.max.get.cards.limit) {
-        //                 $scope.has_more_my_cards = false;
-        //             } else {
-        //                 $scope.has_more_my_cards = true;
-        //             }
-        //             $scope.myCardGroups = $scope.makeCardGroups(result.data.cards);
-        //             $scope.myCardLength = result.data.cards.length;
+                    // 处理从服务器接收的卡片数组
+                    if (result.data.cards.length < $scope.max.get.cards.limit) {
+                        $scope.has_more_my_cards = false;
+                    } else {
+                        $scope.has_more_my_cards = true;
+                    }
+                    $scope.myCardGroups = $scope.makeCardGroups(result.data.cards);
+                    $scope.myCardLength = result.data.cards.length;
         //             break;
         //         default:
         //             $scope.alert("[ERROR] $scope.refreshMyCards(): 加载卡片失败，错误信息：" + result.data.message);
@@ -2129,9 +2135,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
         $scope.confirm( {
             "title": "即将打开外部链接",
-            "content": "<div class='" + name + "'>" +
-                "确认打开外部链接 " + a[0].outerHTML + " 吗?" +
-                "</div>",
+            "content": "<div class='" + name + "'>确认打开外部链接 " + a[0].outerHTML + " 吗?</div>",
             "alertClass": "alert-danger",
             "confirmText": "打开链接",
             "confirmCallback": function () {
@@ -2139,24 +2143,9 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                     "href": link,
                     "target": "_blank"
                 })[0].click();/* 如果不加上 [0] 则 click 事件无效 */
-                $("#" + name).attr({
-                    "href": "javascript:void(0);"
-                }).removeAttr("target");
             },
             "rejectText": "取消",
-            "rejectCallback": function (event) {
-                $("." + name).text("已取消");
-                $(event.target)
-                    .parent()
-                    .find("button")
-                    .off("click")
-                    .on("click", function() {
-                        $window.bsConfirmCloseModal();
-                    });
-                $timeout(function () {
-                    $window.bsConfirmCloseModal();
-                }, 1000);
-            }
+            "rejectCallback": function () {}
         });
     };
 

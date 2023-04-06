@@ -89,7 +89,6 @@ function deleteCard(card) {
         "alertClass": "alert-danger",
         "confirmCallback": function () {
             deleteCardConfirm(card);
-            bsConfirmCloseModal();
         }
     });
 }

@@ -506,9 +506,7 @@
 
             $window.bsConfirm({
                 "title": "即将打开外部链接",
-                "content": "<div class='" + name + "'>" +
-                    "确认打开外部链接 " + a[0].outerHTML + " 吗?" +
-                    "</div>",
+                "content": "<div class='" + name + "'>确认打开外部链接 " + a[0].outerHTML + " 吗?</div>",
                 "alertClass": "alert-danger",
                 "confirmText": "打开链接",
                 "confirmCallback": function () {
@@ -516,24 +514,9 @@
                         "href": link,
                         "target": "_blank"
                     })[0].click();/* 如果不加上 [0] 则 click 事件无效 */
-                    $("#" + name).attr({
-                        "href": "javascript:void(0);"
-                    }).removeAttr("target");
                 },
                 "rejectText": "取消",
-                "rejectCallback": function (event) {
-                    $("." + name).text("已取消");
-                    $(event.target)
-                        .parent()
-                        .find("button")
-                        .off("click")
-                        .on("click", function () {
-                            $window.bsConfirmCloseModal();
-                        });
-                    $timeout(function () {
-                        $window.bsConfirmCloseModal();
-                    }, 1000);
-                }
+                "rejectCallback": function () {}
             });
         };
 

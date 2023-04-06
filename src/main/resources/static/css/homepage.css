@@ -65,6 +65,10 @@ body {
   overflow: hidden;
 }
 
+.overflow-scroll {
+  overflow: scroll;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }

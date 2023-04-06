@@ -193,7 +193,6 @@ var toggleViewCardMethod = {
                     rejectCallback: function () {
                         debugMode.disable();
                         init_button_values();// 刷新设置开关
-                        bsConfirmCloseModal();
                     },
                     confirmCallback: function () {
                         debugMode.enable();
@@ -208,13 +207,11 @@ var toggleViewCardMethod = {
                                 debugMode.allowErrorPrompt();
                                 init_button_values();// 刷新设置开关
                                 bsAlert("press_enter_to_send.js","开发者模式已开启","alert-primary");
-                                bsConfirmCloseModal();
                             },
                             rejectCallback: function () {
                                 debugMode.muteErrorPrompt();
                                 init_button_values();// 刷新设置开关
                                 bsAlert("press_enter_to_send.js","错误警告功能被停用","alert-secondary");
-                                bsConfirmCloseModal();
                             }
                         });
                     }

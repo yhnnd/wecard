@@ -3573,7 +3573,7 @@
                                                         <!-- 消息中的链接 -->
                                                         <div class="d-inline-block w-100" ng-if="message.url">
                                                             <small class="text-muted">访问
-                                                                <a href="{{message.url}}" target="_blank">{{message.url}}</a>
+                                                                <a href="javascript:void(0);" ng-click="openExternalLink(message.url)">{{message.url}}</a>
                                                             </small>
                                                         </div>
                                                         <div ng-if="!message.text" class="text-danger">
@@ -3619,7 +3619,7 @@
                                                         <!-- 消息中的链接 -->
                                                         <div class="d-inline-block w-100" ng-if="message.url">
                                                             <small class="text-muted">访问
-                                                                <a href="{{message.url}}" target="_blank">{{message.url}}</a>
+                                                                <a href="javascript:void(0);" ng-click="openExternalLink(message.url)">{{message.url}}</a>
                                                             </small>
                                                         </div>
                                                         <div ng-if="!message.text" class="text-danger">
@@ -3746,7 +3746,7 @@
                                                         <!-- 消息中的链接 -->
                                                         <div class="d-inline-block w-100" ng-if="message.url">
                                                             <small class="text-muted">访问
-                                                                <a href="{{message.url}}" target="_blank">{{message.url}}</a>
+                                                                <a href="javascript:void(0);" ng-click="openExternalLink(message.url)">{{message.url}}</a>
                                                             </small>
                                                         </div>
                                                         <div ng-if="!message.text" class="text-danger">

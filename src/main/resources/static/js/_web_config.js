@@ -191,42 +191,42 @@ var apis = {
 };
 
 var max = {
-    loading: {
-        delay: {
-            time: 10000
+    "loading": {
+        "delay": {
+            "time": 10000
         }
     },
-    get: {
-        messages: {
-            limit: 15
+    "get": {
+        "messages": {
+            "limit": 15
         },
-        cards: {
-            limit: 10
+        "cards": {
+            "limit": 10
         },
-        card: {
-            comments: {
-                limit: 10
+        "card": {
+            "comments": {
+                "limit": 10
             }
         }
     },
-    card: {
-        title: {
-            length: 20
+    "card": {
+        "title": {
+            "length": 20
         },
-        text: {
-            length: 1000
+        "text": {
+            "length": 1000
         },
-        topics: {
-            length: 3
+        "topics": {
+            "length": 3
         },
-        images: {
-            length: 6
+        "images": {
+            "length": 6
         },
-        videos: {
-            length: 1
+        "videos": {
+            "length": 1
         },
-        audios: {
-            length: 1
+        "audios": {
+            "length": 1
         },
         "comment": {
             "text": {

@@ -54,14 +54,6 @@ function bsAlert(title, content, alertClass, duration) {
 }
 
 
-function bsConfirmCloseModal() {
-    $(".fixed-top.alert").remove();
-}
-
-
-function bsConfirmDefaultCallBack() {
-    bsConfirmCloseModal();
-}
 
 
 function bsConfirm(params) {
@@ -79,47 +71,74 @@ function bsConfirm(params) {
     }
 
     let confirmText = params.confirmText;
-    let confirmCallback = params.confirmCallback;
+    const confirmCallback = params.confirmCallback;
     let rejectText = params.rejectText;
-    let rejectCallback = params.rejectCallback;
+    const rejectCallback = params.rejectCallback;
 
     if (!confirmText) {
         confirmText = "Confirm";
     }
-    if (!confirmCallback) {
-        confirmCallback = bsConfirmDefaultCallBack;
-    }
     if (!rejectText) {
         rejectText = "Cancel";
     }
-    if (!rejectCallback) {
-        rejectCallback = bsConfirmDefaultCallBack;
-    }
 
-    if (getRandomString == undefined) {
-        var getRandomString = function () {
+    let getRandomString = window.getRandomString;
+
+    if (getRandomString === undefined) {
+        getRandomString = function () {
             return ("" + Math.random() * 10).split(".").join("");
         }
     }
 
-    let myTitle = $("<div class='d-flex align-items-center justify-content-between'>")
-        .html("<small>" + title + "</small>")
-        .append("<i class='fa fa-times-circle fa-lg' onclick='$(this).parent().closest(`.alert`).remove()'>");
+    const id = getRandomString();
+    const modalId = "modal-" + id;
+    const dialogueId = "dialogue-" + id;
 
-    let confirmButtonId = "confirm-" + getRandomString();
-    let rejectButtonId = "reject-" + getRandomString();
-    let myAlert = $("<div class='fixed-top mt-5 mx-auto w-100 w-lg-50 alert " + alertClass + " border-radius-0'>")
+    const unlock = $("body.modal-open").length ? function () {
+        /* If there is modal opened before this modal,
+        Then we should not remove that modal backdrop when we close this modal. */
+    } : function () {
+        $("body").removeClass("modal-open");
+    };
+
+    function bsConfirmCloseModal() {
+        $("#" + modalId).remove();
+        $("#" + dialogueId).remove();
+        unlock();
+    }
+
+    const myTitle = $("<div class='d-flex align-items-center justify-content-between'>")
+        .html("<small>" + title + "</small>")
+        .append($("<i class='fa fa-times-circle fa-lg cursor-pointer'>").on("click", bsConfirmCloseModal));
+
+    const confirmButtonId = "confirm-" + id;
+    const rejectButtonId = "reject-" + id;
+
+    $("<div class='fixed-top mt-5 mx-auto w-100 w-lg-50 alert " + alertClass + " border-radius-0'>")
+        .attr("id", dialogueId)
         .css("z-index", 1501)
         .append(myTitle)
         .append("<hr>")
-        .append("<p class='mb-2'>" + content + "</p>")
+        .append("<p class='mb-2 overflow-scroll' style='max-height:calc(100vh - 240px)!important;'>" + content + "</p>")
         .append("<div class='mb-2'>" +
             "   <button class='btn btn-outline-primary mx-auto' id='" + confirmButtonId + "'>" + confirmText + "</button>" +
             "   <button class='btn btn-outline-danger mx-auto' id='" + rejectButtonId + "'>" + rejectText + "</button>" +
             "</div>")
         .appendTo("body");
-    $("#" + confirmButtonId).on("click", confirmCallback);
-    $("#" + rejectButtonId).on("click", rejectCallback);
+    $("#" + confirmButtonId).on("click", function() {
+        if (confirmCallback && typeof confirmCallback === "function") {
+            confirmCallback();
+        }
+        bsConfirmCloseModal();
+    });
+    $("#" + rejectButtonId).on("click", function() {
+        if (rejectCallback && typeof rejectCallback === "function") {
+            rejectCallback();
+        }
+        bsConfirmCloseModal();
+    });
+    const backdrop = $("<div class='modal-backdrop show' id='" + modalId + "' style='z-index: 1200!important;'>").on("click", bsConfirmCloseModal);
+    $("body").addClass("modal-open").append(backdrop);
 
     return [title, content, alertClass, confirmButtonId, rejectButtonId];
 }
