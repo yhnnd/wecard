@@ -102,13 +102,31 @@
 
         this.$onInit = function () {
             const currentCardId = getParameter("card-id");
+            // Loading mock data from Github
             $window.mock = new Mock();
-            $window.mock.loadData("cards", "cards.json");
-            $window.mock.loadData("userdata", "user-data.json").then(function () {
-                const card = _.find($window.mock.data.cards, function (item) {
-                    return item.id === currentCardId;
+            /* Mock Data API Map */
+            $scope.Type2MockDataMap = {
+                "popular": "$window.mock.data.cards",
+                "newest": "$window.mock.data.cards",
+                "following": "$window.mock.data.cards",
+                "myFollowingCards": "$window.mock.data.cards",
+                "myCards": "$window.mock.data.cardsofmine",
+                "myLikes": "$window.mock.data.cardsofmine",
+                "myLiked": "$window.mock.data.cardsofmine",
+                "myShares": "$window.mock.data.cardsofmine",
+                "myShared": "$window.mock.data.cardsofmine",
+            };
+            $window.mock.loadData("userdata", "user-data.json");
+            $window.mock.loadData("cards", "cards.json").then(function () {
+                $window.mock.loadData("cardsofmine", "cards-mine.json").then(function () {
+                    /** Mock Data (viewCard) */
+                    let cardMatched = undefined;
+                    if (_.find($scope.Type2MockDataMap, str => {
+                        return _.find(eval(str), item => cardMatched = item.id === currentCardId ? item : undefined);
+                    })) {
+                        $scope.viewCard(cardMatched);
+                    }
                 });
-                $scope.viewCard(card);
             });
             // 初始化代码高亮样式列表
             $scope.initCodeHighlightStyles();

@@ -876,10 +876,14 @@
                                             </a>
                                         </div>
                                         <!-- 视频 -->
-                                        <video class="card-preview-carousel-image" ng-if="card.type === 'video' && card.video"
+                                        <video class="card-preview-carousel-image" ng-if="card.type === 'video' && card.video && card.video.url.includes('https://www.youtube.com/watch?') === false"
                                                src="{{card.video.url}}" ng-click="viewCard(card)" controls="controls">
                                             您的浏览器不支持视频播放
                                         </video>
+                                        <!-- Youtube -->
+                                        <div ng-if="card.type === 'video' && card.video && card.video.url.includes('https://www.youtube.com/watch?')">
+                                            <iframe src="{{card.video.url}}" frameborder="0"></iframe>
+                                        </div>
                                         <!-- 卡片正文预览 -->
                                         <div class="card-body p-3 transition-all {{card.isLoadedRightNow?'bg-primary text-white':''}}" ng-if="card.type !== 'video'" ng-click="viewCard(card)">
                                             <!-- <h5 class="card-title"></h5> -->
@@ -1691,12 +1695,15 @@
                                     <!-- if this card is video card -->
                                     <div class="row" ng-show="current_card.type === 'video'">
                                         <div class="col px-0 mx-auto d-flex justify-content-center">
-                                            <div class="d-inline-block cursor-pointer">
-                                                <div class="img-thumbnail border-radius-0 overflow-hidden">
+                                            <div ng-if="current_card.video.url.includes('https://www.youtube.com/watch?') === false">
+                                                <div class="img-thumbnail border-radius-0 overflow-hidden cursor-pointer">
                                                     <video class="card-image w-100" style="max-height: 400px;" src="{{current_card.video.url}}" controls="controls">
                                                         你的浏览器不支持视频播放
                                                     </video>
                                                 </div>
+                                            </div>
+                                            <div ng-if="current_card.video.url.includes('https://www.youtube.com/watch?')">
+                                                <iframe src="{{current_card.video.url}}" frameborder="0"></iframe>
                                             </div>
                                         </div>
                                     </div>
