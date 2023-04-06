@@ -44,7 +44,7 @@ function deleteComment(cardId, commentId) {
                     case "comment del success":
                         console.log("deleteComment(): 删除评论成功");
                         // 更新主页中的卡片中的评论
-                        $scope.cardGroups = $scope.mapCardGroups($scope.cardGroups, function (card) {
+                        $scope.popularCardGroups = $scope.mapCardGroups($scope.popularCardGroups, function (card) {
                             // 如果主页中的某个卡片的 ID 等于当前正在查看的卡片的 ID
                             if (card.id === cardId) {
                                 // 刷新这张卡片中的所有评论

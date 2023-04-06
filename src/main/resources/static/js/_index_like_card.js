@@ -39,7 +39,7 @@ function likeCard(cardId) {
                 case "like card success":
                     console.log("likeCard(): 收藏卡片成功");
                     // 更新所有卡片
-                    $scope.cardGroups = $scope.mapCardGroups($scope.cardGroups, function (card) {
+                    $scope.popularCardGroups = $scope.mapCardGroups($scope.popularCardGroups, function (card) {
                         if (card.id === cardId) {
                             card.cardHot++;
                             card.iLike = $scope.userData.user.id;

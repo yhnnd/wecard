@@ -36,7 +36,7 @@ function cancelLikeCard(cardId) {
                 case "unlike card success":
                     console.log("cancelLikeCard(): 取消点赞成功");
                     // 更新所有卡片
-                    $scope.cardGroups = $scope.mapCardGroups($scope.cardGroups, function (card) {
+                    $scope.popularCardGroups = $scope.mapCardGroups($scope.popularCardGroups, function (card) {
                         if (card.id === cardId) {
                             card.cardHot--;
                             card.iLike = false;

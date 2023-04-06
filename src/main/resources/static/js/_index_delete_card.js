@@ -39,7 +39,7 @@ function deleteCard(card) {
                         break;
                     case "card del success":
                         // 刷新所有卡片
-                        $scope.cardGroups = $scope.mapCardGroups($scope.cardGroups, function (c) {
+                        $scope.popularCardGroups = $scope.mapCardGroups($scope.popularCardGroups, function (c) {
                             if (c.id === card.id) {
                                 c.title = c.text = "该卡片已被删除";
                                 c.images = c.video = c.voice = null;

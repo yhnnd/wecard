@@ -47,7 +47,7 @@ function shareCardSubmit(cardId, shareText) {
                             .text("转发成功")
                             .attr("onclick", "hideShareCardModal(this)");
                         // 更新被转发卡片的转发数量属性
-                        $scope.cardGroups = $scope.mapCardGroups($scope.cardGroups, function(card) {
+                        $scope.popularCardGroups = $scope.mapCardGroups($scope.popularCardGroups, function(card) {
                             if (card.id === cardId) {
                                 card.shareNum = card.shareNum + 1;
                             }
@@ -62,7 +62,7 @@ function shareCardSubmit(cardId, shareText) {
                         });
                         // 更新我所转发的卡片
                         $scope.myCardGroups[0].unshift(result.data.card);
-                        $scope.myCardLength ++;
+                        $scope.myCardsLength ++;
                         $scope.$apply();
                         shareCardToFriends($scope, cardId, shareText);
                     } else {

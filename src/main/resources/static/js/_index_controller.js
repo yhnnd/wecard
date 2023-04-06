@@ -59,8 +59,20 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     this.$onInit = function() {
         // Loading mock data from Github
         $window.mock = new Mock();
+        /* Mock Data API Map */
+        $scope.Type2MockDataMap = {
+            "popular": "$window.mock.data.cards",
+            "newest": "$window.mock.data.cards",
+            "following": "$window.mock.data.cards",
+            "myFollowingCards": "$window.mock.data.cards",
+            "myCards": "$window.mock.data.cardsofmine",
+            "myLikes": "$window.mock.data.cardsofmine",
+            "myLiked": "$window.mock.data.cardsofmine",
+            "myShares": "$window.mock.data.cardsofmine",
+            "myShared": "$window.mock.data.cardsofmine",
+        };
         $window.mock.loadData("cards", "cards.json").then(function() {
-            $scope.refreshCards();
+            $scope.refreshCards("popular");
             $scope.$digest();
         });
         // Mock User Data
@@ -70,7 +82,10 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         });
         $window.mock.loadData("messages", "messages.json");
         $window.mock.loadData("roommembers", "room-members.json");
-        // $window.mock.loadData("cardsofmine", "cards-mine.json");
+        $window.mock.loadData("cardsofmine", "cards-mine.json").then(function() {
+            $scope.refreshCards("myCards");
+            $scope.$digest();
+        });
         /* Chat Window */
         var theme = $window.localStorage.getItem("chat_window_background_color");
         if (theme && typeof theme === "string") {
@@ -222,20 +237,49 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         "popular": "popular",
         "newest": "time"
     };
+    const type2VarNamesMap = {
+        "popular": ["popularCardsLength", "popularCardGroups", "has_more_popular_cards"],
+        "newest": ["newestCardsLength", "newestCardGroups", "has_more_newest_cards"],
+        "following": ["followingCardsLength", "followingCardGroups", "has_more_following_cards"],
+        "myFollowingCards": ["followingCardsLength", "followingCardGroups", "has_more_following_cards"],
+        "myCards": ["myCardsLength", "myCardGroups", "has_more_my_cards"],
+        "myLikes": ["myLikedCardsLength", "myLikedCardGroups", "has_more_my_liked_cards"],
+        "myLiked": ["myLikedCardsLength", "myLikedCardGroups", "has_more_my_liked_cards"],
+        "myShares": ["mySharedCardsLength", "mySharedCardGroups", "has_more_my_shared_cards"],
+        "myShared": ["mySharedCardsLength", "mySharedCardGroups", "has_more_my_shared_cards"],
+    };
     // 用户个人信息
     $scope.user = null;
-    // 所有人的卡片
-    $scope.cardLength = 0;
-    $scope.cardGroups = [];
-    $scope.has_more_cards = true;
-    // 我关注的人的卡片
+    // Popular Cards
+    $scope.popularCardsLength = 0;
+    $scope.popularCardGroups = [];
+    $scope.has_more_popular_cards = true;
+    // Newest Cards
+    $scope.newestCardsLength = 0;
+    $scope.newestCardGroups = [];
+    $scope.has_more_newest_cards = true;
+    // My Following Cards
+    $scope.followingCardsLength = 0;
+    $scope.followingCardGroups = [];
     $scope.has_more_following_cards = true;
-    // 当前正在查看的卡片
-    $scope.current_card = null;
-    // 我的所有卡片
-    $scope.myCardLength = 0;
+    // My Cards
+    $scope.myCardsLength = 0;
     $scope.myCardGroups = [];
     $scope.has_more_my_cards = true;
+    // My Liked Cards
+    $scope.myLikedCardsLength = 0;
+    $scope.myLikedCardGroups = [];
+    $scope.has_more_my_Liked_cards = true;
+    // My SharedCards
+    $scope.mySharedCardsLength = 0;
+    $scope.mySharedCardGroups = [];
+    $scope.has_more_my_shared_cards = true;
+    // Currently Viewing Cards
+    $scope.cardsLength = 0;
+    $scope.cardGroups = [];
+    $scope.has_more_cards = true;
+    // Currently Viewing Card
+    $scope.current_card = null;
 
     $scope.my_comment = "";
     $scope.my_topic = "";
@@ -470,7 +514,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             } else {
                 $scope.subPageLocation = subPageName;
             }
-            $scope.refreshCards();
+            $scope.refreshCards($scope.subPageLocation);
             // 因为卡片广场和我关注的卡片共用同一个卡片数组，所以切换页面的时候不得不刷新
             // 同时，我们不需要在 refreshCurrentPage 函数中刷新卡片
             // 因为该函数调用本函数
@@ -480,7 +524,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             } else {
                 $scope.subPageLocation = subPageName;
             }
-            $scope.refreshFollowingCards();
+            $scope.refreshCards($scope.subPageLocation);
             // 因为卡片广场和我关注的卡片共用同一个卡片数组，所以切换页面的时候不得不刷新
             // 同时，我们不需要在 refreshCurrentPage 函数中刷新卡片
             // 因为该函数调用本函数
@@ -490,7 +534,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             } else {
                 $scope.subPageLocation = subPageName;
             }
-            // 因为卡片广场和我关注的卡片所用的卡片数组与我自己的卡片数组不是同一个数组，所以切换到本页面的时候不需要刷新卡片
+            $scope.refreshCards($scope.subPageLocation);
         } else if (["chat"].includes(pageName)) {
             if (['refresh'].includes(chatItemId)) {
                 setChatLocation($scope.currentChatItemId);
@@ -604,14 +648,27 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
 
-    // 刷新当前窗口，重新加载所有（热门/最新）卡片
-    $scope.refreshCards = function () {
+    // load Cards (type: Popular/Newest/MyFollowing/MyCards/Myshared/MyLikes)
+    $scope.refreshCards = function (type) {
         // let loadingId = startLoading(max.loading.delay.time, "$scope.refreshCards()");
+
+        // const Type2ApiMap = {
+        //     "popular": apis.get.cards.allUsers,
+        //     "newest": apis.get.cards.allUsers,
+        //     "following": apis.get.cards.following,
+        //     "myCards": apis.get.cards.mine,
+        //     "myLikes": apis.get.cards.liked,
+        //     "myLiked": apis.get.cards.liked,
+        //     "myShares": apis.get.cards.shared,
+        //     "myShared": apis.get.cards.shared,
+        // };
+        // const api = Type2ApiMap[type];
+
         // $http({
         //     method: 'GET',
-        //     url: $scope.httpRoot + apis.get.cards.allUsers,
+        //     url: $scope.httpRoot + api,
         //     params: {
-        //         "sortKey": $scope.keyOf[$scope.subPageLocation],
+        //         "sortKey": $scope.keyOf[type],
         //         "start": 0,
         //         "limit": $scope.max.get.cards.limit
         //     },
@@ -621,9 +678,9 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //     stopLoading(loadingId);
         //     switch (result.data.message) {
         //         case "no data":
-        //             $scope.cardLength = 0;
-        //             $scope.cardGroups = [];
-        //             $scope.has_more_cards = false;
+        //             $scope.popularCardsLength = 0;
+        //             $scope.popularCardGroups = [];
+        //             $scope.has_more_popular_cards = false;
         //             break;
         //         case "card load failed":
         //             $scope.alert("[ERROR] $scope.refreshCards(): 加载卡片失败");
@@ -631,12 +688,12 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //         case "card load success":
         //             // 处理从服务器接收的卡片数组
         //             if (result.data.cards.length < $scope.max.get.cards.limit) {
-        //                 $scope.has_more_cards = false;
+        //                 $scope.has_more_popular_cards = false;
         //             } else {
-        //                 $scope.has_more_cards = true;
+        //                 $scope.has_more_popular_cards = true;
         //             }
-        //             $scope.cardLength = result.data.cards.length;
-        //             $scope.cardGroups = $scope.makeCardGroups(result.data.cards);
+        //             $scope.popularCardsLength = result.data.cards.length;
+        //             $scope.popularCardGroups = $scope.makeCardGroups(result.data.cards);
         //             break;
         //         default:
         //             $scope.alert("[ERROR] $scope.refreshCards(): 加载卡片失败，错误信息：" + result.data.message);
@@ -649,17 +706,25 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
         /* mock data (refreshCards) */
         const result = {
-            data: {
-                "cards": $window.mock.data.cards
+            "data": {
+                "cards": eval($scope.Type2MockDataMap[type])
             }
         };
-        if (result.data.cards.length < $scope.max.get.cards.limit) {
-            $scope.has_more_cards = false;
-        } else {
-            $scope.has_more_cards = true;
+
+        function handleCards(cards, cardsLength, cardGroups, hasMore) {
+            $scope[hasMore] = (cards.length >= $scope.max.get.cards.limit);
+            $scope[cardsLength] = cards.length;
+            $scope[cardGroups] = $scope.makeCardGroups(cards);
         }
-        $scope.cardLength = result.data.cards.length;
-        $scope.cardGroups = $scope.makeCardGroups(result.data.cards);
+        const varNames = type2VarNamesMap[type];
+
+        handleCards(result.data.cards, ...varNames);
+        if (_.isEqual(varNames,type2VarNamesMap[$scope.subPageLocation])) {
+            // Display cards (card preview)
+            $scope.cardsLength = $scope[varNames[0]];
+            $scope.cardGroups = $scope[varNames[1]];
+            $scope.has_more_cards = $scope[varNames[2]];
+        }
     };
 
 
@@ -703,7 +768,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //     url: $scope.httpRoot + apis.get.cards.allUsers,
         //     params: {
         //         "sortKey": $scope.keyOf[$scope.subPageLocation],
-        //         "start": $scope.cardLength,
+        //         "start": $scope.popularCardsLength,
         //         "limit": $scope.max.get.cards.limit
         //     },
         //     crossDomain: true,
@@ -713,7 +778,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
         //     switch (result.data.message) {
         //         case "no data":
-        //             $scope.has_more_cards = false;
+        //             $scope.has_more_popular_cards = false;
         //             break;
         //         case "card load failed":
         //             $scope.alert("[ERROR] load more cards: 加载卡片失败");
@@ -721,9 +786,9 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //         case "card load success":
         //             // 处理从服务器接收的卡片数组
         //             if (result.data.cards.length < $scope.max.get.cards.limit) {
-        //                 $scope.has_more_cards = false;
+        //                 $scope.has_more_popular_cards = false;
         //             } else {
-        //                 $scope.has_more_cards = true;
+        //                 $scope.has_more_popular_cards = true;
         //             }
         //             // 将新加载的卡片添加到已加载的卡片数组当中
         //             let newCardGroup = [];
@@ -734,11 +799,11 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //                 card.isLoadedRightNow = true;// 高亮新加载的卡片
         //                 newCardGroup.push(card);
         //             });
-        //             $scope.cardGroups.push(newCardGroup);
-        //             $scope.cardLength += newCardGroup.length;
+        //             $scope.popularCardGroups.push(newCardGroup);
+        //             $scope.popularCardsLength += newCardGroup.length;
         //             // 解除新加载的卡片的高亮
         //             $timeout(function () {
-        //                 $scope.cardGroups = _.map($scope.cardGroups, function (cardGroup) {
+        //                 $scope.popularCardGroups = _.map($scope.popularCardGroups, function (cardGroup) {
         //                     cardGroup = _.map(cardGroup, function(card) {
         //                         card.isLoadedRightNow = false;
         //                         return card;
@@ -778,8 +843,8 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
         //     switch (result.data.message) {
         //         case "no data":
-        //             $scope.cardLength = 0;
-        //             $scope.cardGroups = [];
+        //             $scope.popularCardsLength = 0;
+        //             $scope.popularCardGroups = [];
         //             $scope.has_more_following_cards = false;
         //             break;
         //         case "Please login":
@@ -795,8 +860,8 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //             } else {
         //                 $scope.has_more_following_cards = true;
         //             }
-        //             $scope.cardGroups = $scope.makeCardGroups(result.data.cards);
-        //             $scope.cardLength += result.data.cards.length;
+        //             $scope.popularCardGroups = $scope.makeCardGroups(result.data.cards);
+        //             $scope.popularCardsLength += result.data.cards.length;
         //             break;
         //         default:
         //             $scope.alert("[ERROR] $scope.refreshFollowingCards(): 加载卡片失败，错误信息：" + result.data.message);
@@ -816,7 +881,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //     method: 'GET',
         //     url: $scope.httpRoot + apis.get.cards.following,
         //     params: {
-        //         "start": $scope.cardLength,
+        //         "start": $scope.popularCardsLength,
         //         "limit": $scope.max.get.cards.limit
         //     },
         //     crossDomain: true,
@@ -847,11 +912,11 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //                 card.isLoadedRightNow = true;// 高亮新加载的卡片
         //                 newCardGroup.push(card);
         //             });
-        //             $scope.cardGroups.push(newCardGroup);
-        //             $scope.cardLength += newCardGroup.length;
+        //             $scope.popularCardGroups.push(newCardGroup);
+        //             $scope.popularCardsLength += newCardGroup.length;
         //             // 解除新加载的卡片的高亮
         //             $timeout(function () {
-        //                 $scope.cardGroups = _.map($scope.cardGroups, function (cardGroup) {
+        //                 $scope.popularCardGroups = _.map($scope.popularCardGroups, function (cardGroup) {
         //                     cardGroup = _.map(cardGroup, function(card) {
         //                         card.isLoadedRightNow = false;
         //                         return card;
@@ -876,11 +941,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     // 重新加载我的所有卡片
     $scope.refreshMyCards = function () {
-        const result = {
-            data: {
-                cards: $window.mock.data.cardsofmine
-            }
-        };
         // let api = apis.get.cards.mine;
         // if ($scope.subPageLocation === "myLikes") {
         //     api = apis.get.cards.liked;
@@ -907,7 +967,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //             $scope.alert("[ERROR] $scope.refreshMyCards(): 请先登录");
         //             break;
         //         case "no data":
-        //             $scope.myCardLength = 0;
+        //             $scope.myCardsLength = 0;
         //             $scope.myCardGroups = [];
         //             $scope.has_more_my_cards = false;
         //             break;
@@ -915,14 +975,14 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //             $scope.alert("[ERROR] $scope.refreshMyCards(): 加载卡片失败");
         //             break;
         //         case "card load success":
-                    // 处理从服务器接收的卡片数组
-                    if (result.data.cards.length < $scope.max.get.cards.limit) {
-                        $scope.has_more_my_cards = false;
-                    } else {
-                        $scope.has_more_my_cards = true;
-                    }
-                    $scope.myCardGroups = $scope.makeCardGroups(result.data.cards);
-                    $scope.myCardLength = result.data.cards.length;
+        //             // 处理从服务器接收的卡片数组
+        //             if (result.data.cards.length < $scope.max.get.cards.limit) {
+        //                 $scope.has_more_my_cards = false;
+        //             } else {
+        //                 $scope.has_more_my_cards = true;
+        //             }
+        //             $scope.myCardGroups = $scope.makeCardGroups(result.data.cards);
+        //             $scope.myCardsLength = result.data.cards.length;
         //             break;
         //         default:
         //             $scope.alert("[ERROR] $scope.refreshMyCards(): 加载卡片失败，错误信息：" + result.data.message);
@@ -950,7 +1010,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //     url: $scope.httpRoot + api,
         //     params: {
         //         "sortKey": "time",
-        //         "start": $scope.myCardLength,
+        //         "start": $scope.myCardsLength,
         //         "limit": $scope.max.get.cards.limit
         //     },
         //     crossDomain: true,
@@ -981,7 +1041,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         //                 newCardGroup.push(card);
         //             });
         //             $scope.myCardGroups.push(newCardGroup);
-        //             $scope.myCardLength += newCardGroup.length;
+        //             $scope.myCardsLength += newCardGroup.length;
         //             // 解除新加载的卡片的高亮
         //             $timeout(function () {
         //                 $scope.myCardGroups = _.map($scope.myCardGroups, function (cardGroup) {
@@ -1599,10 +1659,17 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // }).then(function (result) {
 
         /** Mock Data (viewCard) */
+        let cardMatched = undefined;
+        if (_.find($scope.Type2MockDataMap, str => {
+            return _.find(eval(str), e => cardMatched = e.id === card.id ? e : undefined);
+        })) {
+            card = cardMatched;
+        }
+
         const result = {
             data: {
                 "message": "card load success",
-                "card": $window.mock.data.cards.find(e=>e.id==card.id)
+                "card": card
             }
         };
 
@@ -4705,7 +4772,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                 }
             };
         }
-        let cardGroups = $scope.cardGroups;
+        let cardGroups = $scope.popularCardGroups;
         let result = null;
         let target_group = [];
         for (let i = 0; i < cardGroups.length; ++i) {

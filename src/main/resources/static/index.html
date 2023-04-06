@@ -495,7 +495,7 @@
                         <li class="nav-item pr-3 d-flex justify-content-center align-items-center"
                             data-style="no-support">
                             <button class="button button-small button-border button-circle"
-                                    ng-click="refreshCards();refreshUserData();"
+                                    ng-click="refreshCards(subPageLocation);refreshUserData();"
                                     ng-class="isNavbarBackgroundDark ? 'button-plain' : 'button-inverse'">
                                 <i class="fa fa-refresh"></i>
                             </button>
@@ -530,28 +530,28 @@
                                     <div ng-click="gotoPage('marketplace');">
                                         <i class="fa fa-circle" ng-if="pageLocation === 'marketplace'"></i>
                                         <i class="fa fa-circle-o" ng-if="pageLocation !== 'marketplace'"></i>
-                                        <div class="d-inline-block ml-2">广场</div>
+                                        <div class="d-inline-block ml-2">Marketplace</div>
                                     </div>
                                 </a>
                                 <a class="dropdown-item" href="#mySocialCircle">
                                     <div ng-click="gotoPage('mySocialCircle');">
                                         <i class="fa fa-circle" ng-if="pageLocation === 'mySocialCircle'"></i>
                                         <i class="fa fa-circle-o" ng-if="pageLocation !== 'mySocialCircle'"></i>
-                                        <div class="d-inline-block ml-2">关注</div>
+                                        <div class="d-inline-block ml-2">MySocialCircle</div>
                                     </div>
                                 </a>
                                 <a class="dropdown-item" href="#cards">
                                     <div ng-click="gotoPage('cards');">
                                         <i class="fa fa-circle" ng-if="pageLocation === 'cards'"></i>
                                         <i class="fa fa-circle-o" ng-if="pageLocation !== 'cards'"></i>
-                                        <div class="d-inline-block ml-2">我的卡片</div>
+                                        <div class="d-inline-block ml-2">Cards</div>
                                     </div>
                                 </a>
                                 <a class="dropdown-item" href="#">
                                     <div ng-click="gotoPage('homepage');">
                                         <i class="fa fa-circle" ng-if="pageLocation === 'homepage'"></i>
                                         <i class="fa fa-circle-o" ng-if="pageLocation !== 'homepage'"></i>
-                                        <div class="d-inline-block ml-2">聊天</div>
+                                        <div class="d-inline-block ml-2">Chat</div>
                                     </div>
                                 </a>
                                 <a class="dropdown-item" href="#">
@@ -736,9 +736,11 @@
             </div>
 
 
-            <!-- marketplace and mySocialCircle -->
-            <div class="cards container-fluid mt-3" ng-show="['marketplace','mySocialCircle'].includes(pageLocation)">
-                <div class="row">
+            <!-- marketplace & mySocialCircle & cards -->
+            <div class="cards container-fluid mt-3" ng-show="['marketplace','mySocialCircle','cards'].includes(pageLocation)">
+
+                <!-- marketplace and mySocialCircle -->
+                <div class="row" ng-show="['marketplace','mySocialCircle'].includes(pageLocation)">
                     <!-- 二级导航栏 -->
                     <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8">
                         <div class="row mb-3">
@@ -747,13 +749,13 @@
                                 <div class="row" ng-show="pageLocation === 'marketplace'">
                                     <div class="col-4 px-0">
                                         <button class="btn btn-sm btn-block btn-outline-primary border-radius-0 overflow-hidden {{subPageLocation==='popular'?'active':''}}"
-                                                ng-click="subPageLocation = 'popular';refreshCards();">
+                                                ng-click="subPageLocation = 'popular';refreshCards('popular');">
                                             热门卡片
                                         </button>
                                     </div>
                                     <div class="col-4 px-0">
                                         <button class="btn btn-sm btn-block btn-outline-primary border-radius-0 border-left-0 overflow-hidden {{subPageLocation==='newest'?'active':''}}"
-                                                ng-click="subPageLocation = 'newest';refreshCards();">
+                                                ng-click="subPageLocation = 'newest';refreshCards('newest');">
                                             最新卡片
                                         </button>
                                     </div>
@@ -767,7 +769,7 @@
                                 <div class="row" ng-show="pageLocation === 'mySocialCircle'">
                                     <div class="col-4 px-0">
                                         <button class="btn btn-sm btn-block btn-outline-primary border-radius-0 overflow-hidden {{subPageLocation==='myFollowingCards'?'active':''}}"
-                                                ng-click="subPageLocation = 'myFollowingCards';refreshFollowingCards();">
+                                                ng-click="subPageLocation = 'myFollowingCards';refreshCards('following');">
                                             关注的人的卡片
                                         </button>
                                     </div>
@@ -791,11 +793,43 @@
                 </div>
 
 
+                <!-- pageLocation === 'cards' -->
+                <div class="row" ng-show="pageLocation === 'cards'">
+                    <!-- 标签栏 -->
+                    <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8">
+                        <div class="row overflow-hidden" onselectstart="return false;">
+                            <div class="col px-0 px-lg-3">
+                                <p class="overflow-hidden py-1 text-center cursor-pointer {{subPageLocation==='myCards'?'text-white bg-dark':'font-weight-light'}}"
+                                    ng-click="subPageLocation = 'myCards';refreshCards('myCards');">
+                                    我的卡片
+                                </p>
+                            </div>
+                            <div class="col px-0 px-lg-3">
+                                <p class="overflow-hidden py-1 text-center cursor-pointer {{subPageLocation==='write'?'text-white bg-dark':'font-weight-light'}}"
+                                    ng-click="subPageLocation = 'write'">
+                                    撰写卡片
+                                </p>
+                            </div>
+                            <div class="col px-0 px-lg-3">
+                                <p class="overflow-hidden py-1 text-center cursor-pointer {{subPageLocation==='myLikes'?'text-white bg-dark':'font-weight-light'}}"
+                                    ng-click="subPageLocation = 'myLikes';refreshCards('myLikes');">
+                                    我赞过的
+                                </p>
+                            </div>
+                            <div class="col px-0 px-lg-3">
+                                <p class="overflow-hidden py-1 text-center cursor-pointer {{subPageLocation==='myShares'?'text-white bg-dark':'font-weight-light'}}"
+                                    ng-click="subPageLocation = 'myShares';refreshCards('myShares');">
+                                    我转发的
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
 
                 <div class="row">
-                    <!-- 所有人的所有卡片 -->
-                    <div class="col-12 col-sm-12 col-md-12 col-lg-12" ng-show="['popular','newest','myFollowingCards'].includes(subPageLocation)">
+                    <!-- marketplace & mySocialCircle & cards 所有人的所有卡片 -->
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12" ng-show="['popular','newest','myFollowingCards','myCards','myLikes','myShares'].includes(subPageLocation)">
                         <div ng-if="['classic'].includes(cardsViewMode)">
                             <div class="card-columns" ng-repeat="cards in cardGroups track by $index">
                                 <div ng-repeat="card in cards track by $index">
@@ -1086,7 +1120,7 @@
                     
                     
                     
-                    <!-- 话题区域 -->
+                    <!-- marketplace -> topics -->
                     <div class="col-12 col-sm-12 col-md-10 offset-md-1 col-lg-6 offset-lg-3" ng-show="['marketplace'].includes(pageLocation) && ['topics'].includes(subPageLocation)">
                         <div class="p3">
                             <div class="form-group">
@@ -1098,21 +1132,21 @@
                     
                     
 
-                    <!-- 所有人的卡片 -->
+                    <!-- marketplace -> popular, newest 所有人的卡片 -->
                     <!-- 加载更多卡片 -->
                     <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8" ng-show="['marketplace'].includes(pageLocation) && ['popular','newest'].includes(subPageLocation)">
                         <div class="text-center my-4">
-                            <div class="btn btn-block btn-outline-primary border-radius-0" ng-click="load_more_cards()" ng-if="has_more_cards">
+                            <div class="btn btn-block btn-outline-primary border-radius-0" ng-click="load_more_cards()" ng-if="has_more_popular_cards">
                                 <span>加载更多卡片</span>
                             </div>
-                            <div ng-if="!has_more_cards">
+                            <div ng-if="!has_more_popular_cards">
                                 <span class="text-muted">没有更多卡片了</span>
                             </div>
                         </div>
                     </div>
                     
 
-                    <!-- 我关注的人的卡片 -->
+                    <!-- mySocialCircle -> myFollowingCards 我关注的人的卡片 -->
                     <!-- 加载更多卡片 -->
                     <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8" ng-show="['mySocialCircle'].includes(pageLocation) && ['myFollowingCards'].includes(subPageLocation)">
                         <div class="text-center my-4">
@@ -1128,8 +1162,8 @@
 
 
 
-                    <!-- 我关注的用户 -->
-                    <div class="col-12 col-sm-12 col-md-12 col-lg-12" ng-show="subPageLocation === 'myFollowingUsers'">
+                    <!-- mySocialCircle 我关注的用户 -->
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12" ng-show="['mySocialCircle'].includes(pageLocation) && subPageLocation === 'myFollowingUsers'">
                         <!-- 没有关注的用户 -->
                         <div class="card border-radius-0 mx-auto" style="width: 30rem;" ng-show="!user.following || !user.following.length">
                             <div class="card-body bg-white text-center px-5" style="opacity: .8;">
@@ -1181,8 +1215,8 @@
 
 
 
-                    <!-- 我的粉丝 -->
-                    <div class="col-12 col-sm-12 col-md-12 col-lg-12" ng-show="subPageLocation === 'myFollowers'">
+                    <!-- mySocialCircle 我的粉丝 -->
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12" ng-show="['mySocialCircle'].includes(pageLocation) && subPageLocation === 'myFollowers'">
                         <!-- 没有粉丝 -->
                         <div class="card border-radius-0 mx-auto" style="width: 30rem;" ng-show="!user.fans || !user.fans.length">
                             <div class="card-body bg-white text-center px-5" style="opacity: .8;">
@@ -1238,71 +1272,8 @@
 
 
 
-                </div>
-            </div>
-            <!-- end of page "marketplace" and page "mySocialCircle" -->
-
-
-
-
-            <div class="create-card container-fluid mt-3" ng-show="pageLocation === 'cards'">
-                <!-- 用户登录了 -->
-                <div class="row">
-                    <!-- 标签栏 -->
-                    <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8">
-                        <div class="row overflow-hidden" onselectstart="return false;">
-                            <div class="col px-0 px-lg-3">
-                                <p class="overflow-hidden py-1 text-center cursor-pointer {{subPageLocation==='myCards'?'text-white bg-dark':'font-weight-light'}}"
-                                    ng-click="subPageLocation = 'myCards';refreshMyCards();">
-                                    我的卡片
-                                </p>
-                            </div>
-                            <div class="col px-0 px-lg-3">
-                                <p class="overflow-hidden py-1 text-center cursor-pointer {{subPageLocation==='write'?'text-white bg-dark':'font-weight-light'}}"
-                                    ng-click="subPageLocation = 'write'">
-                                    撰写卡片
-                                </p>
-                            </div>
-                            <div class="col px-0 px-lg-3">
-                                <p class="overflow-hidden py-1 text-center cursor-pointer {{subPageLocation==='myLikes'?'text-white bg-dark':'font-weight-light'}}"
-                                    ng-click="subPageLocation = 'myLikes';refreshMyCards();">
-                                    我赞过的
-                                </p>
-                            </div>
-                            <div class="col px-0 px-lg-3">
-                                <p class="overflow-hidden py-1 text-center cursor-pointer {{subPageLocation==='myShares'?'text-white bg-dark':'font-weight-light'}}"
-                                    ng-click="subPageLocation = 'myShares';refreshMyCards();">
-                                    我转发的
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-
-
-                    <!-- 标签项内容 -->
-                    <!-- 我的所有卡片 -->
-                    <div class="col-12 col-sm-12 col-md-12 col-lg-12" ng-show="['myCards','myLikes','myShares'].includes(subPageLocation)">
-                        <div class="card-columns" ng-repeat="myCards in myCardGroups track by $index">
-                            <div ng-repeat="card in myCards track by $index">
-                                <!-- 如果卡片不是转发卡片 -->
-                                <wc-card-preview
-                                    ng-if="card.type !== 'share'"
-                                    card="card"
-                                    user="user"></wc-card-preview>
-                                <!-- 如果（我的）卡片是转发卡片 -->
-                                <wc-shared-card-preview
-                                    ng-if="card.type === 'share' && card.share"
-                                    card="card"
-                                    user="user"></wc-shared-card-preview>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 加载更多我的卡片 -->
-                    <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8" ng-show="['myCards','myLikes','myShares'].includes(subPageLocation)">
+                    <!-- cards 加载更多我的卡片 -->
+                    <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8" ng-show="['cards'].includes(pageLocation) && ['myCards','myLikes','myShares'].includes(subPageLocation)">
                         <div class="w-100 text-center my-4">
                             <div class="btn btn-block btn-outline-primary border-radius-0" ng-click="load_more_my_cards()" ng-if="has_more_my_cards">
                                 <span>加载更多卡片</span>
@@ -1316,8 +1287,8 @@
 
 
 
-                    <!-- 撰写卡片 Create Card -->
-                    <div class="col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8" ng-show="subPageLocation === 'write'">
+                    <!-- cards 撰写卡片 Create Card -->
+                    <div class="create-card col-12 col-sm-12 col-md-12 offset-lg-2 col-lg-8" ng-show="['cards'].includes(pageLocation) && subPageLocation === 'write'">
                         <div class="row">
                             <div class="col-12 col-lg-10 mx-auto" style="max-width: 700px!important;">
                                 <!-- 选择卡片类型 -->
@@ -1593,11 +1564,10 @@
 
 
 
-
-
                 </div>
             </div>
-<!--            end of page "cards" -->
+            <!-- end of page "marketplace" & "mySocialCircle" & "cards" -->
+
 
 
 
@@ -4590,7 +4560,7 @@
                                 <!-- 10. cards groups -->
                                 <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
                                     Card Groups
-                                    <button data-toggle="collapse" data-target=".collapse-card-groups" class="button button-action button-3d button-rounded mb-1">open card groups</button>
+                                    <button data-toggle="collapse" data-target=".collapse-card-groups" class="button button-action button-3d button-rounded button-capitalize mb-1">open card groups</button>
                                 </li>
                                 <!-- 10.1 card groups length -->
                                 <li class="list-group-item collapse collapse-card-groups">
@@ -4654,7 +4624,7 @@
                                 <!-- 11. my cards groups -->
                                 <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
                                     My Card Groups
-                                    <button data-toggle="collapse" data-target=".collapse-my-card-groups" class="button button-primary button-3d button-small button-rounded mb-1">open</button>
+                                    <button data-toggle="collapse" data-target=".collapse-my-card-groups" class="button button-action button-3d button-rounded button-capitalize mb-1">open</button>
                                 </li>
                                 <!-- 11.1 my card groups length -->
                                 <li class="list-group-item collapse collapse-my-card-groups">
