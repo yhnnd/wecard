@@ -180,8 +180,9 @@ textarea.card-comment-editor {
   height: 1.5rem;
   min-width: 1.5rem;
   min-height: 1.5rem;
+  max-width: 1.5rem;
+  max-height: 1.5rem;
   object-fit: cover;
-  font-size: 80%;
 }
 
 .user-avatar-sm {
@@ -189,8 +190,9 @@ textarea.card-comment-editor {
   height: 2rem;
   min-width: 2rem;
   min-height: 2rem;
+  max-width: 2rem;
+  max-height: 2rem;
   object-fit: cover;
-  font-size: 80%;
 }
 
 .user-avatar {
@@ -198,8 +200,9 @@ textarea.card-comment-editor {
   height: 2.5rem;
   min-width: 2.5rem;
   min-height: 2.5rem;
+  max-width: 2.5rem;
+  max-height: 2.5rem;
   object-fit: cover;
-  font-size: 80%;
 }
 
 .user-avatar-md {
@@ -207,8 +210,29 @@ textarea.card-comment-editor {
   height: 3rem;
   min-width: 3rem;
   min-height: 3rem;
+  max-width: 3rem;
+  max-height: 3rem;
   object-fit: cover;
-  font-size: 80%;
+}
+
+.user-avatar-lg {
+  width: 4rem;
+  height: 4rem;
+  min-width: 4rem;
+  min-height: 4rem;
+  max-width: 4rem;
+  max-height: 4rem;
+  object-fit: cover;
+}
+
+.user-avatar-xl {
+  width: 5rem;
+  height: 5rem;
+  min-width: 5rem;
+  min-height: 5rem;
+  max-width: 5rem;
+  max-height: 5rem;
+  object-fit: cover;
 }
 
 .chat-window {
