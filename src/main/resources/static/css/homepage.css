@@ -649,14 +649,15 @@ textarea.card-comment-editor {
   border-bottom-right-radius: 0 !important;
 }
 
+pre.wp-block-code,
 .break-all {
   word-break: break-all;
   word-wrap: break-word;
 }
 
+pre.wp-block-code,
 pre.break-all {
   white-space: pre-wrap;
-  word-wrap: break-word;
 }
 
 pre.line {
