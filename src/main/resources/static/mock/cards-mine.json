@@ -69,6 +69,20 @@
         ]
     },
     {
+        "id": "uuid_card_test_html_card_1",
+        "status": "exist",
+        "createdTime": "April 7 2023",
+        "title": "test html card youtube links",
+        "user": {
+            "id": "uuid_user3",
+            "username": "user",
+            "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280"
+        },
+        "type": "html",
+        "text": "<div>\n<img class=\"user-avatar rounded-circle\" src=\"https://yt3.googleusercontent.com/NPz8uBAdNqk9ybfFUKyov2NRUDuvrFTcZQ19aeWkQABEO5t6nIta1X-aKlRtodEWU3wgMtD8=s176-c-k-c0x00ffffff-no-rj\">\n<a href=\"https://www.youtube.com/@weiyuksj\">https://www.youtube.com/@weiyuksj</a>\n</div><div><img class=\"user-avatar rounded-circle\" src=\"https://yt3.googleusercontent.com/ytc/AL5GRJWkOmMLgiyAkCSvSpCNVE3up402BeniZ6les1HN=s176-c-k-c0x00ffffff-no-rj\"><a href=\"https://www.youtube.com/@TianLiangTimes\">https://www.youtube.com/@TianLiangTimes</a></div>",
+        "comments": []
+    },
+    {
         "id": "uuid_card_9154664009263522",
         "status": "exist",
         "createdTime": "9154664009263522",
