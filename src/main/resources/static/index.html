@@ -728,11 +728,12 @@
 
 
             <!-- /* z-index of it should be no more than 1050 */ -->
-            <div class="d-inline-block px-3 py-2 border bg-white"
-                 style="position:fixed;bottom: 0;right: 0;z-index: 1049;"
+            <div class="d-inline-block px-3 py-2 border bg-white cursor-pointer"
+                 style="position:fixed;bottom: .2rem;right: .2rem;z-index: 1049;"
                  ng-show=" (['marketplace','mySocialCircle'].includes(pageLocation) || pageLocation === 'cards' && subPageLocation !== 'write')"
-                 ng-click="gotoPage('cards');subPageLocation = 'write';">
-                <span class="fa fa-3x fa-pencil" title="撰写卡片" data-toggle="tooltip"></span>
+                 ng-click="gotoPage('cards');subPageLocation = 'write';"
+                 title="Write A Card" data-toggle="tooltip">
+                <span class="fa fa-3x fa-pencil"></span>
             </div>
 
 
@@ -2092,10 +2093,10 @@
                                                                                 <i class="fa fa-lg fa-file-text"></i>
                                                                             </button>
                                                                             <div class="dropdown-menu">
-                                                                                <div class="dropdown-item" ng-click="current_card.share.type = 'text';">Plain Text</div>
-                                                                                <div class="dropdown-item" ng-click="current_card.share.type = 'wcml';">WCML</div>
-                                                                                <div class="dropdown-item" ng-click="current_card.share.type = 'markdown';">Markdown</div>
-                                                                                <div class="dropdown-item" ng-click="current_card.share.type = 'html';">HTML</div>
+                                                                                <div class="dropdown-item" ng-repeat="cardType in allAvailableCardTypes track by $index" ng-click="current_card.share.type = cardType">
+                                                                                    <span ng-if="current_card.share.type === cardType">✅</span>
+                                                                                    <span class="button-capitalize" ng-bind="cardType"></span>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -2115,10 +2116,10 @@
                                                                                 <i class="fa fa-lg fa-file-text"></i>
                                                                             </button>
                                                                             <div class="dropdown-menu">
-                                                                                <div class="dropdown-item" ng-click="current_card.share.type = 'text';">Plain Text</div>
-                                                                                <div class="dropdown-item" ng-click="current_card.share.type = 'wcml';">WCML</div>
-                                                                                <div class="dropdown-item" ng-click="current_card.share.type = 'markdown';">Markdown</div>
-                                                                                <div class="dropdown-item" ng-click="current_card.share.type = 'html';">HTML</div>
+                                                                                <div class="dropdown-item" ng-repeat="cardType in allAvailableCardTypes track by $index" ng-click="current_card.share.type = cardType">
+                                                                                    <span ng-if="current_card.share.type === cardType">✅</span>
+                                                                                    <span class="button-capitalize" ng-bind="cardType"></span>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -2331,45 +2332,9 @@
                                                     <i class="fa fa-lg fa-file-text"></i>
                                                 </button>
                                                 <div class="dropdown-menu">
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'text'; ">
-                                                        <span ng-if="current_card.type === 'text'">✅</span>
-                                                        <span>Plain Text</span>
-                                                    </div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'quill'; ">
-                                                        <span ng-if="current_card.type === 'quill'">✅</span>
-                                                        <span>Quill</span>
-                                                    </div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'image'; ">
-                                                        <span ng-if="current_card.type === 'image'">✅</span>
-                                                        <span>Image</span>
-                                                    </div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'video'; ">
-                                                        <span ng-if="current_card.type === 'video'">✅</span>
-                                                        <span>Video</span>
-                                                    </div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'Audio'; ">
-                                                        <span ng-if="current_card.type === 'Audio'">✅</span>
-                                                        <span>Audio</span>
-                                                    </div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'Share'; ">
-                                                        <span ng-if="current_card.type === 'Share'">✅</span>
-                                                        <span>Share</span>
-                                                    </div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'wcml'; ">
-                                                        <span ng-if="current_card.type === 'wcml'">✅</span>
-                                                        <span>WCML</span>
-                                                    </div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'markdown'; ">
-                                                        <span ng-if="current_card.type === 'markdown'">✅</span>
-                                                        <span>Markdown</span>
-                                                    </div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'html'; ">
-                                                        <span ng-if="current_card.type === 'html'">✅</span>
-                                                        <span>HTML</span>
-                                                    </div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'wordpress'; ">
-                                                        <span ng-if="current_card.type === 'wordpress'">✅</span>
-                                                        <span>WordPress</span>
+                                                    <div class="dropdown-item" ng-repeat="cardType in allAvailableCardTypes track by $index" ng-click="current_card.type = cardType">
+                                                        <span ng-if="current_card.type === cardType">✅</span>
+                                                        <span class="button-capitalize" ng-bind="cardType"></span>
                                                     </div>
                                                 </div>
                                             </div>

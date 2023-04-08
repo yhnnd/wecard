@@ -296,6 +296,8 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         file: null
     };
 
+    $scope.allAvailableCardTypes = ["text", "quill", "image", "video", "audio", "share", "markdown", "html", "wcml", "wordpress"];
+
 
 
 

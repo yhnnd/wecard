@@ -1063,15 +1063,15 @@ pre.line.dme.dme-i {
   border-width: 1px;
   border-style: solid;
   border-color: transparent;
-  outline-width: .25rem;
+  outline-width: .2rem;
   outline-style: solid;
   outline-color: transparent;
   transition: border-color linear .05s, outline-color linear .1s;
 }
 
 .modal#view-card .message-content-wrapper:has(.button:hover) {
-  border-color: rgba(64, 168, 255, .75);
-  outline-color: rgba(16, 133, 255, 0.33);
+  border-color: #80bdff;
+  outline-color: rgba(0, 123, 255, 0.25);
 }
 
 .card-image-preview-wrapper {

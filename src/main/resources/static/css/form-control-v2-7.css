@@ -1,9 +1,20 @@
 .form-control-v2-7 > .text-editable {
+  min-width: 100%;
   width: 100% !important;
+  max-width: 100% !important;
   display: block !important;
   border: none !important;
   box-shadow: none !important;
-  outline: none !important;
+  outline: .2rem solid transparent;
+}
+
+.form-control-v2-7 > .line.text-editable {
+  min-width: 1rem;
+  min-height: 1.5rem;
+}
+
+.form-control-v2-7 > .text-editable[contenteditable="true"] {
+  outline-color: rgba(0, 123, 255, 0.25);
 }
 
 .form-control-v2-7 > .text-editable.hover-shadow:hover {
