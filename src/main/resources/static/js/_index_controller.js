@@ -118,7 +118,19 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             }
             return "fa-internet-explorer";
         })($scope.webBrowserName));
+
+        $(".legacy-form-control").on("input", function() {
+            $(this).css("height", "");
+            $(this).css("height", this.scrollHeight + "px");
+        });
     };
+
+
+
+    // $scope.resizeTextArea = function () {
+    //     $(".legacy-form-control").css("height", "").css("height", this.scrollHeight + "px");
+    // };
+
 
 
 
@@ -186,10 +198,13 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.isNavbarBackgroundDark = true;
     // 导航栏的尺寸高度
     $scope.isNavbarMinimized = false;
-    // 撰写卡片正文编辑器的类型
-    $scope.writeCard_editorType = "v2.7";
-    // 撰写卡片正文编辑区域的高度
-    $scope.writeCard_textAreaHeight = 468;
+    $scope.writeCard = {
+        "editorType": "v2_7",// 撰写卡片正文编辑器的类型
+        "textArea": {
+            "minHeight": "468px",// 撰写卡片正文编辑区域的高度
+            "height": "fit-content"
+        }
+    };
     // 是否使用新窗口打开卡片
     $scope.alwaysViewCardInAnotherPage = false;
 

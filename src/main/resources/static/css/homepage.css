@@ -669,10 +669,51 @@ pre.line {
   /* font-family: inherit; */
   background: transparent;
   color: black;
+  overflow: visible;
+}
+
+*:has(>pre.line.text-editable) {
+  counter-reset: element;   
+  list-style: none;
+}
+
+pre.line.text-editable::after {
+  display: inline-block;
+  counter-increment: element;               
+  content: counter(element);
+  color: transparent;
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translateX(24px) scale(0.1);
+  transition: all linear .1s;
+}
+
+.focus > pre.line.text-editable::after {
+  color: rgba(128,128,128,0.25);
+  background: transparent;
+  transform: translateX(0) scale(0.8);
+}
+
+.focus > pre.line.text-editable:hover::after {
+  color:rgba(0, 0, 0, 0.5);
+}
+
+.focus > pre.line.text-editable[contenteditable="true"]::after {
+  color: rgba(128, 128, 128, 0.1);
+}
+
+.focus > pre.line.text-editable[contenteditable="true"]:hover::after {
+  color:rgba(0, 0, 0, 0.5);
 }
 
 pre.line.text-editable {
   color: inherit;
+  position: relative;
+}
+
+pre.line.text-editable:last-of-type {
+  padding-bottom: 336px;
 }
 
 ol.card-text-lines {

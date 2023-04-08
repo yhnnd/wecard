@@ -1299,28 +1299,33 @@
                                 <!-- 选择卡片类型 -->
                                 <ul class="nav nav-tabs">
                                     <li class="nav-item">
-                                        <a class="nav-link active" data-toggle="tab" href="#create-text-card" ng-click="writeCard_editorType = 'v2.7'">
+                                        <a class="nav-link active" data-toggle="tab" href="#create-text-card" ng-click="writeCard.editorType = 'legacy'">
                                             <span>文字</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#create-image-card" ng-click="writeCard_editorType = 'v2.7'">
+                                        <a class="nav-link" data-toggle="tab" href="#create-image-card" ng-click="writeCard.editorType = 'legacy'">
                                             <span>图片</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#create-video-card" ng-click="writeCard_editorType = 'v2.7'">
+                                        <a class="nav-link" data-toggle="tab" href="#create-video-card" ng-click="writeCard.editorType = 'legacy'">
                                             <span>视频</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#create-audio-card" ng-click="writeCard_editorType = 'v2.7'">
+                                        <a class="nav-link" data-toggle="tab" href="#create-audio-card" ng-click="writeCard.editorType = 'legacy'">
                                             <span>音频</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#create-quill-card" ng-click="writeCard_editorType = 'quill'">
-                                            <span>富文本</span><span class="visible hidden-sm">卡片</span>
+                                        <a class="nav-link" data-toggle="tab" href="#create-quill-card" ng-click="writeCard.editorType = 'quill'">
+                                            <span>Quill</span><span class="visible hidden-sm">卡片</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-toggle="tab" href="#create-text-card" ng-click="writeCard.editorType = 'v2_7'">
+                                            <span>WCML</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -1336,7 +1341,7 @@
                                         <input type="text" class="form-control" ng-model="card_to_create.title" placeholder="Card Title">
                                     </div>
                                     <!-- 卡片正文 Quill 编辑器 -->
-                                    <div class="form-group" ng-show="writeCard_editorType === 'quill'">
+                                    <div class="form-group" ng-show="writeCard.editorType === 'quill'">
                                         <div class="px-2 mb-3">
                                             <div>
                                                 <button class="btn btn-sm btn-outline-primary py-0 border-radius-0" onclick="$(this).parent().hide().next().show();">
@@ -1365,7 +1370,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div id="editor-container" style="background-color: #fff; height: {{writeCard_textAreaHeight}}px;">
+                                        <div id="editor-container" style="background-color: #fff;min-height: {{writeCard.textArea.minHeight}};height: {{writeCard.textArea.height}};">
                                         </div>
                                         <script>
                                             function toggleQuillToolbarFont(selector) {
@@ -1427,53 +1432,36 @@
                                             }, 1000);
                                         </script>
                                     </div>
-                                    <!-- 卡片正文 v 2.7 编辑器 -->
-                                    <div class="form-group" ng-show="writeCard_editorType === 'v2.7'">
+                                    <!-- 卡片正文 Legacy 编辑器 -->
+                                    <div class="form-group" ng-show="writeCard.editorType === 'legacy'">
                                         <textarea class="form-control legacy-form-control" rows="6" ng-model="card_to_create.text" placeholder="卡片正文"
-                                                  style="height: {{writeCard_textAreaHeight}}px;">
+                                                  style="min-height: {{writeCard.textArea.minHeight}};height: {{writeCard.textArea.height}};">
                                         </textarea>
+                                    </div>
+                                    <!-- 卡片正文 v 2.7 编辑器 -->
+                                    <div class="form-group" ng-show="writeCard.editorType === 'v2_7'">
                                         <div class="form-control form-control-v2-7" id="card-to-create-text-v2-7" 
-                                             style="display: none;height: {{writeCard_textAreaHeight}}px;">
+                                             style="min-height: {{writeCard.textArea.minHeight}};height: {{writeCard.textArea.height}};">
                                         </div>
                                     </div>
                                     <!-- 切换编辑器按钮区 -->
-                                    <div class="form-group row" ng-show="writeCard_editorType === 'v2.7'">
+                                    <div class="form-group row">
                                         <div class="col-12">
                                             <div class="form-inline">
-                                                <script>
-                                                    function toggleNewEditor (btn) {
-                                                        $('.legacy-form-control').hide().next().show();
-                                                        $(btn).parent().find('.editor-toggle-old').hide();
-                                                        $(btn).parent().find('.editor-toggle-new').show();
-                                                    }
-
-                                                    function toggleOldEditor (btn) {
-                                                        $('.legacy-form-control').show().next().hide();
-                                                        $(btn).parent().find('.editor-toggle-new').hide();
-                                                        $(btn).parent().find('.editor-toggle-old').show();
-                                                    }
-                                                </script>
-                                                <button class="btn btn-sm btn-outline-primary editor-toggle editor-toggle-old mr-1 mr-lg-2 mb-1 mb-lg-0"
-                                                        id="editor-toggle-1"
-                                                        onclick="toggleNewEditor(this);">
-                                                    开启新版编辑器
+                                                <button class="btn btn-sm btn-outline-secondary mb-2 mr-2" ng-class="{'active focus':writeCard.editorType === 'legacy'}" ng-click="writeCard.editorType = 'legacy';" data-toggle="tooltip" title="Open Legacy Editor">
+                                                    <span>Legacy Editor</span>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-danger editor-toggle editor-toggle-old mr-auto mb-1 mb-lg-0"
-                                                        id="editor-toggle-2"
-                                                        onclick="toggleNewEditor(this);v2_7.reload();">
-                                                    复制当前内容到新版编辑器
+                                                <button class="btn btn-sm btn-outline-danger mb-2 mr-2" onclick="v2_7.reload();$(this).siblings().eq(1).click();" ng-disabled="writeCard.editorType !== 'legacy'">
+                                                    <span>Copy Text To Editor V2.7</span>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-secondary editor-toggle editor-toggle-new mr-1 mr-lg-2 mb-1 mb-lg-0"
-                                                        id="editor-toggle-3"
-                                                        onclick="toggleOldEditor(this);"
-                                                        style="display: none;">
-                                                    开启旧版卡片编辑器
+                                                <button class="btn btn-sm btn-outline-primary mb-2 mr-2" ng-class="{'active focus':writeCard.editorType === 'v2_7'}" ng-click="writeCard.editorType = 'v2_7'" data-toggle="tooltip" title="Open Editor V2.7">
+                                                    <span>Editor V2.7</span>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-primary editor-toggle editor-toggle-new mr-auto mb-1 mb-lg-0"
-                                                        id="editor-toggle-4"
-                                                        onclick="v2_7.initHelp();v2_7.help();"
-                                                        style="display: none;">
-                                                    新版卡片编辑器功能介绍
+                                                <button class="btn btn-sm btn-outline-primary mb-2 mr-2" onclick="$(this).siblings().eq(0).click();$(this).siblings().eq(1).click();setTimeout(()=>{$('#card-to-create-text-v2-7').click();},0);" ng-disabled="writeCard.editorType !== 'v2_7'">
+                                                    <span>Refresh</span>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-primary mb-2 mr-2" onclick="v2_7.initHelp();v2_7.help();" data-toggle="tooltip" title="Introduction to Editor V2.7">
+                                                    <span>Help with Editor V2.7</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -1494,7 +1482,7 @@
                                                 <span title="index: {{$index}}">{{topic}}</span>
                                                 <i class="fa fa-lg fa-times cursor-pointer" ng-click="removeCardTopic($index)"></i>
                                             </span>
-                                            <span class="btn btn-sm btn-outline-danger float-right upper" ng-click="removeAllCardTopics()">清空话题</span>
+                                            <span class="btn btn-sm btn-outline-danger float-right upper" ng-click="removeAllCardTopics()" ng-show="card_to_create.topics.length">清空话题</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1555,10 +1543,10 @@
                                 <!-- 上传卡片 -->
                                 <div class="row py-4">
                                     <div class="col offset-lg-6 px-5 px-lg-4">
-                                        <div ng-if="['v2.7','quill'].includes(writeCard_editorType) === true">
+                                        <div ng-if="['legacy','v2_7','quill'].includes(writeCard.editorType) === true">
                                             <button class="btn btn-primary btn-block" onclick="createCard()">上传卡片</button>
                                         </div>
-                                        <div ng-if="['v2.7','quill'].includes(writeCard_editorType) === false">
+                                        <div ng-if="['legacy','v2_7','quill'].includes(writeCard.editorType) === false">
                                             <div class="alert alert-danger">无法上传卡片</div>
                                         </div>
                                     </div>

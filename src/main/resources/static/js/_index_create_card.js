@@ -131,10 +131,10 @@ function createCardValidate($scope, card) {
         // if card.title is "", then card.title is false, and card.title.trim() is also false
         // if card.title is " ", then card.title is true, but card.title.trim() is false
         // if card.title is not "" or " ", then card.title is true, and card.title.trim() is also true
-        if ($scope.writeCard_editorType === "v2.7" && !card.text) {
+        if ($scope.writeCard.editorType === "v2_7" && !card.text) {
             createCardAlert("[ERROR] createCard(): 卡片标题和卡片正文不能同时为空, 中止卡片上传");
             return false;
-        } else if ($scope.writeCard_editorType === "quill") {
+        } else if ($scope.writeCard.editorType === "quill") {
             createCardAlert("[ERROR] createCard(): 卡片标题不能为空, 中止卡片上传");
             return false;
         }

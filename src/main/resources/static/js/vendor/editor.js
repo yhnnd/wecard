@@ -40,6 +40,9 @@ var v2_7 = {
             return false;
         }
     },
+    getAllLines: function () {
+        return this.field.children();
+    },
     getScope: function () {
         let model = document.querySelector('[ng-controller="controller"]');
         let scope = angular.element(model).scope();
@@ -49,7 +52,7 @@ var v2_7 = {
         return scope;
     },
     getNewLine: function(attr) {
-        const id = "text-editable-" + new Date().getTime()
+        const id = "text-editable-" + this.getRandomString() + "-time-" + new Date().getTime();
         const newLine = $("<pre id=\"" + id + "\" class=\"line break-all text-editable\">");
         if (attr) {
             newLine.attr(attr);
@@ -98,14 +101,14 @@ var v2_7 = {
         this.field = this.getField();
         // 绑定聚焦监听器
         this.addFocusListener();
+        // Add Keydown Listener
+        this.addKeydownListener();
         // Add Drag Listener
         this.addDragListener(this.field);
         // 注册按键监听器
         this.keyPressListener = keyPressListener;
         // 注册文本改变监听器
         this.onTextChange = onTextChange;
-        // 初始化编辑区域
-        this.empty();
     },
     // 绑定点击事件, 当点击编辑区域的时候, 添加自定义的 focus 类
     addFocusListener: function() {
@@ -120,25 +123,233 @@ var v2_7 = {
             || parent_2.is(self.fieldSelector)
             || parent_3.is(self.fieldSelector)
             ) {
-                if (self.field.hasClass("focus") !== true) {
-                    console.log("v2.7 editor: clickListener: focused.");
-                    self.field.addClass("focus");
-                } else {
-                    console.log("v2.7 editor: clickListener: already focused.");
-                }
+                console.log("v2.7 editor: clickListener: focused.");
+                self.focusField();
                 // 如果点击到了编辑区域但未点击到文本行
                 if ($(target).is(self.fieldSelector)) {
                     if (self.field.text().length === 0 || self.field.hasClass("selecting") === false) {
                         console.log("v2.7 editor: clickListener: auto focus on last line.");
+                        self.field.find(".text-editable").blur().removeAttr("contenteditable");
                         self.field.find(".text-editable").last().attr("contenteditable", true).focus();
                         self.setCursorPosition(self.getCursorPositionMax());
                     }
                 }
-            } else if (self.field.hasClass("focus")) {
+            } else if (self.isFieldFocused()) {
                 self.field.find(".text-editable").blur().removeAttr("contenteditable");
-                self.field.removeClass("focus");
+                self.blurField();
                 console.log("v2.7 editor: clickListener: blurred.");
                 self.save();
+            }
+        });
+    },
+    getSelection: function () {
+        let selection = undefined;
+        if (window.getSelection) {
+            selection = window.getSelection();
+        } else if (document.getSelection) {
+            selection = document.getSelection();
+        }
+        return selection;
+    },
+    isFieldFocused: function () {
+        return this.field.hasClass("focus");
+    },
+    focusField: function() {
+        if (this.getAllLines().length === 0) {
+            this.empty();
+        }
+        this.field.addClass("focus");
+    },
+    blurField: function() {
+        this.field.removeClass("focus");
+    },
+    isLineElement: function (element) {
+        return element.is(".line.text-editable");
+    },
+    getLineElementFromTextNode: function (text) {
+        return $(text).closest(".line.text-editable");
+    },
+    getSelectedLines: function () {
+        const self = this;
+        const selection = self.getSelection();
+        // Base Node
+        const baseNode = $(selection.baseNode);
+        const realBaseNode = self.isLineElement(baseNode) ? baseNode : self.getLineElementFromTextNode(baseNode);
+        const base = {
+            "node": realBaseNode,
+            "index": realBaseNode.index(),
+            "offset": selection.baseOffset,
+        };
+        // Extend Node
+        const extentNode = $(selection.extentNode);
+        const realExtentNode = self.isLineElement(extentNode) ? extentNode : self.getLineElementFromTextNode(extentNode);
+        const extend = {
+            "node": realExtentNode,
+            "index": realExtentNode.index(),
+            "offset": selection.extentOffset,
+        };
+        // Computed Order
+        const from = Math.min(base.index, extend.index), to = Math.max(base.index, extend.index);
+        const allLines = self.getAllLines();
+        const linesSelected = [];
+        const fromLine = from === base.index ? base : extend;
+        const toLine = to === base.index ? base : extend;
+        if (fromLine.index < toLine.index) {
+            linesSelected.push(fromLine);
+            for (let i = from + 1; i < to; ++i) {
+                linesSelected.push({
+                    "node": allLines.eq(i),
+                    "index": i
+                });
+            }
+            linesSelected.push(toLine);
+        } else if (realBaseNode.attr("id") === realExtentNode.attr("id")) {
+            const fromOffset = Math.min(base.offset, extend.offset);
+            const toOffset = Math.max(base.offset, extend.offset);
+            const realFrom = fromOffset === base.offset ? base : extend;
+            const realTo = toOffset === base.offset ? base : extend;
+            linesSelected.push(realFrom);
+            linesSelected.push(realTo);
+        } else {
+            throw "getSelectedLines: error";
+        }
+        return linesSelected;
+    },
+    clearSelection: function () {
+        // https://stackoverflow.com/questions/3169786/clear-text-selection-with-javascript
+        let sel;
+        if (window.getSelection) {
+            sel = window.getSelection();
+            if (sel.empty) {// Chrome
+                sel.empty();
+            } else if (sel.removeAllRanges) {// Firefox
+                sel.removeAllRanges();
+            }
+        } else if (document.selection) {// IE?
+            document.selection.empty();
+        }
+    },
+    getCaretCharOffset: function (element) {
+        if (element === undefined) {
+            throw "getCaretCharOffset: element undefined";
+        }
+        // https://stackoverflow.com/questions/3972014/get-contenteditable-caret-position/#answer-30400227
+        var caretOffset = 0;
+        if (window.getSelection) {
+            var range = window.getSelection().getRangeAt(0);
+            var preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(element);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            caretOffset = preCaretRange.toString().length;
+        }
+        else if (document.selection && document.selection.type != "Control") {
+            var textRange = document.selection.createRange();
+            var preCaretTextRange = document.body.createTextRange();
+            preCaretTextRange.moveToElementText(element);
+            preCaretTextRange.setEndPoint("EndToEnd", textRange);
+            caretOffset = preCaretTextRange.text.length;
+        }
+        return caretOffset;
+    },
+    getCaretPosition: function (editableElement) {
+        if (editableElement === undefined) {
+            throw "getCaretPosition: editableElement undefined";
+        }
+        // https://stackoverflow.com/questions/3972014/get-contenteditable-caret-position/#answer-3976125
+        var caretPos = 0, sel, range;
+        if (window.getSelection) {
+            sel = window.getSelection();
+            if (sel.rangeCount) {
+                range = sel.getRangeAt(0);
+                if (range.commonAncestorContainer.parentNode == editableElement) {
+                    caretPos = range.endOffset;
+                }
+            }
+        } else if (document.selection && document.selection.createRange) {
+            range = document.selection.createRange();
+            if (range.parentElement() == editableElement) {
+                var tempEl = document.createElement("span");
+                editableElement.insertBefore(tempEl, editableElement.firstChild);
+                var tempRange = range.duplicate();
+                tempRange.moveToElementText(tempEl);
+                tempRange.setEndPoint("EndToEnd", range);
+                caretPos = tempRange.text.length;
+            }
+        }
+        return caretPos;
+    },
+    setCaretPosition: function (el, char) {// character at which to place caret
+        if (el === undefined || el.lastChild === undefined) {
+            throw "setCaretPosition: error element not defined";
+        }
+        if (char === undefined) {
+            throw "setCaretPosition: error char not defined";
+        }
+        // https://stackoverflow.com/questions/6249095/how-to-set-the-caret-cursor-position-in-a-contenteditable-element-div/#answer-55377676
+        let sel;
+        if (window.getSelection) {// Chrome
+            sel = window.getSelection();
+            sel.collapse(el.lastChild, char);
+        } else if (document.selection) {// IE?
+            sel = document.selection.createRange();
+            sel.moveStart('character', char);
+            sel.select();
+        }
+    },
+    deleteSelectedTextInline: function () {
+        // 1
+        // baseOffset: 5
+        // extentOffset: 0
+        // 2
+        // baseOffset: 12
+        // extentOffset: 17
+        const sel = this.getSelectedLines();
+        console.log("sel = ", sel);
+        const target = sel[0].node;
+        const from = sel[0].offset, to = sel[1].offset;
+        const text = target.text();
+        const textA = text.substring(0, from), textB = text.substring(from, to), textC = text.substring(to);
+        if (textA + textB + textC === text) {
+            target.text(textA + textC);
+            target.click();
+            this.setCaretPosition(target[0], from);
+        } else {
+            throw "deleteSelectedTextInline: error";
+        }
+    },
+    deleteSelectedText: function () {
+        const self = this;
+        const linesSelected = self.getSelectedLines();
+        const begin = linesSelected.shift();
+        const end = linesSelected.pop();
+        if (begin.index !== end.index) {
+            function splitLine(line) {
+                const text = line.node.text();
+                const offset = line.offset;
+                return [text.substr(0, offset), text.substr(offset)];
+            }
+            const beginLineSplitted = splitLine(begin);
+            const endLineSplitted = splitLine(end);
+            begin.node.text(beginLineSplitted[0] + endLineSplitted[1]);
+            for (let i = 0; i < linesSelected.length; ++i) {
+                self.deleteLine(linesSelected[i].node);
+            }
+            self.deleteLine(end.node);
+            self.clearSelection();
+            begin.node.click();
+            self.setCaretPosition(begin.node[0], begin.offset);
+        } else {
+            this.deleteSelectedTextInline();
+        }
+    },
+    addKeydownListener: function () {
+        const self = this;
+        $(document).off("keydown").on("keydown", function (event) {
+            if (event.keyCode === self.DELETE) {
+                if (self.isFieldFocused() === true && self.field.find("[contenteditable='true']").length === 0) {
+                    event.preventDefault();
+                    self.deleteSelectedText();
+                }
             }
         });
     },
@@ -146,9 +357,9 @@ var v2_7 = {
         return ("" + Math.random() * 10).split(".").join("");
     },
     enableLineEdit: function (lineElement) {
+        this.focusField();
         lineElement.siblings().removeAttr("contenteditable");
         lineElement.attr({"contenteditable": true}).focus();
-        this.field.addClass("focus");
     },
     getLineMaxWidth: function () {
         return 644;
@@ -167,22 +378,30 @@ var v2_7 = {
         return Math.ceil(lineElement.innerWidth() / charWidth);
     },
     getEditInfo: function (lineElement, clickEvent) {
-        const charWidth = this.getCharWidth();
-        const offsetX = Math.ceil(clickEvent.offsetX / charWidth);
-        const offsetY = Math.ceil(clickEvent.offsetY / 24);
-        const index = offsetX + (() => {
-            if (offsetY > 1) {
-                const actualLineMax = this.getComputedLineMaxChar(lineElement);
-                return (offsetY - 1) * actualLineMax;
-            }
-            return 0;
-        })();
-        return {
+        const caretInfo = {
             "cursorPosition": this.getCursorPosition(),
-            "index": index,
-            "x": offsetX,
-            "y": offsetY,
+            "caretPosition": this.getCaretPosition(lineElement[0]),
+            "caretOffset": this.getCaretCharOffset(lineElement[0]),
         };
+        if (clickEvent) {
+            const charWidth = this.getCharWidth();
+            const offsetX = Math.ceil(clickEvent.offsetX / charWidth);
+            const offsetY = Math.ceil(clickEvent.offsetY / 24);
+            const index = offsetX + (() => {
+                if (offsetY > 1) {
+                    const actualLineMax = this.getComputedLineMaxChar(lineElement);
+                    return (offsetY - 1) * actualLineMax;
+                }
+                return 0;
+            })();
+            const clickInfo = {
+                "index": index,
+                "x": offsetX,
+                "y": offsetY,
+            }
+            return Object.assign(caretInfo, clickInfo);
+        }
+        return caretInfo;
     },
     handleLineClick: function (lineElement, event) {
         event.stopPropagation();
@@ -205,15 +424,21 @@ var v2_7 = {
         })();
         const browserName = window.getBrowserName();
         if (browserName === "chrome") {
+            element.data("isListeningMouseleave", "false");
             element.mousedown(function () {
                 $(this).off("mousemove").on("mousemove",function () {
-                    $(this).off("mouseleave").on("mouseleave", function () {
-                        $(this).off("mousemove").off("mouseleave");
-                        self.field.addClass("selecting").find(".text-editable").blur().removeAttr("contenteditable");
-                    });
+                    if (element.data("isListeningMouseleave") === "false") {
+                        element.data("isListeningMouseleave", "true");
+                        $(this).on("mouseleave", function () {
+                            $(this).off("mousemove").off("mouseleave");
+                            element.data("isListeningMouseleave", "false");
+                            self.field.addClass("selecting").find(".text-editable").blur().removeAttr("contenteditable");
+                        });
+                    }
                 });
             }).mouseup(function () {
                 $(this).off("mousemove").off("mouseleave");
+                element.data("isListeningMouseleave", "false");
                 setTimeout(() => {
                     self.field.removeClass("selecting");
                 }, 0);
@@ -272,7 +497,7 @@ var v2_7 = {
                 }
             }
             if (hasHtml) {
-                function callback () {
+                (function () {
                     const target = newLine;
                     // let contentAddedLength = 0;
                     // for (const child of target.children()) {
@@ -280,21 +505,28 @@ var v2_7 = {
                     //         contentAddedLength += child.textContent.length;
                     //     }
                     // }
-                    self.getCursorPosition();
-                    $(target).text($(target).text());
-                    self.setCursorPosition(1);
-                }
-                if (window.getBrowserName() === "chrome") {
-                    window.bsConfirm({
-                        "title": "<i class='fa fa-lg fa-chrome mr-1'></i> Chrome Browser Issue",
-                        "content": "This editor does not support html editing.<br>Copying html codes to this editor may cause losing data if you use Chrome.",
-                        "alertClass": "alert-danger",
-                        "confirmCallback": callback,
-                        "rejectCallback": callback,
-                    });
-                } else {
-                    callback();
-                }
+                    const posPrev = self.getEditInfo(target);
+                    // Format Text
+                    function formatHtml (div) {
+                        if ($(div).children("div,pre,p").length) {
+                            return _.map($(div).children(), div2 => formatHtml(div2)).join("\n");
+                        } else {
+                            return $(div).text();
+                        }
+                    }
+                    console.log("pos before formatting " + JSON.stringify(posPrev));
+                    $(target).text(formatHtml(target));
+                    console.log("pos after formatting " + JSON.stringify(self.getEditInfo(target)));
+                    if (posPrev.caretOffset <= $(target).text().length) {
+                        self.setCaretPosition(target[0], posPrev.caretOffset);
+                    } else {
+                        window.bsConfirm({
+                            "title": "<i class='fa fa-lg fa-exclamation-triangle upper'></i> We Got An Issue",
+                            "content": "This editor does not support html editing.<br>Copying html text to this editor is not safe.",
+                            "alertClass": "alert-danger",
+                        });
+                    }
+                })();
             }
         });
         // 观察文本行内容改变
@@ -308,9 +540,13 @@ var v2_7 = {
         newLine.data("observer-id", observerId);
         // 当删除这一行的时候, 观察器将会被停止
     },
-    stopObserver: function(target) {
+    stopObserver: function (target) {
         var observerId = target.data("observer-id");
         this.observerMap.get(observerId).disconnect();
+    },
+    deleteLine: function (target) {
+        this.stopObserver(target);
+        target.remove();
     },
     empty: function() {
         const newLine = this.getNewLine();
@@ -320,11 +556,11 @@ var v2_7 = {
         return newLineApplied;
     },
     getCursorPosition: function() {
-        var selection = window.getSelection();
+        const selection = this.getSelection();
         return selection.focusOffset;
     },
     setCursorPosition: function(pos) {
-        const selection = window.getSelection();
+        const selection = this.getSelection();
         const posMax = this.getCursorPositionMax();
         if (pos > posMax) {
             pos = posMax;
@@ -332,7 +568,7 @@ var v2_7 = {
         selection.setPosition(selection.focusNode, pos);
     },
     getCursorPositionMax: function() {
-        var selection = window.getSelection();
+        const selection = this.getSelection();
         if (selection.focusNode.innerText != null) {
             // 仅在文本行为空行的时候有效
             return selection.focusNode.innerText.length;
@@ -392,19 +628,18 @@ var v2_7 = {
                     }
                 } else if (event.keyCode == this.DELETE && cursorPosition == 0) {
                     // 如果光标在文本行的开始, 并且按下了退格键
-                    event.preventDefault();
                     // console.log("v2.7 editor: edit: keycode = ", event.keyCode);
                     // console.dir(event);
-                    var prev = target.prev();
+                    const prev = target.prev();
                     if (prev && prev.length) {
+                        event.preventDefault();
                         // 获取上一行的文字
-                        var prevText = prev.text();
+                        const prevText = prev.text();
                         // 判断上一行是不是空行
                         if (prevText && prevText.length) {
                             // 如果上一行不是空行
                             // 删掉这一行
-                            this.stopObserver(target);
-                            target.remove();
+                            self.deleteLine(target);
                             // 将这一行的文字加在上一行的行尾
                             prev.text(prevText + text);
                             // 将上一行变成可编辑模式 (如果上一行不是文本, 而是图片或者链接, 则默认是不可编辑的)
@@ -413,8 +648,7 @@ var v2_7 = {
                             this.setCursorPosition(prevText.length);
                         } else {// 如果上一行是空行
                             // 删掉上一行
-                            this.stopObserver(prev);
-                            prev.remove();
+                            self.deleteLine(prev);
                         }
                     }
                 } else if ([this.UP, this.LEFT].includes(event.keyCode)) {
