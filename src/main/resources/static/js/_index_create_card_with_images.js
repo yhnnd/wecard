@@ -15,7 +15,7 @@ function createImageCard($scope, card) {
         let file = cardImages[i].files[0];
         if (file) {
             formData.append("files", file);
-            formData.append("remarks", "图片-" + i);
+            formData.append("remarks", "card-img-" + i);
         }
     }
 

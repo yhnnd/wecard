@@ -1951,7 +1951,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                             "imageSrc": imageRemark,
                             "imageSrcType": "external"
                         };
-                        if (imageRemark.startsWith("图片-")) {
+                        if (imageRemark.startsWith("card-img-")) {
                             scriptSet["line-" + lineNo].imageSrcType = "local";
                         } else if (imageRemark.indexOf(".") < 0) {
                             // 图片地址不正确

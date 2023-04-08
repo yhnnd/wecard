@@ -5425,7 +5425,7 @@
                 .removeClass("line")
                 .addClass("alert-success mb-0 cursor-pointer hover-expand-y hover-shadow half-hidden hover-show")
                 .attr({
-                    "title": "图片 " + picNum,
+                    "title": "Picture " + picNum,
                     "data-toggle": "tooltip"
                 }).on("click", function() {
                     if ($(this).find(".fa").length) {
@@ -5467,22 +5467,26 @@
 
 
         function insertImageLine(event, tools) {
-            var isInsertPic = confirm("插入图片?");
+            const isInsertPic = confirm("插入图片?");
             if (isInsertPic) {
-                var msgs = [
+                const msgs = [
                     "您要插入第几张图片?",
                     "请输入图片的编号, 可选的值有: " + myRange(0, 6),
                     "请确保您输入的编号小于卡片附件图片的长度, 否则卡片渲染器将找不到对应的图片"
                 ];
-                var picNum = prompt(msgs.join("\n"));
-                if (myRangeStr(0, 6).includes(picNum)) {
-                    picNum = Number.parseInt(picNum);
+                const picSrc = prompt(msgs.join("\n"));
+                if (myRangeStr(0, 6).includes(picSrc)) {
+                    const picNum = Number.parseInt(picSrc);
                     if (_.range(0, 6).includes(picNum)) {
                         event.preventDefault();
-                        event.target.innerHTML = "![图片-" + picNum + "](图片-" + picNum + ")";
+                        event.target.innerHTML = "![card-img-" + picNum + "](card-img-" + picNum + ")";
                         activateImageLine(event, picNum);
-                        tools.insertNewLine();
+                        tools.insertNewLine("", event.target);
                     }
+                } else {
+                        event.preventDefault();
+                        event.target.innerHTML = "![" + picSrc + "](" + picSrc + ")";
+                        tools.insertNewLine("", event.target);
                 }
             }
         }
@@ -5503,7 +5507,7 @@
                         event.preventDefault();
                         event.target.innerHTML = "@iconify(user,name," + username + ")";
                         activateIconLine(event, username);
-                        tools.insertNewLine();
+                        tools.insertNewLine("", event.target);
                     }
                 }
             }
@@ -5555,7 +5559,8 @@
             if (lines && lines.length) {
                 v2_7.empty().text(lines[0]);
                 for (var i = 1; i < lines.length; ++i) {
-                    v2_7.insertNewLine().text(lines[i]);
+                    console.log("insert " + lines[i]);
+                    v2_7.insertNewLine(lines[i]);
                 }
             }
         }

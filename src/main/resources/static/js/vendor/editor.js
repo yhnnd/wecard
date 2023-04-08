@@ -16,11 +16,11 @@ var v2_7 = {
     },
     observerMap: new Map(),
     onTextChange: null,
-    tools: function(event) {
+    getTools: function() {
         const self = this;
         return {
-            "insertNewLine": function() {
-                self.insertNewLine(event);
+            "insertNewLine": function(text, event) {
+                self.insertNewLine(text, event);
             },
             "getCursorPosition": function() {
                 return self.getCursorPosition();
@@ -59,16 +59,18 @@ var v2_7 = {
         }
         return newLine;
     },
-    insertNewLine: function (event) {
+    insertNewLine: function (text, target) {
         // 获取当前文本行
-        let target;
-        if (event) {
-            target = $(event.target).closest(".text-editable");
+        if (target !== undefined) {
+            target = $(target).closest(".text-editable");
         } else {
             target = this.field.find(".text-editable").last();
         }
         // 新的文本行
         const newLine = this.getNewLine();
+        if (text) {
+            newLine.text(text);
+        }
         // Disable Current Line Editability
         target.removeAttr("contenteditable");
         // 在当前文本行的下面插入新的文本行
@@ -487,7 +489,7 @@ var v2_7 = {
                         if (target.data("is-pristine") === "true") {
                             const event = mutation;
                             event.preventDefault = function() {};
-                            self.onTextChange(text, self.data, event, self.tools(event));
+                            self.onTextChange(text, self.data, event, self.getTools());
                         }
                         target.data("is-pristine", "false");
                     } else {
@@ -702,7 +704,7 @@ var v2_7 = {
             }
         }
         this.save();
-        this.keyPressListener(event, this.data, this.tools(event), this.getScope());
+        this.keyPressListener(event, this.data, this.getTools(), this.getScope());
     },
     // 保存可编辑的文本行
     save: function () {
