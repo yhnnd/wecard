@@ -313,6 +313,7 @@ var v2_7 = {
             target.text(textA + textC);
             target.click();
             this.setCaretPosition(target[0], from);
+            return true;
         } else {
             throw "deleteSelectedTextInline: error";
         }
@@ -338,8 +339,9 @@ var v2_7 = {
             self.clearSelection();
             begin.node.click();
             self.setCaretPosition(begin.node[0], begin.offset);
+            return true;
         } else {
-            this.deleteSelectedTextInline();
+            return this.deleteSelectedTextInline();
         }
     },
     addKeydownListener: function () {
@@ -347,8 +349,9 @@ var v2_7 = {
         $(document).off("keydown").on("keydown", function (event) {
             if (event.keyCode === self.DELETE) {
                 if (self.isFieldFocused() === true && self.field.find("[contenteditable='true']").length === 0) {
-                    event.preventDefault();
-                    self.deleteSelectedText();
+                    if (self.deleteSelectedText() === true) {
+                        event.preventDefault();
+                    }
                 }
             }
         });
