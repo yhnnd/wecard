@@ -35,7 +35,7 @@ function uploadFile(apiName, parameterName, fileInput) {
                     break;
                 case "Set success":
                     if (result[parameterName + "Url"]) {
-                        var model = document.getElementById('user-data');
+                        const model = document.querySelector("[ng-controller='controller']");
                         let $scope = angular.element(model).scope();
                         $scope.userData.user[parameterName + "Url"] = result[parameterName + "Url"];
                         $scope.$apply();

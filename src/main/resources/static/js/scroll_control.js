@@ -48,19 +48,6 @@ function isViewingLastMessage() {
     return false;
 }
 
-// 开关 scroll control
-function toggle_scroll_control() {
-    let toggle = $('.settings .toggle-scroll-control');
-    // 如果开关是打开的
-    if ($(toggle).hasClass('fa-toggle-on')) {// 关闭开关
-        $(toggle).removeClass('fa-toggle-on').addClass('fa-toggle-off');
-        return false;
-    } else {// 开启开关
-        $(toggle).removeClass('fa-toggle-off').addClass('fa-toggle-on');
-        return true;
-    }
-}
-
 // 监听是否到达整个文档的底部
 $(window).scroll(function () {
     if (isViewingLastMessage()) {

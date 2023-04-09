@@ -17,7 +17,7 @@ function loadNewChatItem(chatItemId) {
                     if (!data.chatItem) {
                         bsAlert("[ERROR] load new chat item (" + chatItemId + "): 未找到聊天项");
                     } else {
-                        var model = document.getElementById('user-data');
+                        const model = document.querySelector("[ng-controller='controller']");
                         let scope = angular.element(model).scope();
                         if (data.chatItem.type === "friend") {
                             data.chatItem.message = { type: "text", text: "我们已经是好友了，开始聊天吧" };

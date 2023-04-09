@@ -832,7 +832,7 @@
                     <!-- marketplace & mySocialCircle & cards 所有人的所有卡片 -->
                     <div class="col-12 col-sm-12 col-md-12 col-lg-12" ng-show="['popular','newest','myFollowingCards','myCards','myLikes','myShares'].includes(subPageLocation)">
                         <div ng-if="['classic'].includes(cardsViewMode)">
-                            <div class="card-columns" ng-repeat="cards in cardGroups track by $index">
+                            <div class="card-columns" ng-class="{'single-column': isCardColumnsSingleColumnEnabled()}" ng-repeat="cards in cardGroups track by $index">
                                 <div ng-repeat="card in cards track by $index">
                                     <!-- Card Preview 1 (If Card type is not 'share') -->
                                     <div ng-controller="cardPreviewController" class="card border-radius-0 hover-shadow transition-all-300ms" title="{{card.type}}" ng-style="{'opacity': (card.status === 'exist' ? '1' : '0.5') }" ng-if="card.type !== 'share'">
@@ -1116,7 +1116,7 @@
                                             <div class="col-12 col-lg-9" ng-bind="card.title"></div>
                                             <div class="col-12 col-lg-3" ng-bind="card.user.username"></div>
                                         </div>
-                                        <div ng-bind="card.text"></div>
+                                        <div ng-bind="card.text | textLengthSet : true : 200 : '...'"></div>
                                     </li>
                                 </ul>
                             </div>
@@ -1178,7 +1178,7 @@
                             </div>
                         </div>
                         <!-- 有关注的用户，显示我关注的用户 -->
-                        <div class="card-columns" ng-show="user.following && user.following.length">
+                        <div class="card-columns" ng-class="{'single-column': isCardColumnsSingleColumnEnabled()}" ng-show="user.following && user.following.length">
                             <div class="card border-radius-0 hover-shadow transition-all-300ms" style="height: 360px;background-image: url({{person.styleImgUrl}});background-repeat: no-repeat;background-size: cover;"
                                  ng-repeat="person in user.following track by $index">
                                 <div class="card-body bg-white text-center" style="opacity: .8;">
@@ -1231,7 +1231,7 @@
                             </div>
                         </div>
                         <!-- 有粉丝 -->
-                        <div class="card-columns" ng-show="user.fans && user.fans.length">
+                        <div class="card-columns" ng-class="{'single-column': isCardColumnsSingleColumnEnabled()}" ng-show="user.fans && user.fans.length">
                             <div class="card border-radius-0 hover-shadow transition-all-300ms" style="height: 360px;background-image: url({{person.styleImgUrl}});background-repeat: no-repeat;background-size: cover;"
                                  ng-repeat="person in user.fans track by $index">
                                 <div class="card-body bg-white text-center" style="opacity: .8;">
@@ -1440,7 +1440,7 @@
                                     </div>
                                     <!-- 卡片正文 v 2.7 编辑器 -->
                                     <div class="form-group" ng-show="writeCard.editorType === 'v2_7'">
-                                        <div class="form-control form-control-v2-7" id="card-to-create-text-v2-7" 
+                                        <div class="form-control form-control-v2-7" id="card-to-create-text-v2-7" ng-class="{'show-line-number':v2_7IsFeatureEnabled('lineNumber'),'show-line-create-time':v2_7IsFeatureEnabled('createTime'),'show-line-hash':v2_7IsFeatureEnabled('hash')}"
                                              style="min-height: {{writeCard.textArea.minHeight}};height: {{writeCard.textArea.height}};">
                                         </div>
                                     </div>
@@ -1448,16 +1448,16 @@
                                     <div class="form-group row">
                                         <div class="col-12">
                                             <div class="form-inline">
-                                                <button class="btn btn-sm btn-outline-secondary mb-2 mr-2" ng-class="{'active focus':writeCard.editorType === 'legacy'}" ng-click="writeCard.editorType = 'legacy';" data-toggle="tooltip" title="Open Legacy Editor">
+                                                <button class="btn btn-sm btn-outline-secondary mb-2 mr-2" id="open-legacy-editor" ng-class="{'active focus':writeCard.editorType === 'legacy'}" ng-click="writeCard.editorType = 'legacy';" data-toggle="tooltip" title="Open Legacy Editor">
                                                     <span>Legacy Editor</span>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-danger mb-2 mr-2" onclick="v2_7.reload();$(this).siblings().eq(1).click();" ng-disabled="writeCard.editorType !== 'legacy'">
+                                                <button class="btn btn-sm btn-outline-danger mb-2 mr-2" id="export-legacy-to-v2-7" onclick="v2_7.reload();$('#open-v2-7-editor').click();" ng-disabled="writeCard.editorType !== 'legacy'">
                                                     <span>Copy Text To Editor V2.7</span>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-primary mb-2 mr-2" ng-class="{'active focus':writeCard.editorType === 'v2_7'}" ng-click="writeCard.editorType = 'v2_7'" data-toggle="tooltip" title="Open Editor V2.7">
+                                                <button class="btn btn-sm btn-outline-primary mb-2 mr-2" id="open-v2-7-editor" ng-class="{'active focus':writeCard.editorType === 'v2_7'}" ng-click="writeCard.editorType = 'v2_7'" data-toggle="tooltip" title="Open Editor V2.7">
                                                     <span>Editor V2.7</span>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-primary mb-2 mr-2" onclick="$(this).siblings().eq(0).click();$(this).siblings().eq(1).click();setTimeout(()=>{$('#card-to-create-text-v2-7').click();},0);" ng-disabled="writeCard.editorType !== 'v2_7'">
+                                                <button class="btn btn-sm btn-outline-primary mb-2 mr-2" onclick="v2_7.save();v2_7.reload();setTimeout(()=>{v2_7.focusField();},0);" ng-disabled="writeCard.editorType !== 'v2_7'">
                                                     <span>Refresh</span>
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-primary mb-2 mr-2" onclick="v2_7.initHelp();v2_7.help();" data-toggle="tooltip" title="Introduction to Editor V2.7">
@@ -2329,7 +2329,7 @@
                                             <!-- 【用户已登录】以单独页面形式查看卡片 -->
                                             <a class="btn btn-primary border-radius-0" href="card-page.html?card-id={{current_card.id}}" target="_blank"
                                                     data-toggle="tooltip" title="单独页面查看卡片">
-                                                <i class="fa fa-lg fa-link"></i>
+                                                <i class="fa fa-lg fa-external-link"></i>
                                             </a>
                                         </div>
                                         <!-- 如果用户没有登录 -->
@@ -2361,7 +2361,7 @@
                                             <!-- 【用户未登录】【可用的】以单独页面形式查看卡片 -->
                                             <a class="btn btn-primary border-radius-0" href="card-page.html?card-id={{current_card.id}}" target="_blank"
                                                     data-toggle="tooltip" title="单独页面查看卡片">
-                                                <i class="fa fa-lg fa-link"></i>
+                                                <i class="fa fa-lg fa-external-link"></i>
                                             </a>
                                         </div>
                                     </div>
@@ -4271,20 +4271,13 @@
                                 <!-- 3.1 卡片列表单列显示 -->
                                 <li class="list-group-item">
                                     <div class="row">
-                                        <div class="col-6 d-flex align-items-center">
-                                            <i class="fa fa-link mr-1"></i>
-                                            <span>卡片列表单列显示</span>
+                                        <div class="col-6 d-flex align-items-center" data-toggle="tooltip" title="卡片列表单列显示">
+                                            <i class="fa fa-list mr-1"></i>
+                                            <span>Show Cards in a Single Column</span>
                                         </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
-                                            <div ng-show="is_card_columns_single_column_enabled === true">
-                                                <button class="btn btn-danger" ng-click="toggle_card_columns_single_column_save('off')">
-                                                    <span>关闭</span>
-                                                </button>
-                                            </div>
-                                            <div ng-show="is_card_columns_single_column_enabled === false">
-                                                <button class="btn btn-success" ng-click="toggle_card_columns_single_column_save('on')">
-                                                    <span>开启</span>
-                                                </button>
+                                            <div class="ios-button" data-value="{{is_card_columns_single_column_enabled}}" ng-click="toggleCardColumnsSingleColumn($event)" data-style="no-support">
+                                                <div class="ios-button-circle"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -4292,15 +4285,12 @@
                                 <!-- 3.2 Always View Card in Another Page -->
                                 <li class="list-group-item">
                                     <div class="row">
-                                        <div class="col-6 d-flex align-items-center">
-                                            <i class="fa fa-link mr-1"></i>
-                                            <span>始终使用新窗口打开卡片</span>
+                                        <div class="col-6 d-flex align-items-center" data-toggle="tooltip" title="始终使用新窗口打开卡片">
+                                            <i class="fa fa-external-link mr-1"></i>
+                                            <span>Open Card In External Web Page</span>
                                         </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
-                                            <div class="ios-button" id="toggle-always-view-card-in-another-page"
-                                                 data-button-on="toggleViewCardMethod.on()"
-                                                 data-button-off="toggleViewCardMethod.off()"
-                                                 data-style="no-support">
+                                            <div class="ios-button" id="toggle-always-view-card-in-external-web-page" ng-click="toggle_view_card_in_external_web_page($event);" data-style="no-support">
                                                 <div class="ios-button-circle"></div>
                                             </div>
                                         </div>
@@ -4314,17 +4304,27 @@
                                             <span>显示聊天窗口滚动控制器</span>
                                         </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
-                                            <i class="fa fa-2x fa-toggle-on toggle-scroll-control" ng-click="toggle_scroll_control();"></i>
+                                            <div class="ios-button" id="toggle-scroll-control" data-value="{{is_scroll_control_enabled}}" ng-click="toggle_scroll_control($event);">
+                                                <div class="ios-button-circle"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </li>
                                 <!-- 5. 按回车发送消息 -->
                                 <li class="list-group-item">
                                     <div class="row">
-                                        <div class="col-6 d-flex align-items-center">按回车发送消息</div>
+                                        <div class="col-6 d-flex align-items-center" data-toggle="tooltip" title="按回车发送消息">
+                                            <svg width="20px" height="20px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                                <g  stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                    <g fill="#212121" fill-rule="nonzero">
+                                                        <path d="M21,4 C21.5128358,4 21.9355072,4.38604019 21.9932723,4.88337887 L22,5 L22,11.5 C22,13.3685634 20.5357224,14.8951264 18.6920352,14.9948211 L18.5,15 L5.415,15 L8.70710678,18.2928932 C9.06759074,18.6533772 9.09532028,19.2206082 8.79029539,19.6128994 L8.70710678,19.7071068 C8.34662282,20.0675907 7.77939176,20.0953203 7.38710056,19.7902954 L7.29289322,19.7071068 L2.29289322,14.7071068 C2.25749917,14.6717127 2.22531295,14.6343256 2.19633458,14.5953066 L2.12467117,14.4840621 L2.12467117,14.4840621 L2.07122549,14.371336 L2.07122549,14.371336 L2.03584514,14.265993 L2.03584514,14.265993 L2.0110178,14.1484669 L2.0110178,14.1484669 L2.00397748,14.0898018 L2.00397748,14.0898018 L2,14 L2.00278786,13.9247615 L2.00278786,13.9247615 L2.02024007,13.7992742 L2.02024007,13.7992742 L2.04973809,13.6878575 L2.04973809,13.6878575 L2.09367336,13.5767785 L2.09367336,13.5767785 L2.14599545,13.4792912 L2.14599545,13.4792912 L2.20970461,13.3871006 L2.20970461,13.3871006 L2.29289322,13.2928932 L2.29289322,13.2928932 L7.29289322,8.29289322 C7.68341751,7.90236893 8.31658249,7.90236893 8.70710678,8.29289322 C9.06759074,8.65337718 9.09532028,9.22060824 8.79029539,9.61289944 L8.70710678,9.70710678 L5.415,13 L18.5,13 C19.2796961,13 19.9204487,12.4051119 19.9931334,11.64446 L20,11.5 L20,5 C20,4.44771525 20.4477153,4 21,4 Z"></path>
+                                                    </g>
+                                                </g>
+                                            </svg>
+                                            <span class="inline-block ml-1">Press ENTER to Send</span>
+                                        </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
-                                            <div class="ios-button" id="toggle-press-enter-to-send" data-button-on="enablePressEnterToSend()" data-button-off="disablePressEnterToSend()"
-                                                 data-style="no-support">
+                                            <div class="ios-button" id="toggle-press-enter-to-send" data-button-on="enablePressEnterToSend()" data-button-off="disablePressEnterToSend()" data-style="no-support">
                                                 <div class="ios-button-circle"></div>
                                             </div>
                                         </div>
@@ -4343,8 +4343,7 @@
                                             </div>
                                         </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
-                                            <div class="ios-button" id="toggle-night-mode" data-button-on="nightMode.enable()" data-button-off="nightMode.disable()"
-                                                 data-style="no-support">
+                                            <div class="ios-button" id="toggle-night-mode" data-value="{{nightMode.isEnabled}}" data-button-on="nightMode.enable()" data-button-off="nightMode.disable()" data-style="no-support">
                                                 <div class="ios-button-circle"></div>
                                             </div>
                                         </div>
@@ -4363,8 +4362,7 @@
                                             </div>
                                         </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
-                                            <div class="ios-button" id="toggle-night-mode-now" data-button-on="applyDarkMode()" data-button-off="cancelDarkMode()"
-                                                 data-style="no-support">
+                                            <div class="ios-button" id="toggle-night-mode-now" data-value="0" data-button-on="applyDarkMode()" data-button-off="cancelDarkMode()" data-style="no-support">
                                                 <div class="ios-button-circle"></div>
                                             </div>
                                         </div>
@@ -4373,13 +4371,12 @@
                                 <!-- 8. 开发者模式 Debug Mode -->
                                 <li class="list-group-item">
                                     <div class="row">
-                                        <div class="col-6 d-flex align-items-center">
+                                        <div class="col-6 d-flex align-items-center" data-toggle="tooltip" title="启用开发者模式">
                                             <i class="fa fa-code mr-1"></i>
-                                            <span>启用开发者模式</span>
+                                            <span>Toggle Debug Mode</span>
                                         </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
-                                            <div class="ios-button" id="toggle-debug-mode" data-button-on="debugMode.enable()" data-button-off="debugMode.disable()"
-                                                 data-style="no-support">
+                                            <div class="ios-button" id="toggle-debug-mode" data-button-on="debugMode.enable()" data-button-off="debugMode.disable()" data-style="no-support">
                                                 <div class="ios-button-circle"></div>
                                             </div>
                                         </div>
@@ -4429,7 +4426,7 @@
                                             <span>允许错误警告</span>
                                         </div>
                                         <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
-                                            <div class="ios-button" id="toggle-allow-error-prompt"
+                                            <div class="ios-button" id="toggle-allow-error-prompt" data-value="0"
                                                  data-button-on="debugMode.allowErrorPrompt()"
                                                  data-button-off="debugMode.muteErrorPrompt()"
                                                  data-style="no-support">
@@ -4752,6 +4749,25 @@
                                             </div>
                                             <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
                                                 <input id="chat-message-{{messageIndex}}-{{key}}" class="form-control form-control-sm border-radius-0" ng-model="value">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- Write Card V2.7 Editor Configs -->
+                                <li class="list-group-item list-group-item-success">
+                                    <div>Write Card V2.7 Editor Settings</div>
+                                </li>
+                                <!-- Write Card V2.7 Editor Configs -->
+                                <li class="list-group-item" ng-repeat="entry in writeCard.v2_7.settings track by $index">
+                                    <div class="row">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <span data-toggle="tooltip" title="{{entry.key}}" class="cursor-pointer">
+                                                {{entry.description}}
+                                            </span>
+                                        </div>
+                                        <div class="col-6 offset-lg-1 col-lg-4 d-flex align-items-center justify-content-center">
+                                            <div class="ios-button" data-value="{{entry.isEnabled()}}" ng-click="entry.toggle($event)" data-style="no-support">
+                                                <div class="ios-button-circle"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -5553,21 +5569,28 @@
             $scope.$apply();
         }, keyPressListener, onTextChange);
 
-        v2_7.reload = function () {
-            var $scope = v2_7.getScope();
-            var lines = $scope.card_to_create.text.split("\n");
-            if (lines && lines.length) {
-                v2_7.empty().text(lines[0]);
-                for (var i = 1; i < lines.length; ++i) {
-                    console.log("insert " + lines[i]);
-                    v2_7.insertNewLine(lines[i]);
+        v2_7.reload = async function () {
+            const $scope = v2_7.getScope();
+            const lines = $scope.card_to_create.text.split("\n");
+            const linesApplied = [];
+            return await new Promise((resolve, reject) => {
+                if (lines && lines.length) {
+                    v2_7.empty().then(async (target) => {
+                        target.text(lines[0]);
+                        linesApplied.push(target.text());
+                        for (var i = 1; i < lines.length; ++i) {
+                            linesApplied.push(lines[i]);
+                            target = await v2_7.insertNewLine(lines[i], target);
+                        }
+                    });
                 }
-            }
+                resolve(linesApplied);
+            });
         }
 
         v2_7.initHelp = function () {
             var id = "help-prompt-" + new Date().getTime();
-            var totalTime = 10;
+            var totalTime = 60;
             v2_7.data.helpTitle = "v2.7 卡片编辑器 功能介绍";
             v2_7.data.helpContent = "<div>" +
                 "   <p>在一个空行中, 输入 \"!\" 可以插入图片, " +
@@ -5733,8 +5756,7 @@
         // dme-i: dark mode element inline
         // dme-d: dark mode element dynamic
         function applyDarkMode() {
-            $("#toggle-night-mode-now").attr("data-value", true);
-            ios_button_init(".settings");
+            button_on("#toggle-night-mode-now");
             $(darkModeApplicableClasses.borderedClasses).addClass("dme dme-b");
             $(darkModeApplicableClasses.inlineClasses).addClass("dme dme-i");
             darkModeTimer = setInterval(function () {
@@ -5744,8 +5766,7 @@
         }
 
         function cancelDarkMode() {
-            $("#toggle-night-mode-now").attr("data-value", false);
-            ios_button_init(".settings");
+            button_off("#toggle-night-mode-now");
             $(darkModeApplicableClasses.borderedClasses).removeClass("dme dme-b dme-d");
             $(darkModeApplicableClasses.inlineClasses).removeClass("dme dme-i dme-d");
             clearInterval(darkModeTimer);

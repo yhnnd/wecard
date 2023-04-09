@@ -14,7 +14,7 @@ function updateChatItem(chatItemId) {
             console.log("update chat item: " + JSON.stringify(data));
             switch (data.message) {
                 case "Find success":
-                    var model = document.getElementById('user-data');
+                    const model = document.querySelector("[ng-controller='controller']");
                     let scope = angular.element(model).scope();
                     scope.userData.chatList = _.filter(scope.userData.chatList, function (chatItem) { return chatItem.id !== chatItemId; });
                     scope.userData.chatList.unshift(data.chatItem);

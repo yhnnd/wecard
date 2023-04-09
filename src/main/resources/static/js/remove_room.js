@@ -1,6 +1,6 @@
 // 我退出群，群主解散群，我被移出群都会收到系统指令调用此函数
 function removeRoom(roomId) {
-    var model = document.getElementById('user-data');
+    const model = document.querySelector("[ng-controller='controller']");
     let scope = angular.element(model).scope();
     scope.userData.rooms = _.filter(scope.userData.rooms, function (room) {
         return room.id !== roomId;

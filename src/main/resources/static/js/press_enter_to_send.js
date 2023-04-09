@@ -9,11 +9,14 @@ function disablePressEnterToSend() {
 }
 
 function init_button_values() {
-    $("#toggle-press-enter-to-send").attr("data-value", localStorage.getItem("press_enter_to_send"));
-    $("#toggle-night-mode").attr("data-value", localStorage.getItem("is_night_mode_enabled"));
-    $("#toggle-debug-mode").attr("data-value", localStorage.getItem("debug_mode_enabled"));
-    $("#toggle-allow-error-prompt").attr("data-value", localStorage.getItem("debug_mode_is_allow_error_prompt"));
-    $("#toggle-always-view-card-in-another-page").attr("data-value", window.toggleViewCardMethod.storeValue());
+    function sanctify(e) {
+        return e === null || e === undefined ? "0" : e;
+    }
+    $("#toggle-press-enter-to-send").attr("data-value", sanctify(localStorage.getItem("press_enter_to_send")));
+    $("#toggle-night-mode").attr("data-value", sanctify(localStorage.getItem("is_night_mode_enabled")));
+    $("#toggle-debug-mode").attr("data-value", sanctify(localStorage.getItem("debug_mode_enabled")));
+    $("#toggle-allow-error-prompt").attr("data-value", sanctify(localStorage.getItem("debug_mode_is_allow_error_prompt")));
+    $("#toggle-always-view-card-in-external-web-page").attr("data-value", sanctify(localStorage.getItem("is_view_card_in_external_web_page")));
     ios_button_init(".settings");
 }
 
@@ -26,15 +29,16 @@ function listenPressEnter() {
                 if (localStorage.getItem("press_enter_to_send") == undefined) {// == 不能变成 ===
                     if (confirm("是否开启按回车发送消息？")) {
                         enablePressEnterToSend();
+                        window.button_on("#toggle-press-enter-to-send");
                     } else {
                         disablePressEnterToSend();
+                        window.button_off("#toggle-press-enter-to-send");
                     }
-                    init_button_values();
                 }
                 if (![undefined, null, false, 0, "false", "0"].includes(localStorage.getItem("press_enter_to_send"))) {
                     // 如果已开启按回车发送消息功能
                     e.preventDefault();
-                    var model = document.getElementById('user-data');
+                    const model = document.querySelector("[ng-controller='controller']");
                     let scope = angular.element(model).scope();
                     scope.sendMessage();// 发送消息
                 }
@@ -146,35 +150,6 @@ var debugMode = {
 
 
 
-var toggleViewCardMethod = {
-    scope: function() {
-        return window.debugMode.getScope();
-    },
-    storeValue: function(value) {
-        if (value == undefined) {
-            return window.localStorage.getItem("always_view_card_in_another_page");
-        } else {
-            window.localStorage.setItem("always_view_card_in_another_page", value);
-        }
-    },
-    on: function () {
-        this.storeValue(true);
-        var $scope = this.scope();
-        $scope.$apply(function () {
-            $scope.alwaysViewCardInAnotherPage = true;
-        });
-    },
-    off: function () {
-        this.storeValue(false);
-        var $scope = this.scope();
-        $scope.$apply(function () {
-            $scope.alwaysViewCardInAnotherPage = false;
-        });
-    }
-};
-
-
-
 
 (function (debugMode) {
     debugMode.init();
@@ -185,33 +160,33 @@ var toggleViewCardMethod = {
 
             if (debugMode.isEnabled == undefined) {// == 不能变成 ===
                 bsConfirm({
-                    title: "开发者模式（全局设置）",
-                    content: "是否开启开发者模式？<br>(此设置永久有效)",
+                    title: "Debug Mode (开发者模式) ",
+                    content: "是否开启 Debug Mode (开发者模式)？<br>(此设置永久有效)",
                     alertClass: "alert-primary",
                     rejectText: "关闭 (Disable)",
                     confirmText: "开启 (Enable)",
                     rejectCallback: function () {
                         debugMode.disable();
-                        init_button_values();// 刷新设置开关
+                        window.button_off("#toggle-debug-mode");
                     },
                     confirmCallback: function () {
                         debugMode.enable();
-                        init_button_values();// 刷新设置开关
+                        window.button_on("#toggle-debug-mode");
                         bsConfirm({
-                            title: "开发者模式（全局设置）",
-                            content: "是否开启错误警告功能？<br>(此设置永久有效)",
+                            title: "Debug Mode (开发者模式) ",
+                            content: "是否开启 Error Prompt (错误警告功能)？<br>(此设置永久有效)",
                             alertClass: "alert-warning",
                             confirmText: "开启 (Enable)",
                             rejectText: "关闭 (Disable)",
                             confirmCallback: function () {
                                 debugMode.allowErrorPrompt();
-                                init_button_values();// 刷新设置开关
-                                bsAlert("press_enter_to_send.js","开发者模式已开启","alert-primary");
+                                window.button_on("#toggle-allow-error-prompt");
+                                bsAlert("press_enter_to_send.js","Debug Mode (开发者模式) 已开启","alert-primary");
                             },
                             rejectCallback: function () {
                                 debugMode.muteErrorPrompt();
-                                init_button_values();// 刷新设置开关
-                                bsAlert("press_enter_to_send.js","错误警告功能被停用","alert-secondary");
+                                window.button_off("#toggle-allow-error-prompt");
+                                bsAlert("press_enter_to_send.js","Error Prompt (错误警告功能) 被停用","alert-secondary");
                             }
                         });
                     }

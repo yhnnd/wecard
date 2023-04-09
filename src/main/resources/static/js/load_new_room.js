@@ -17,7 +17,7 @@ function loadNewChatRoom(roomId) {
                         bsAlert("[ERROR] load new chatRoom (" + roomId + "): 未找到该聊天室");
                     } else {
                         console.log("load new chatRoom: " + JSON.stringify(data));
-                        var model = document.getElementById('user-data');
+                        const model = document.querySelector("[ng-controller='controller']");
                         let scope = angular.element(model).scope();
                         scope.userData.rooms.push(data.room);
                         scope.$apply();

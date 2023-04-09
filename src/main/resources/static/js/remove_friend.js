@@ -1,5 +1,5 @@
 function removeFriend(friendId) {
-    var model = document.getElementById('user-data');
+    const model = document.querySelector("[ng-controller='controller']");
     let $scope = angular.element(model).scope();
     // 从好友分组中删除该好友
     $scope.userData.groups = _.map($scope.userData.groups, function (group) {

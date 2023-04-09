@@ -8,6 +8,8 @@ var v2_7 = {
     UP: 38,
     RIGHT: 39,
     DOWN: 40,
+    lineNumberEnabled: true,
+    createTimeEnabled: true,
     data: {
         prevKeyCode: false,
         helpTitle: "",
@@ -19,10 +21,10 @@ var v2_7 = {
     getTools: function() {
         const self = this;
         return {
-            "insertNewLine": function(text, event) {
-                self.insertNewLine(text, event);
+            "insertNewLine": function (text, target) {
+                return self.insertNewLine(text, target);
             },
-            "getCursorPosition": function() {
+            "getCursorPosition": function () {
                 return self.getCursorPosition();
             }
         };
@@ -52,36 +54,50 @@ var v2_7 = {
         return scope;
     },
     getNewLine: function(attr) {
-        const id = "text-editable-" + this.getRandomString() + "-time-" + new Date().getTime();
+        const hash = this.getRandomString().substring(0, 12);
+        const time = new Date();
+        const id = "text-editable-" + hash + "-" + time.getTime();
         const newLine = $("<pre id=\"" + id + "\" class=\"line break-all text-editable\">");
+        newLine.attr({
+            "data-create-date": time.toLocaleDateString(),
+            "data-create-time": time.toLocaleTimeString(),
+            "data-hash": hash.substring(0, 3) + "@" + hash.substring(8),
+        });
         if (attr) {
             newLine.attr(attr);
         }
         return newLine;
     },
-    insertNewLine: function (text, target) {
+    insertNewLine: async function (text, target) {
         // 获取当前文本行
         if (target !== undefined) {
             target = $(target).closest(".text-editable");
         } else {
             target = this.field.find(".text-editable").last();
         }
-        // 新的文本行
-        const newLine = this.getNewLine();
-        if (text) {
-            newLine.text(text);
+        if (this.isLineElement(target)) {
+            // 新的文本行
+            const newLine = this.getNewLine();
+            if (text) {
+                newLine.text(text);
+            }
+            // Disable Current Line Editability
+            target.removeAttr("contenteditable");
+            // Insert new line after current line
+            target.after(newLine);
+            // 获取新的文本行 DOM
+            let newLineApplied = target.siblings("#" + newLine.attr("id"));
+            if (newLineApplied.length) {
+                // 为新的文本行 DOM 添加监听编辑事件
+                newLineApplied = await this.addEditListener(newLineApplied);
+                // 将光标移动到新的文本行的开始
+                return newLineApplied;
+            } else {
+                throw "insertNewLine: failed to insert new line";
+            }
+        } else {
+            throw "insertNewLine: target is not valid";
         }
-        // Disable Current Line Editability
-        target.removeAttr("contenteditable");
-        // 在当前文本行的下面插入新的文本行
-        target.after(newLine);
-        // 获取新的文本行 DOM
-        const newLineApplied = target.siblings("#" + newLine.attr("id"));
-        // 为新的文本行 DOM 添加监听编辑事件
-        this.addEditListener(newLineApplied);
-        // 将光标移动到新的文本行的开始
-        newLineApplied.attr({"contenteditable": true}).focus();
-        return newLine;
     },
     // 第一个参数是编辑区域的选择器, 类型是字符串
     // 第二个参数是保存编辑区域内容的回调函数, 调用的时候会注入参数 $scope 和 text
@@ -116,30 +132,11 @@ var v2_7 = {
     addFocusListener: function() {
         const self = this;
         $(document).on("click", function(event) {
-            const target = event.target;
-            const parent = $(target).parent();
-            const parent_2 = parent.parent();
-            const parent_3 = parent_2.parent();
-            if ($(target).is(self.fieldSelector)
-            || parent.is(self.fieldSelector)
-            || parent_2.is(self.fieldSelector)
-            || parent_3.is(self.fieldSelector)
-            ) {
-                console.log("v2.7 editor: clickListener: focused.");
-                self.focusField();
-                // 如果点击到了编辑区域但未点击到文本行
-                if ($(target).is(self.fieldSelector)) {
-                    if (self.field.text().length === 0 || self.field.hasClass("selecting") === false) {
-                        console.log("v2.7 editor: clickListener: auto focus on last line.");
-                        self.field.find(".text-editable").blur().removeAttr("contenteditable");
-                        self.field.find(".text-editable").last().attr("contenteditable", true).focus();
-                        self.setCursorPosition(self.getCursorPositionMax());
-                    }
-                }
+            const target = $(event.target);
+            if (target.closest(self.fieldSelector).length === 1) {
+                self.focusField(target);
             } else if (self.isFieldFocused()) {
-                self.field.find(".text-editable").blur().removeAttr("contenteditable");
                 self.blurField();
-                console.log("v2.7 editor: clickListener: blurred.");
                 self.save();
             }
         });
@@ -156,17 +153,41 @@ var v2_7 = {
     isFieldFocused: function () {
         return this.field.hasClass("focus");
     },
-    focusField: function() {
-        if (this.getAllLines().length === 0) {
-            this.empty();
+    focusLastLine: function () {
+        console.log("v2.7 editor: focus last line.");
+        const self = this;
+        const allLines = $(self.getAllLines());
+        if (allLines.length > 0) {
+            allLines.removeAttr("contenteditable");
+            allLines.last().attr("contenteditable", true).focus();
+            const lastLineTextLength = allLines.last().text().length;
+            self.setCursorPosition(lastLineTextLength);
         }
-        this.field.addClass("focus");
+    },
+    focusField: function (target) {
+        console.log("v2.7 editor: focus field.");
+        const self = this;
+        const allLines = $(self.getAllLines());
+        if (allLines.length === 0) {
+            self.empty();
+            self.focusLastLine();
+        } else if (self.isLineElement(target)) {
+            // If target is specific line
+            allLines.removeAttr("contenteditable");
+            target.attr({"contenteditable": true}).focus();
+        } else if (self.field.text().length === 0 || self.field.hasClass("selecting") === false) {
+            // If target is field not line
+            self.focusLastLine();
+        }
+        self.field.addClass("focus");
     },
     blurField: function() {
+        console.log("v2.7 editor: field blurred.");
+        $(this.getAllLines()).blur().removeAttr("contenteditable");
         this.field.removeClass("focus");
     },
     isLineElement: function (element) {
-        return element.is(".line.text-editable");
+        return element?.is(".line.text-editable");
     },
     getLineElementFromTextNode: function (text) {
         return $(text).closest(".line.text-editable");
@@ -361,11 +382,6 @@ var v2_7 = {
     getRandomString: function () {
         return ("" + Math.random() * 10).split(".").join("");
     },
-    enableLineEdit: function (lineElement) {
-        this.focusField();
-        lineElement.siblings().removeAttr("contenteditable");
-        lineElement.attr({"contenteditable": true}).focus();
-    },
     getLineMaxWidth: function () {
         return 644;
     },
@@ -413,7 +429,7 @@ var v2_7 = {
         if (lineElement.has("contenteditable") === "true" || (window.getBrowserName() === "firefox" && this.field.hasClass("selecting"))) {
         } else {
             event.preventDefault();
-            this.enableLineEdit(lineElement);
+            this.focusField(lineElement);
             const pos = this.getEditInfo(lineElement, event);
             console.log("v2.7 editor: clicking " + lineElement.attr("id") + " " + JSON.stringify(pos));
         }
@@ -466,7 +482,7 @@ var v2_7 = {
             });
         }
     },
-    addEditListener: function(newLine) {
+    addEditListener: async function (newLine) {
         const self = this;
         // 此处不能用 keypress, 因为 keypress 不能监听到 13(回车) 和 8(退格)
         // 此处加上 click 的原因是, 如果不加上 click, 用户通过鼠标移动光标, 将不会被 save 函数保存
@@ -544,6 +560,7 @@ var v2_7 = {
         this.observerMap.set(observerId, observer);
         newLine.data("observer-id", observerId);
         // 当删除这一行的时候, 观察器将会被停止
+        return await Promise.resolve(newLine);
     },
     stopObserver: function (target) {
         var observerId = target.data("observer-id");
@@ -553,11 +570,18 @@ var v2_7 = {
         this.stopObserver(target);
         target.remove();
     },
-    empty: function() {
+    empty: async function() {
+        if (this.observerMap.size > 0) {
+            this.observerMap.forEach((value, key, map) => {
+                value.disconnect();
+            });
+            this.observerMap.clear();
+        }
+        this.field.empty();
         const newLine = this.getNewLine();
-        this.field.empty().append(newLine);
-        const newLineApplied = this.field.find("#" + newLine.attr("id"));
-        this.addEditListener(newLineApplied);
+        this.field.append(newLine);
+        let newLineApplied = this.field.find("#" + newLine.attr("id"));
+        newLineApplied = await this.addEditListener(newLineApplied);
         return newLineApplied;
     },
     getCursorPosition: function() {
@@ -574,17 +598,17 @@ var v2_7 = {
     },
     getCursorPositionMax: function() {
         const selection = this.getSelection();
-        if (selection.focusNode.innerText != null) {
+        if (selection.focusNode.innerText !== undefined) {
             // 仅在文本行为空行的时候有效
             return selection.focusNode.innerText.length;
-        } else if (selection.focusNode.parentElement.innerText != null) {
+        } else if (selection.focusNode.parentElement.innerText !== undefined) {
             // 在文本行不是空行的时候有效
             return selection.focusNode.parentElement.innerText.length;
         }
-        return false;
+        return 0;
     },
     // 编辑可编辑的文本行
-    edit: function (event) {
+    edit: async function (event) {
         const self = this;
         // 获取当前文本行
         const target = $(event.target).closest(".text-editable");
@@ -622,9 +646,9 @@ var v2_7 = {
                         target.before(newLine);
                     }
                     // 获取新的文本行 DOM
-                    const newLineApplied = target.siblings("#" + newLine.attr("id"));
+                    let newLineApplied = target.siblings("#" + newLine.attr("id"));
                     // 为新的文本行 DOM 添加监听编辑事件
-                    this.addEditListener(newLineApplied);
+                    newLineApplied = await this.addEditListener(newLineApplied);
                     if (cursorPosition > 0) {
                         // Disable Current Line Editability
                         target.removeAttr("contenteditable");
@@ -708,22 +732,23 @@ var v2_7 = {
     },
     // 保存可编辑的文本行
     save: function () {
-        var lines = [];
-        var fieldLines = this.field.find(".text-editable");
-        for(var i = 0; i < fieldLines.length; ++i) {
-            var fieldLine = fieldLines.get(i);
-            var line = fieldLine.innerText;
+        const lines = [];
+        const fieldLines = this.getAllLines();
+        for(let i = 0; i < fieldLines.length; ++i) {
+            const fieldLine = fieldLines.get(i);
+            const line = fieldLine.innerText;
             lines.push(line);
         }
-        var $scope = this.getScope();
-        var text = lines.join("\n");
-        if (!$scope) {
-            console.log("v2.7 editor: save: $scope not found.");
-        } else if (!text) {
-            console.log("v2.7 editor: save: no content to save.");
+        const $scope = this.getScope();
+        const text = lines.join("\n");
+        if ($scope === undefined) {
+            throw ("v2.7 editor: save: $scope not found.");
+        } else if (this.saveCallback === undefined || typeof this.saveCallback !== "function") {
+            throw ("v2.7 editor: save: saveCallback undefined.");
         } else {
             this.saveCallback($scope, text);
-            // console.log("v2.7 editor: save: saved. ", lines);
+            console.log("v2.7 editor: save: saved. ", lines);
         }
+        return text;
     }
 };

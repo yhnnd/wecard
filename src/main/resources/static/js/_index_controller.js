@@ -3,13 +3,16 @@ const app = angular.module('module-index', []);
 
 app.filter('textLengthSet', function () {
     return function (value, wordwise, max, tail) {
-        if (!value) return '';
+        if (!value) {
+            return "";
+        }
         max = parseInt(max, 10);
-        if (!max) return value;
-        if (value.length <= max) return value;
+        if (!max || value.length <= max) {
+            return value;
+        }
         value = value.substr(0, max);
         if (wordwise) {
-            var lastspace = value.lastIndexOf(' ');
+            const lastspace = value.lastIndexOf(' ');
             if (lastspace !== -1) {
                 value = value.substr(0, lastspace);
             }
@@ -94,12 +97,9 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         // 读取客制化设置
         loadDataFromStorage("isNavbarBackgroundDark", "is_navbar_background_dark");
         loadDataFromStorage("isNavbarMinimized", "is_navbar_minimized");
-        loadDataFromStorage("alwaysViewCardInAnotherPage", "always_view_card_in_another_page");
+        loadDataFromStorage("is_view_card_in_external_web_page", "is_view_card_in_external_web_page");
         loadDataFromStorage("is_card_columns_single_column_enabled", "is_card_columns_single_column_enabled");
-    
-        if ($scope.is_card_columns_single_column_enabled) {
-            $scope.toggle_card_columns_single_column("on");
-        }
+
         /* modal view card */
         // 初始化代码高亮样式列表
         $scope.initCodeHighlightStyles();
@@ -148,44 +148,28 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
         return $window.innerWidth;
     };
 
-    $scope.is_scroll_control_enabled = true;
+    function toggle (target, key) {
+        let value = $window.getButtonValue(target) === true ? false : true;
+        $scope.set_ios_toggle_value(target, value);
+        $scope[key] = value;
+        $window.localStorage.setItem(key, value);
+        return value;
+    }
 
-    $scope.toggle_scroll_control = function () {
-        $scope.is_scroll_control_enabled = $window.toggle_scroll_control();
+    $scope.is_scroll_control_enabled = ["1", "true"].includes($window.localStorage.getItem("is_scroll_control_enabled"));
+
+    $scope.toggle_scroll_control = function (event) {
+        return toggle(event.target, "is_scroll_control_enabled");
     };
 
-    $scope.is_card_columns_single_column_enabled = true;
-    
-    $scope.toggle_card_columns_single_column = function (flag) {
-        const textContent = `
-.card-columns {
-    column-count: 1;
-    max-width: 600px;
-    margin: 0 auto;
-}
-`;
-        const style = $("<style>").addClass("single-column").text(textContent);
-        let styleInline = $("style.single-column");
-        if (!styleInline.length && [undefined, "on"].includes(flag)) {
-            $("html > body").prepend(style);
-        } else if ([undefined, "off"].includes(flag)) {
-            styleInline.remove();
-        }
+    $scope.is_card_columns_single_column_enabled = false;
+
+    $scope.isCardColumnsSingleColumnEnabled = function () {
+        return $scope.is_card_columns_single_column_enabled;
     };
     
-    $scope.toggle_card_columns_single_column_save = function (flag) {
-        if (["on"].includes(flag)) {
-            $scope.toggle_card_columns_single_column('on');
-            $scope.is_card_columns_single_column_enabled = true;
-            $window.localStorage.setItem('is_card_columns_single_column_enabled', true);
-            return true;
-        } else if (["off"].includes(flag)) {
-            $scope.toggle_card_columns_single_column('off');
-            $scope.is_card_columns_single_column_enabled = false;
-            $window.localStorage.setItem('is_card_columns_single_column_enabled', false);
-            return false;
-        }
-        return;
+    $scope.toggleCardColumnsSingleColumn = function (event) {
+        return toggle(event.target, "is_card_columns_single_column_enabled");
     };
 
     // 夜间模式
@@ -200,13 +184,77 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.isNavbarMinimized = false;
     $scope.writeCard = {
         "editorType": "v2_7",// 撰写卡片正文编辑器的类型
+        "v2_7": {
+            "lineNumber": {
+                "description": "Enable Line Number",
+                "isEnabled": false
+            },
+            "createTime": {
+                "description": "Enable Line Create Time",
+                "isEnabled": false
+            },
+            "hash": {
+                "description": "Enable Line Hash Code",
+                "isEnabled": false
+            }
+        },
         "textArea": {
             "minHeight": "468px",// 撰写卡片正文编辑区域的高度
             "height": "fit-content"
         }
     };
+
+    (function () {
+        for (const [key, obj] of Object.entries($scope["writeCard"]["v2_7"])) {
+            const value = $window.localStorage.getItem("writeCard_v2.7_" + key);
+            let valueParsed = false;
+            if (["1", "true"].includes(value)) {
+                valueParsed = true;
+            }
+            $scope["writeCard"]["v2_7"][key]["isEnabled"] = valueParsed;
+        }
+    })();
+
+    $scope.v2_7IsFeatureEnabled = function (key) {
+        return $scope["writeCard"]["v2_7"][key]["isEnabled"] && $scope.debugMode.isEnabled;
+    };
+
+    $scope.writeCard.v2_7.settings = (function () {
+        const v2_7Settings = [];
+        for (const [key, value] of Object.entries($scope["writeCard"]["v2_7"])) {
+            function isEnabled () {
+                return $scope["writeCard"]["v2_7"][key]["isEnabled"];
+            }
+            // console.log("v2_7 key = ", key, "value = ", value);
+            v2_7Settings.push({
+                "key": key,
+                "description": value["description"],
+                "isEnabled": isEnabled,
+                "toggle": function (event) {
+                    const flag = !isEnabled();
+                    $scope["writeCard"]["v2_7"][key]["isEnabled"] = flag;
+                    $window.localStorage.setItem("writeCard_v2.7_" + key, flag);
+                    $scope.set_ios_toggle_value(event.target, flag);
+                }
+            });
+        }
+        return v2_7Settings;
+    })();
+
+    $scope.set_ios_toggle_value = function (target, flag) {
+        if (flag) {
+            $window.button_on(target);
+        } else {
+            $window.button_off(target);
+        }
+    };
+
     // 是否使用新窗口打开卡片
-    $scope.alwaysViewCardInAnotherPage = false;
+    $scope.is_view_card_in_external_web_page = false;
+
+    $scope.toggle_view_card_in_external_web_page = function (event) {
+        return toggle(event.target, "is_view_card_in_external_web_page");
+    };
 
     // 读取浏览器存储的客制化设置的函数
     function loadDataFromStorage(scopeKey, storageKey) {
@@ -486,6 +534,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                             $scope.card_to_create.type   = draftCard.type;
                             $scope.card_to_create.topics = draftCard.topics;
                             $scope.$digest();
+                            $window.v2_7.reload();
                         },
                         "rejectCallback": function() {
                             removeDraft(id);
@@ -1642,7 +1691,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             bsAlert("$scope.viewCard():","ERR-1 parameter 'card' was not provided","alert-danger");
             return false;
         }
-        if ($scope.alwaysViewCardInAnotherPage) {
+        if ($scope.is_view_card_in_external_web_page) {
             $window.open($scope.httpRoot + "/card-page.html?card-id=" + card.id, "_blank");
             return true;
         }
