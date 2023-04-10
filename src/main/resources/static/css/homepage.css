@@ -751,11 +751,13 @@ ol.card-text-lines.show-line-number > li {
   transition: transform 0.3s ease, margin 0.3s ease, border 1s ease;
 }
 
-.ios-button[data-value="1"] {
+.ios-button[data-value="1"],
+.ios-button[data-value="true"] {
   background-color: limegreen;
 }
 
-.ios-button[data-value="1"] > .ios-button-circle {
+.ios-button[data-value="1"] > .ios-button-circle,
+.ios-button[data-value="true"] > .ios-button-circle {
   margin-left: 28px;
 }
 
