@@ -196,20 +196,20 @@ var v2_7 = {
         const self = this;
         const selection = self.getSelection();
         // Base Node
-        const baseNode = $(selection.baseNode);
+        const baseNode = $(selection.baseNode !== undefined ? selection.baseNode : selection.anchorNode);
         const realBaseNode = self.isLineElement(baseNode) ? baseNode : self.getLineElementFromTextNode(baseNode);
         const base = {
             "node": realBaseNode,
             "index": realBaseNode.index(),
-            "offset": selection.baseOffset,
+            "offset": selection.baseOffset !== undefined ? selection.baseOffset : selection.anchorOffset,
         };
         // Extend Node
-        const extentNode = $(selection.extentNode);
+        const extentNode = $(selection.extentNode !== undefined ? selection.extentNode : selection.focusNode);
         const realExtentNode = self.isLineElement(extentNode) ? extentNode : self.getLineElementFromTextNode(extentNode);
         const extend = {
             "node": realExtentNode,
             "index": realExtentNode.index(),
-            "offset": selection.extentOffset,
+            "offset": selection.extentOffset !== undefined ? selection.extentOffset : selection.focusOffset,
         };
         // Computed Order
         const from = Math.min(base.index, extend.index), to = Math.max(base.index, extend.index);
@@ -487,6 +487,7 @@ var v2_7 = {
         // 此处不能用 keypress, 因为 keypress 不能监听到 13(回车) 和 8(退格)
         // 此处加上 click 的原因是, 如果不加上 click, 用户通过鼠标移动光标, 将不会被 save 函数保存
         newLine.on("keydown", function (event) {
+            newLine.data("keycode", event.keyCode);
             self.edit(event);
         });
         newLine.on("click", function (event) {
@@ -515,6 +516,16 @@ var v2_7 = {
                     if (mutation.target.children.length) {
                         hasHtml = true;
                     }
+                }
+            }
+            if (newLine.data("keycode") === self.DELETE && newLine.text().length === 0) {
+                // Firefox: delete whole line will lost focus.
+                // Firefox: text.length = 0  hasHtml = true
+                // This is obviously wrong.
+                // Stop Firefox from formatting empty line will fix this issue.
+                if (hasHtml === true) {
+                    console.log("Whole line was deleted. Browser " + window.getBrowserName() + " has detected html in empty line. Stopped it from formatting text which could cause losing focus.");
+                    return;
                 }
             }
             if (hasHtml) {
@@ -660,7 +671,11 @@ var v2_7 = {
                     // 如果光标在文本行的开始, 并且按下了退格键
                     // console.log("v2.7 editor: edit: keycode = ", event.keyCode);
                     // console.dir(event);
-                    if (selection.baseOffset === 0 && selection.focusOffset === 0) {
+                    // Make sure that user is not selecting text and cursor index is 0.
+                    const baseOffset = selection.baseOffset !== undefined ? selection.baseOffset : selection.anchorOffset;
+                    const extentOffset = selection.extentOffset !== undefined ? selection.extentOffset : selection.focusOffset;
+                    if (baseOffset === 0 && extentOffset === 0) {
+                        console.log("delete whole line");
                         const prev = target.prev();
                         if (prev && prev.length) {
                             event.preventDefault();

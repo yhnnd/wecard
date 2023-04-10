@@ -28,9 +28,12 @@
   list-style: none;
 }
 
+.form-control-v2-7.show-line-number > .line.text-editable {
+  counter-increment: element;
+}
+
 .form-control-v2-7.show-line-number > .line.text-editable::before {
   display: block;
-  counter-increment: element;
   content: counter(element);
   color: transparent;
   background: transparent;
