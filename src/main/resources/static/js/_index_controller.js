@@ -1577,6 +1577,54 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
 
+    function parseCardHtml(card, field) {
+        field = $(field);
+        if (field.length === 0) {
+            throw "field not found";
+        }
+        const lines = card.text.split("\n").map(e => e.length ? e : "<br/>");
+        if (lines.length) {
+            const idMap = {};
+            function getIdValue(idKey) {
+                if (idMap[idKey] === undefined) {
+                    idMap[idKey] = idKey + "_" + getRandomString().substring(0, 12) + "_" + new Date().getTime();
+                }
+                return idMap[idKey];
+            }
+            function getHrefValue(hrefKey) {
+                return "#" + getIdValue(hrefKey.substr(1));
+            }
+            const lineElements = [];
+            for (let line of lines) {
+                const lineElement = $("<pre class='line break-all'>" + line + "</pre>");
+                const childrenWithId = lineElement.find("[id]");
+                if (childrenWithId.length) {
+                    childrenWithId.each((index, child) => {
+                        $(child).attr("id", getIdValue($(child).attr("id")));
+                    });
+                }
+                const childrenWithHref = lineElement.find("[href]");
+                if (childrenWithHref.length) {
+                    childrenWithHref.each((index, child) => {
+                        const href = $(child).attr("href");
+                        if (href.startsWith("#")) {
+                            $(child).attr("href", getHrefValue(href));
+                        }
+                    });
+                }
+                lineElements.push(lineElement);
+            }
+            field.html(lineElements.shift());
+            for (let element of lineElements) {
+                field.append(element);
+            }
+        } else {
+            field.empty();
+        }
+    }
+
+
+
     $scope.get_card_info_html = function (card) {
         const str =`
 <!-- 卡片统计信息 -->
@@ -1776,7 +1824,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                             // Parse Card markdown content.
                             parseCardMarkdown(result.data.card, "#view-card #marked");
                             // Parse Card HTML content.
-                            $("#view-card #html").html("<pre class='line break-all'>" + $scope.current_card.text.split("\n").join("</pre><pre class='line break-all'>") + "</pre>");
+                            parseCardHtml(result.data.card, "#view-card #html");
 
                             // 如果当前卡片是 share 类型的卡片
                             if (card.type === "share" && $scope.current_card.type === "share") {
