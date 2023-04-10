@@ -1776,7 +1776,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                             // Parse Card markdown content.
                             parseCardMarkdown(result.data.card, "#view-card #marked");
                             // Parse Card HTML content.
-                            $("#view-card #html").html($scope.current_card.text);
+                            $("#view-card #html").html("<pre class='line break-all'>" + $scope.current_card.text.split("\n").join("</pre><pre class='line break-all'>") + "</pre>");
 
                             // 如果当前卡片是 share 类型的卡片
                             if (card.type === "share" && $scope.current_card.type === "share") {

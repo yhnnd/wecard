@@ -4499,10 +4499,13 @@
                                     </div>
                                 </li>
                                 <!-- 9. data for cards -->
-                                <li class="list-group-item list-group-item-success">
+                                <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center" >
                                     User Info
+                                    <button data-toggle="collapse" data-target=".collapse-user-info" class="button button-primary button-3d button-small button-rounded button-capitalize mb-1">
+                                        open user info
+                                    </button>
                                 </li>
-                                <li class="list-group-item" ng-repeat="(key, value) in user track by $index">
+                                <li class="list-group-item collapse collapse-user-info" ng-repeat="(key, value) in user track by $index">
                                     <div class="row">
                                         <div class="col-6 d-flex align-items-center">
                                             <span data-toggle="tooltip" title="user[&quot;{{key}}&quot;]" class="cursor-pointer">
@@ -4671,10 +4674,13 @@
                                 </li>
                                 <!-- data for chat -->
                                 <!-- 14. user data -->
-                                <li class="list-group-item list-group-item-success">
+                                <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
                                     User Data
+                                    <button data-toggle="collapse" data-target=".user-data" class="button button-primary button-3d button-small button-rounded button-capitalize mb-1">
+                                        open user data
+                                    </button>
                                 </li>
-                                <li class="list-group-item" ng-repeat="(key, value) in userData track by $index">
+                                <li class="list-group-item collapse user-data" ng-repeat="(key, value) in userData track by $index">
                                     <div class="row">
                                         <div class="col-6 d-flex align-items-center">
                                             <span data-toggle="tooltip" title="user[&quot;{{key}}&quot;]" class="cursor-pointer">
@@ -4687,10 +4693,13 @@
                                     </div>
                                 </li>
                                 <!-- 18. friend groups -->
-                                <li class="list-group-item list-group-item-success">
+                                <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
                                     User Data Friend Groups
+                                    <button data-toggle="collapse" data-target=".friend-groups" class="button button-primary button-3d button-small button-rounded button-capitalize mb-1">
+                                        open friend groups
+                                    </button>
                                 </li>
-                                <li class="list-group-item" ng-repeat="(groupIndex, group) in userData.groups track by $index">
+                                <li class="list-group-item collapse friend-groups" ng-repeat="(groupIndex, group) in userData.groups track by $index">
                                     <div class="alert alert-success">group {{groupIndex}}</div>
                                     <div>
                                         <div class="row" ng-repeat="(key, value) in group track by $index">
@@ -4721,10 +4730,13 @@
                                     </div>
                                 </li>
                                 <!-- Chat Message List -->
-                                <li class="list-group-item list-group-item-success">
+                                <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
                                     Chat Message List
+                                    <button data-toggle="collapse" data-target=".chat-message-list-info" class="button button-primary button-3d button-small button-rounded button-capitalize mb-1">
+                                        open chat message list
+                                    </button>
                                 </li>
-                                <li class="list-group-item">
+                                <li class="list-group-item chat-message-list-info collapse">
                                     <div class="row">
                                         <div class="col-6 d-flex align-items-center">
                                             <span data-toggle="tooltip" title="chatMessageList.length" class="cursor-pointer">
@@ -4736,7 +4748,7 @@
                                         </div>
                                     </div>
                                 </li>
-                                <li class="list-group-item" ng-repeat="(messageIndex, message) in chatMessageList track by $index">
+                                <li class="list-group-item chat-message-list-info collapse" ng-repeat="(messageIndex, message) in chatMessageList track by $index">
                                     <div class="alert alert-success">
                                         Chat Message {{messageIndex}}
                                     </div>
@@ -4753,10 +4765,22 @@
                                         </div>
                                     </div>
                                 </li>
-                                <!-- Write Card V2.7 Editor Configs -->
-                                <li class="list-group-item list-group-item-success">
-                                    <div>Write Card V2.7 Editor Settings</div>
-                                </li>
+
+                            </ul>
+                        </div>
+                    </div>
+
+
+
+
+                    <!-- Write Card V2.7 Editor Configs -->
+                    <div class="col-12 col-sm-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3 mb-3" ng-show="debugMode.isEnabled">
+                        <div class="card border-radius-0">
+                            <div class="card-header">
+                                <i class="fa fa-edit mr-1"></i>
+                                <div class="d-inline-block">Write Card V2.7 Editor Settings</div>
+                            </div>
+                            <ul class="list-group list-group-flush">
                                 <!-- Write Card V2.7 Editor Configs -->
                                 <li class="list-group-item" ng-repeat="entry in writeCard.v2_7.settings track by $index">
                                     <div class="row">
@@ -4775,7 +4799,6 @@
                             </ul>
                         </div>
                     </div>
-
 
                 </div>
             </div>
