@@ -1746,7 +1746,7 @@
                                                     <li ng-repeat="line in current_card.contentLines track by $index" ng-init="index = $index">
                                                         <!-- 开发者模式 显示行号 -->
                                                         <div class="position-relative" ng-if="debugMode.isEnabled">
-                                                            <div class="position-absolute half-hidden hover-show" style="left: -.5rem; z-index: 200;">
+                                                            <div class="position-absolute half-hidden hover-show index-indicator">
                                                                 <div ng-if="current_card.plainTextIndexList.includes(index)">
                                                                     <div class="text-danger bg-white" ng-if="current_card.scriptIndexList.includes(index)">
                                                                         {{index}}

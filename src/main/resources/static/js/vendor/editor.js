@@ -614,6 +614,7 @@ var v2_7 = {
         const target = $(event.target).closest(".text-editable");
         const text = target.text();
         // 获取当前光标位置
+        const selection = self.getSelection();
         const cursorPosition = this.getCursorPosition();
         const keys = [this.ENTER, this.DELETE, this.UP, this.DOWN, this.LEFT, this.RIGHT];
         if (keys.includes(event.keyCode)) {
@@ -655,29 +656,31 @@ var v2_7 = {
                         // 将光标移动到新的文本行的开始
                         newLineApplied.attr({"contenteditable": true}).focus();
                     }
-                } else if (event.keyCode == this.DELETE && cursorPosition == 0) {
+                } else if (event.keyCode == this.DELETE) {
                     // 如果光标在文本行的开始, 并且按下了退格键
                     // console.log("v2.7 editor: edit: keycode = ", event.keyCode);
                     // console.dir(event);
-                    const prev = target.prev();
-                    if (prev && prev.length) {
-                        event.preventDefault();
-                        // 获取上一行的文字
-                        const prevText = prev.text();
-                        // 判断上一行是不是空行
-                        if (prevText && prevText.length) {
-                            // 如果上一行不是空行
-                            // 删掉这一行
-                            self.deleteLine(target);
-                            // 将这一行的文字加在上一行的行尾
-                            prev.text(prevText + text);
-                            // 将上一行变成可编辑模式 (如果上一行不是文本, 而是图片或者链接, 则默认是不可编辑的)
-                            prev.attr("contenteditable", true).focus();
-                            // 将光标置于上一行原来行尾的位置, 而不是上一行现在行尾的位置
-                            this.setCursorPosition(prevText.length);
-                        } else {// 如果上一行是空行
-                            // 删掉上一行
-                            self.deleteLine(prev);
+                    if (selection.baseOffset === 0 && selection.focusOffset === 0) {
+                        const prev = target.prev();
+                        if (prev && prev.length) {
+                            event.preventDefault();
+                            // 获取上一行的文字
+                            const prevText = prev.text();
+                            // 判断上一行是不是空行
+                            if (prevText && prevText.length) {
+                                // 如果上一行不是空行
+                                // 删掉这一行
+                                self.deleteLine(target);
+                                // 将这一行的文字加在上一行的行尾
+                                prev.text(prevText + text);
+                                // 将上一行变成可编辑模式 (如果上一行不是文本, 而是图片或者链接, 则默认是不可编辑的)
+                                prev.attr("contenteditable", true).focus();
+                                // 将光标置于上一行原来行尾的位置, 而不是上一行现在行尾的位置
+                                this.setCursorPosition(prevText.length);
+                            } else {// 如果上一行是空行
+                                // 删掉上一行
+                                self.deleteLine(prev);
+                            }
                         }
                     }
                 } else if ([this.UP, this.LEFT].includes(event.keyCode)) {

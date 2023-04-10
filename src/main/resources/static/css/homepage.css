@@ -683,12 +683,16 @@ ol.card-text-lines {
   margin-bottom: 0;
 }
 
-ol.card-text-lines:not(.show-line-number) {
+ol.card-text-lines {
   padding-inline-start: 0;
 }
 
 ol.card-text-lines.show-line-number {
   list-style-type: decimal;
+}
+
+ol.card-text-lines.show-line-number > li::marker {
+  line-height: 0;
 }
 
 ol.card-text-lines.show-line-number > li {
@@ -947,10 +951,17 @@ pre.line.dme.dme-i {
   transform: scale(1)!important;
 }
 
+.modal#view-card .img-thumbnail {
+  max-width: 400px;
+  height: fit-content;
+  margin: 0 auto;
+  display: block;
+}
+
 .modal#view-card .card-image.card-image-wrapper,
 .modal-content#view-card .card-image.card-image-wrapper {
   width: 100%;
-  height: 60%;
+  height: fit-content;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -960,6 +971,19 @@ pre.line.dme.dme-i {
 .modal-content#view-card .card-image.card-image-wrapper > img {
   width: 100%;
   height: auto;
+}
+
+.modal#view-card .index-indicator {
+  left: -100px;
+  width: 100px;
+  text-align: right;
+  margin-left: -1.5rem;
+  z-index: 200;
+  font-weight: 200;
+}
+
+.modal#view-card .index-indicator:hover {
+  font-weight: normal;
 }
 
 .modal#view-card .comments-wrapper {
