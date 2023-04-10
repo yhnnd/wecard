@@ -1,14 +1,10 @@
 function button_on(target) {
     button = $(target).closest(".ios-button");
-    button.find('.ios-button-circle').get(0).style.marginLeft = '28px';
-    button.get(0).style.backgroundColor = 'limegreen';
     button.attr("data-value", "1");
 }
 
 function button_off(target) {
     button = $(target).closest(".ios-button");
-    button.find('.ios-button-circle').get(0).style.marginLeft = '0px';
-    button.get(0).style.backgroundColor = 'lightgray';
     button.attr("data-value", "0");
 }
 
