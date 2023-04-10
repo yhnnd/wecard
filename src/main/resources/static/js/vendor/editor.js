@@ -134,7 +134,12 @@ var v2_7 = {
         $(document).on("click", function(event) {
             const target = $(event.target);
             if (target.closest(self.fieldSelector).length === 1) {
-                self.focusField(target);
+                const selection = self.getSelection();
+                if ($(selection.anchorNode).is($(selection.focusNode)) && selection.anchorOffset === selection.focusOffset) {
+                    self.focusField(target);
+                } else {
+                    self.field.addClass("focus");
+                }
             } else if (self.isFieldFocused()) {
                 self.blurField();
                 self.save();
