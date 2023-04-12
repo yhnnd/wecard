@@ -728,11 +728,7 @@
 
 
             <!-- /* z-index of it should be no more than 1050 */ -->
-            <div class="d-inline-block px-3 py-2 border bg-white cursor-pointer"
-                 style="position:fixed;bottom: .2rem;right: .2rem;z-index: 1049;"
-                 ng-show=" (['marketplace','mySocialCircle'].includes(pageLocation) || pageLocation === 'cards' && subPageLocation !== 'write')"
-                 ng-click="gotoPage('cards');subPageLocation = 'write';"
-                 title="Write A Card" data-toggle="tooltip">
+            <div class="d-inline-block px-3 py-2 border bg-white cursor-pointer" style="position:fixed;bottom: .2rem;right: .2rem;z-index: 1049;" ng-show=" (['marketplace','mySocialCircle'].includes(pageLocation) || pageLocation === 'cards' && subPageLocation !== 'write')" ng-click="gotoPage('cards', 'write');" title="Write A Card" data-toggle="tooltip">
                 <span class="fa fa-3x fa-pencil"></span>
             </div>
 
@@ -808,7 +804,7 @@
                             <div class="col px-0 px-lg-3">
                                 <p class="overflow-hidden py-1 text-center cursor-pointer {{subPageLocation==='write'?'text-white bg-dark':'font-weight-light'}}"
                                     ng-click="subPageLocation = 'write'">
-                                    撰写卡片
+                                    <span data-toggle="tooltip" title="撰写卡片">Write <span class="hidden-sm">A Card</span></span>
                                 </p>
                             </div>
                             <div class="col px-0 px-lg-3">
@@ -1299,42 +1295,153 @@
                                 <!-- 选择卡片类型 -->
                                 <ul class="nav nav-tabs">
                                     <li class="nav-item">
-                                        <a class="nav-link active" data-toggle="tab" href="#create-text-card" ng-click="writeCard.editorType = 'legacy'">
+                                        <a class="nav-link active" data-toggle="tab" href="#create-text-card" ng-click="card_to_create.type = 'text'; writeCard.editorType = 'legacy'; ">
                                             <span>文字</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#create-image-card" ng-click="writeCard.editorType = 'legacy'">
+                                        <a class="nav-link" data-toggle="tab" href="#create-image-card" ng-click="card_to_create.type = 'image'; writeCard.editorType = 'legacy'; ">
                                             <span>图片</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#create-video-card" ng-click="writeCard.editorType = 'legacy'">
+                                        <a class="nav-link" data-toggle="tab" href="#create-video-card" ng-click="card_to_create.type = 'video'; writeCard.editorType = 'legacy'; ">
                                             <span>视频</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#create-audio-card" ng-click="writeCard.editorType = 'legacy'">
+                                        <a class="nav-link" data-toggle="tab" href="#create-audio-card" ng-click="card_to_create.type = 'audio'; writeCard.editorType = 'legacy'; ">
                                             <span>音频</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#create-quill-card" ng-click="writeCard.editorType = 'quill'">
+                                        <a class="nav-link" data-toggle="tab" href="#create-quill-card" ng-click="card_to_create.type = 'quill'; writeCard.editorType = 'quill'; ">
                                             <span>Quill</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#create-text-card" ng-click="writeCard.editorType = 'v2_7'">
+                                    <li class="nav-item" ng-show="debugMode.isEnabled">
+                                        <a class="nav-link" data-toggle="tab" href="#create-markdown-card" ng-click="card_to_create.type = 'markdown'; writeCard.editorType = 'v2_7'; ">
+                                            <span>Markdown</span><span class="visible hidden-sm">卡片</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" ng-show="debugMode.isEnabled">
+                                        <a class="nav-link" data-toggle="tab" href="#create-html-card" ng-click="card_to_create.type = 'html'; writeCard.editorType = 'v2_7'; ">
+                                            <span>HTML</span><span class="visible hidden-sm">卡片</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" ng-show="debugMode.isEnabled">
+                                        <a class="nav-link" data-toggle="tab" href="#create-wcml-card" ng-click="card_to_create.type = 'wcml'; writeCard.editorType = 'v2_7'; ">
                                             <span>WCML</span><span class="visible hidden-sm">卡片</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" ng-show="debugMode.isEnabled">
+                                        <a class="nav-link" data-toggle="tab" href="#create-wordpress-card" ng-click="card_to_create.type = 'wordpress'; writeCard.editorType = 'v2_7'; ">
+                                            <span>WordPress</span><span class="visible hidden-sm">卡片</span>
                                         </a>
                                     </li>
                                 </ul>
                                 <!-- 卡片 标题, 正文, 话题 编辑区 -->
-                                <div class="py-4">
+                                <div class="pt-4">
                                     <!-- 错误消息显示区域 -->
                                     <div class="create-card-error-messge-wrapper alert alert-danger" style="display: none;">
                                         <i class="fa fa-times mx-2" onclick="$(this).parent().hide();"></i>
                                         <span class="create-card-error-messge"></span>
+                                    </div>
+                                    <!-- 切换编辑器按钮区 -->
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <div class="form-inline">
+                                                <!-- Legacy Editor Dropdown -->
+                                                <div class="btn-group mb-2 mr-3">
+                                                    <button class="btn btn-sm" id="open-legacy-editor" ng-class="writeCard.editorType === 'legacy' ? 'btn-outline-primary active focus' : 'btn-outline-secondary'" ng-click="writeCard.editorType = 'legacy';" data-toggle="tooltip" title="Open Legacy Editor">
+                                                        <span>Legacy Editor</span>
+                                                    </button>
+                                                    <button class="btn btn-sm dropdown-toggle dropdown-toggle-split" ng-class="writeCard.editorType === 'legacy' ? 'btn-outline-primary' : 'btn-outline-secondary'" data-toggle="dropdown" ng-disabled="writeCard.editorType !== 'legacy'">
+                                                        <span>Actions</span>
+                                                    </button>
+                                                    <div class="dropdown-menu">
+                                                        <button class="dropdown-item" id="export-legacy-to-v2-7" onclick="v2_7.reload().then(() => {$('#open-v2-7-editor').click();});">
+                                                            <span>Copy Text To Editor V2.7</span>
+                                                        </button>
+                                                        <div class="dropdown-divider"></div>
+                                                        <button class="dropdown-item" id="write-card-legacy-preview" ng-click="viewCard(card_to_create);">
+                                                            <span>View This Card</span>
+                                                        </button>
+                                                        <div class="dropdown-divider"></div>
+                                                        <button class="dropdown-item" onclick="(function(){const $scope = angular.element('[ng-controller=\'controller\']').scope();saveCardAsDraft($scope.user, $scope.card_to_create);})();">
+                                                            <span>Save As Draft</span>
+                                                        </button>
+                                                        <button class="dropdown-item" ng-click="viewDraftCards();">
+                                                            <span>View All Drafts</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <!-- Quill Editor Dropdown -->
+                                                <div class="btn-group mb-2 mr-3">
+                                                    <button class="btn btn-sm" ng-class="writeCard.editorType === 'quill' ? 'btn-outline-primary active focus' : 'btn-outline-secondary'" ng-click="writeCard.editorType = 'quill'">
+                                                        <div>Quill Editor</div>
+                                                    </button>
+                                                    <button class="btn btn-sm dropdown-toggle dropdown-toggle-split" ng-class="writeCard.editorType === 'quill' ? 'btn-outline-primary' : 'btn-outline-secondary'" data-toggle="dropdown" ng-disabled="writeCard.editorType !== 'quill'">
+                                                        <span class="sr-only">Actions</span>
+                                                    </button>
+                                                    <div class="dropdown-menu">
+                                                        <button class="dropdown-item" onclick="toggleQuillToolbarFont('#editor-container');$(this).toggleClass('alert-primary');">
+                                                            <div>Font & Size</div>
+                                                        </button>
+                                                        <button class="dropdown-item" onclick="toggleQuillToolbarColor('#editor-container');$(this).toggleClass('alert-primary');">
+                                                            <div>Color</div>
+                                                        </button>
+                                                        <button class="dropdown-item" onclick="toggleQuillToolbarList('#editor-container');$(this).toggleClass('alert-primary');">
+                                                            <div>List</div>
+                                                        </button>
+                                                        <button class="dropdown-item" onclick="toggleQuillToolbarCode('#editor-container');$(this).toggleClass('alert-primary');">
+                                                            <div>Image, Blockquote, Code Block</div>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <!-- V2.7 Editor Dropdown -->
+                                                <div class="btn-group mb-2 mr-3">
+                                                    <button class="btn btn-sm" id="open-v2-7-editor" ng-class="writeCard.editorType === 'v2_7' ? 'btn-outline-primary active focus' : 'btn-outline-secondary'" ng-click="writeCard.editorType = 'v2_7'" data-toggle="tooltip" title="Open Editor V2.7">
+                                                        <span>Editor V2.7</span>
+                                                    </button>
+                                                    <button class="btn btn-sm dropdown-toggle dropdown-toggle-split" ng-class="writeCard.editorType === 'v2_7' ? 'btn-outline-primary' : 'btn-outline-secondary'" data-toggle="dropdown" ng-disabled="writeCard.editorType !== 'v2_7'">
+                                                        <span>Actions</span>
+                                                    </button>
+                                                    <div class="dropdown-menu">
+                                                        <button class="dropdown-item" id="v2-7-save" onclick="v2_7.save().then(()=>{setTimeout(()=>{v2_7.focusField();},0);});">
+                                                            <span>Save</span>
+                                                        </button>
+                                                        <button class="dropdown-item" onclick="v2_7.reload().then(()=>{setTimeout(()=>{v2_7.focusField();},0);});">
+                                                            <span>Load From Legacy Editor</span>
+                                                        </button>
+                                                        <button class="dropdown-item" onclick="v2_7.save().then(()=>{v2_7.reload().then(()=>{setTimeout(()=>{v2_7.focusField();},0);});});">
+                                                            <span>Save And Reload</span>
+                                                        </button>
+                                                        <button class="dropdown-item" onclick="v2_7.undo();">
+                                                            <span>Undo</span>
+                                                        </button>
+                                                        <button class="dropdown-item" onclick="v2_7.redo();">
+                                                            <span>Redo</span>
+                                                        </button>
+                                                        <button class="dropdown-item" onclick="v2_7.initHelp();v2_7.help();" data-toggle="tooltip" title="Introduction to Editor V2.7">
+                                                            <span>Help with Editor V2.7</span>
+                                                        </button>
+                                                        <div class="dropdown-divider"></div>
+                                                        <button class="dropdown-item" id="write-card-v2-7-preview" onclick="v2_7.save().then(()=>{$('#write-card-legacy-preview').click();});">
+                                                            <span>Save and View This Card</span>
+                                                        </button>
+                                                        <div class="dropdown-divider"></div>
+                                                        <button class="dropdown-item" onclick="(function(){v2_7.save();const $scope = angular.element('[ng-controller=\'controller\']').scope();saveCardAsDraft($scope.user, $scope.card_to_create);})();">
+                                                            <span>Save As Draft</span>
+                                                        </button>
+                                                        <button class="dropdown-item" ng-click="viewDraftCards();">
+                                                            <span>View All Drafts</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <!-- Dropdowns Ends -->
+                                            </div>
+                                        </div>
                                     </div>
                                     <!-- 卡片标题 -->
                                     <div class="form-group">
@@ -1342,95 +1449,7 @@
                                     </div>
                                     <!-- 卡片正文 Quill 编辑器 -->
                                     <div class="form-group" ng-show="writeCard.editorType === 'quill'">
-                                        <div class="px-2 mb-3">
-                                            <div>
-                                                <button class="btn btn-sm btn-outline-primary py-0 border-radius-0" onclick="$(this).parent().hide().next().show();">
-                                                    <div>设置工具栏</div>
-                                                </button>
-                                            </div>
-                                            <div style="display: none;">
-                                                <div class="d-flex align-items-center">
-                                                    <button class="btn btn-sm btn-outline-primary py-0" 
-                                                            onclick="toggleQuillToolbarFont('#editor-container');$(this).toggleClass('btn-primary btn-outline-primary');">
-                                                        <div>字体</div>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-primary py-0 ml-2" 
-                                                            onclick="toggleQuillToolbarColor('#editor-container');$(this).toggleClass('btn-primary btn-outline-primary');">
-                                                        <div>颜色</div>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-primary py-0 ml-2" 
-                                                            onclick="toggleQuillToolbarList('#editor-container');$(this).toggleClass('btn-primary btn-outline-primary');">
-                                                        <div>列表</div>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-primary py-0 ml-2" 
-                                                            onclick="toggleQuillToolbarCode('#editor-container');$(this).toggleClass('btn-primary btn-outline-primary');">
-                                                        <div>代码</div>
-                                                    </button>
-                                                    <i class="fa fa-lg fa-times-circle ml-auto" onclick="$(this).parent().parent().hide().prev().show();"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="editor-container" style="background-color: #fff;min-height: {{writeCard.textArea.minHeight}};height: {{writeCard.textArea.height}};">
-                                        </div>
-                                        <script>
-                                            function toggleQuillToolbarFont(selector) {
-                                                var toolbar = $(selector).siblings(".ql-toolbar");
-                                                toolbar.find(".ql-formats").eq(0).toggle();
-                                            }
-
-                                            function toggleQuillToolbarColor(selector) {
-                                                var toolbar = $(selector).siblings(".ql-toolbar");
-                                                toolbar.find(".ql-color-picker").toggle();
-                                            }
-                                            
-                                            function toggleQuillToolbarList(selector) {
-                                                var toolbar = $(selector).siblings(".ql-toolbar");
-                                                toolbar.find(".ql-list").toggle();
-                                            }
-
-                                            function toggleQuillToolbarCode(selector) {
-                                                var toolbar = $(selector).siblings(".ql-toolbar");
-                                                toolbar.find(".ql-code").toggle();
-                                                toolbar.find(".ql-code-block").toggle();
-                                            }
-
-                                            function initQuill(selector) {
-                                                try {
-                                                    Quill;
-                                                } catch (e) {
-                                                    return false;
-                                                }
-                                                // 当 quill 脚本未被加载的时候, 下面的代码会报错
-                                                if (Quill !== undefined) {
-                                                    var quill = new Quill(selector, {
-                                                        modules: {
-                                                            toolbar: [
-                                                                [{ "font": [] }, { "size": [] }, { "header": [1, 2, 3, false] }],
-                                                                [{ 'color': [] }, { 'background': [] }, 'bold', 'italic', 'underline', "strike", "code"],
-                                                                [{ 'list': 'ordered' }, { 'list': 'bullet' }, 'image', "blockquote", 'code-block']
-                                                            ]
-                                                        },
-                                                        placeholder: "卡片正文",
-                                                        theme: 'snow'  // or 'bubble'
-                                                    });
-
-                                                    var imageButton = $("#editor-container").siblings(".ql-toolbar").find(".ql-image");
-                                                    imageButton.replaceWith(imageButton.prop("outerHTML"));
-                                                    toggleQuillToolbarFont("#editor-container");
-                                                    toggleQuillToolbarColor("#editor-container");
-                                                    toggleQuillToolbarList("#editor-container");
-                                                    toggleQuillToolbarCode("#editor-container");
-                                                    return true;
-                                                }
-                                                return false;
-                                            }
-
-                                            setTimeout(() => {
-                                                if (initQuill("#editor-container") !== true) {
-                                                    $("[href=\"#create-quill-card\"]").parent().hide();
-                                                }
-                                            }, 1000);
-                                        </script>
+                                        <div id="editor-container" style="background-color: #fff;min-height: {{writeCard.textArea.minHeight}};height: {{writeCard.textArea.height}};"></div>
                                     </div>
                                     <!-- 卡片正文 Legacy 编辑器 -->
                                     <div class="form-group" ng-show="writeCard.editorType === 'legacy'">
@@ -1442,28 +1461,6 @@
                                     <div class="form-group" ng-show="writeCard.editorType === 'v2_7'">
                                         <div class="form-control form-control-v2-7" id="card-to-create-text-v2-7" ng-class="{'show-line-number':v2_7IsFeatureEnabled('lineNumber'),'show-line-create-time':v2_7IsFeatureEnabled('createTime'),'show-line-hash':v2_7IsFeatureEnabled('hash')}"
                                              style="min-height: {{writeCard.textArea.minHeight}};height: {{writeCard.textArea.height}};">
-                                        </div>
-                                    </div>
-                                    <!-- 切换编辑器按钮区 -->
-                                    <div class="form-group row">
-                                        <div class="col-12">
-                                            <div class="form-inline">
-                                                <button class="btn btn-sm btn-outline-secondary mb-2 mr-2" id="open-legacy-editor" ng-class="{'active focus':writeCard.editorType === 'legacy'}" ng-click="writeCard.editorType = 'legacy';" data-toggle="tooltip" title="Open Legacy Editor">
-                                                    <span>Legacy Editor</span>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-danger mb-2 mr-2" id="export-legacy-to-v2-7" onclick="v2_7.reload();$('#open-v2-7-editor').click();" ng-disabled="writeCard.editorType !== 'legacy'">
-                                                    <span>Copy Text To Editor V2.7</span>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-primary mb-2 mr-2" id="open-v2-7-editor" ng-class="{'active focus':writeCard.editorType === 'v2_7'}" ng-click="writeCard.editorType = 'v2_7'" data-toggle="tooltip" title="Open Editor V2.7">
-                                                    <span>Editor V2.7</span>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-primary mb-2 mr-2" onclick="v2_7.save();v2_7.reload();setTimeout(()=>{v2_7.focusField();},0);" ng-disabled="writeCard.editorType !== 'v2_7'">
-                                                    <span>Refresh</span>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-primary mb-2 mr-2" onclick="v2_7.initHelp();v2_7.help();" data-toggle="tooltip" title="Introduction to Editor V2.7">
-                                                    <span>Help with Editor V2.7</span>
-                                                </button>
-                                            </div>
                                         </div>
                                     </div>
                                     <!-- 卡片话题 -->
@@ -1479,7 +1476,7 @@
                                                 <small>没有话题</small>
                                             </span>
                                             <span class="badge badge-secondary badge-pill mx-1 px-2 py-1" ng-repeat="topic in card_to_create.topics track by $index" onselectstart="return false;">
-                                                <span title="index: {{$index}}">{{topic}}</span>
+                                                <span title="index: {{$index}}">{{topic.name}}</span>
                                                 <i class="fa fa-lg fa-times cursor-pointer" ng-click="removeCardTopic($index)"></i>
                                             </span>
                                             <span class="btn btn-sm btn-outline-danger float-right upper" ng-click="removeAllCardTopics()" ng-show="card_to_create.topics.length">清空话题</span>
@@ -1489,14 +1486,14 @@
                                 <!-- 选择卡片类型对应的文件 -->
                                 <div class="tab-content">
                                     <div class="tab-pane fade show active" id="create-text-card">
-                                        <div class="p-3">
+                                        <div class="px-3">
                                             <small class="text-muted">卡片标题不能超过 {{max.card.title.length}} 字，</small>
                                             <small class="text-muted">卡片正文不能超过 {{max.card.text.length}} 字，</small>
                                             <small class="text-muted">卡片话题不能超过 {{max.card.topics.length}} 个</small>
                                         </div>
                                     </div>
                                     <div class="tab-pane fade" id="create-image-card">
-                                        <div class="mb-2 text-muted">
+                                        <div class="mb-3 text-muted">
                                             <small class="d-inline-block">选择图片</small>
                                             <small class="d-inline-block">已选择 <span id="card_to_create_files_length">0</span> 张</small>
                                             <small class="d-inline-block">最多 {{max.card.images.length}} 张</small>
@@ -1517,7 +1514,7 @@
                                         </div>
                                     </div>
                                     <div class="tab-pane fade" id="create-video-card">
-                                        <div class="mb-2 text-muted">
+                                        <div class="mb-3 text-muted">
                                             <small>选择视频</small>
                                         </div>
                                         <div class="form-group">
@@ -1525,7 +1522,7 @@
                                         </div>
                                     </div>
                                     <div class="tab-pane fade" id="create-audio-card">
-                                        <div class="mb-2 text-muted">
+                                        <div class="mb-3 text-muted">
                                             <small>选择音频</small>
                                         </div>
                                         <div class="form-group">
@@ -1533,7 +1530,7 @@
                                         </div>
                                     </div>
                                     <div class="tab-pane fade" id="create-quill-card">
-                                        <div class="p-3">
+                                        <div class="px-3">
                                             <small class="text-muted">卡片标题不能超过 {{max.card.title.length}} 字，</small>
                                             <small class="text-muted">卡片正文不能超过 {{max.card.text.length}} 字，</small>
                                             <small class="text-muted">卡片话题不能超过 {{max.card.topics.length}} 个</small>
@@ -1566,6 +1563,102 @@
 
 
 
+            <div class="modal" id="drafts">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content border-radius-0">
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <div>Drafts</div>
+                            <!-- close button -->
+                            <button class="close" data-dismiss="modal" onselect="return false;">
+                                <i class="fa fa-2x fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- Modal Body -->
+                        <div class="modal-body pb-0">
+                            <div class="card-body pt-0" ng-if="drafts.length === 0">
+                                <div>no drafts</div>
+                            </div>
+                            <div class="draft border border-bottom-0 pr-3 pb-3" ng-repeat="draft in drafts track by $index">
+                                <div class="position-relative mt-3">
+                                    <div class="position-absolute triangle-top-left" data-color="yellowgreen"></div>
+                                    <div class="position-absolute text-light font-weight-bold font-italic font-size-larger" style="left: 22px;top: -10px;">{{$index + 1}}</div>
+                                </div>
+                                <!-- draft info -->
+                                <div ng-repeat="(key, value) in draft track by $index">
+                                    <div class="row" ng-if="typeof(value) === 'string' || typeof(value) === 'undefined'">
+                                        <div class="col-6 text-center">{{key}}</div>
+                                        <div class="col-6">
+                                            <pre class="mb-0 break-all {{value.includes('\n') ? 'img-thumbnail' : ''}}" ng-if="key !== 'author avatar'">{{value}}</pre>
+                                            <img class="img-thumbnail user-avatar-md rounded-circle cursor-pointer" ng-if="key === 'author avatar'" ng-src="{{value}}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- card info -->
+                                <div class="border-top mt-1 pt-1">
+                                    <div class="row" ng-repeat="(key, value) in draft.card track by $index">
+                                        <div class="col-6 text-center">card {{key}}</div>
+                                        <div class="col-6">
+                                            <div ng-class="{'img-thumbnail': value.includes('\n')}" ng-if="typeof(value) === 'string'">
+                                                <small class="text-muted" ng-if="value ===''">empty string</small>
+                                                <pre class="mb-0 break-all" ng-if="value.length">{{value}}</pre>
+                                            </div>
+                                            <div ng-if="value === undefined">
+                                                <small class="text-muted">undefined</small>
+                                            </div>
+                                            <div ng-if="value === null">
+                                                <small class="text-muted">null</small>
+                                            </div>
+                                            <div ng-if="isArray(value)">
+                                                <small class="text-muted" ng-if="value.length === 0">empty array</small>
+                                                <div ng-if="value.length > 0" ng-init="list = value">
+                                                    <div ng-if="key === 'topics'">
+                                                        <span ng-repeat="object in list track by $index">
+                                                            <span class="badge badge-primary">{{object.name}}</span>
+                                                        </span>
+                                                    </div>
+                                                    <div ng-if="key !== 'topics'">
+                                                        <div class="d-inline-block mb-1" ng-repeat="object in list track by $index">
+                                                            <pre class="d-inline word-sm img-thumbnail no-shrink break-all">{{object}}</pre>
+                                                            <pre class="d-inline word-sm break-all" ng-if="!$last">,</pre>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- actions -->
+                                <div class="d-flex justify-content-center align-items-center mt-2 pb-2">
+                                    <button class="button button-3d button-action button-capitalize" ng-click="draft.keepAndEdit();">
+                                        <span>keep and edit this draft</span>
+                                    </button>
+                                    <button class="button button-3d button-primary button-capitalize" ng-click="draft.deleteAndEdit();">
+                                        <span>delete and edit this draft</span>
+                                    </button>
+                                    <button class="button button-3d button-caution button-capitalize" ng-click="draft.delete();">
+                                        <span>delete this draft</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Modal Footer -->
+                        <div class="modal-footer justify-content-end">
+                            <button class="btn btn-primary border-radius-0 px-4"
+                                    onclick="$('.modal#drafts').scrollTop(0);">
+                                回到页面顶部
+                            </button>
+                            <button class="btn btn-secondary border-radius-0 px-4" data-dismiss="modal">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
 
 
             <!-- Modal View Card -->
@@ -1577,7 +1670,7 @@
                             <div class="row w-100 m-0">
                                 <!-- 作者头像 -->
                                 <div class="col-3 px-1 pt-1 text-center break-all">
-                                    <img alt="image not found" class="user-avatar rounded-circle cursor-pointer" src="{{current_card.user.avatarUrl}}" data-toggle="tooltip"
+                                    <img alt="" class="user-avatar rounded-circle cursor-pointer" src="{{current_card.user.avatarUrl}}" data-toggle="tooltip"
                                          title="{{current_card.user.nickname}}">
                                 </div>
             
@@ -1800,13 +1893,15 @@
                                                                 <div ng-switch-when="iconify-user">
                                                                     <div class="d-inline-block" ng-repeat="word in current_card.scriptSet['line-' + index].lineSubStrings track by $index">
                                                                         <div ng-switch="current_card.scriptSet['line-' + index].scriptPositions.includes($index)">
-                                                                            <span ng-switch-when="false">{{word}}</span>
+                                                                            <div ng-switch-when="false">
+                                                                                <div class="d-inline-block"><pre class="line break-all">{{word}}</pre></div>
+                                                                            </div>
                                                                             <div ng-switch-when="true">
                                                                                 <!-- 默认隐藏此用户的头像图标, 因为未登录的用户无法查看此用户的信息, 也就无法加载用户头像 -->
                                                                                 <div class="iconify-user" data-icon-id="{{current_card.scriptSet['line-' + index].iconId}}">
-                                                                                    <img src=""  class="user-avatar-xs rounded-circle" style="display: none;">
-                                                                                    <div class="original-script" data-toggle="tooltip" title="该用户不存在">
-                                                                                        {{word}}
+                                                                                    <img ng-if="current_card.scriptSet['line-' + index].user !== undefined" ng-src="{{current_card.scriptSet['line-' + index].user.avatarUrl}}" class="user-avatar-xs rounded-circle d-inline-block cursor-pointer" data-toggle="popover" title="{{ getUserInfoTitle(current_card.scriptSet['line-' + index].user) }}" data-content="{{getUserInfoContent(current_card.scriptSet['line-' + index].user)}}">
+                                                                                    <div class="d-inline-block" data-toggle="tooltip" title="该用户不存在" ng-show="current_card.scriptSet['line-' + index].showOriginalScript">
+                                                                                        <div class="d-inline-block"><pre class="line break-all">{{word}}</pre></div>
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
@@ -1922,7 +2017,7 @@
                                                         <div class="row w-100 m-0">
                                                             <!-- 【被转发的卡片】作者头像 -->
                                                             <div class="col-3 px-1 pt-1 text-center break-all">
-                                                                <img alt="image not found" class="user-avatar rounded-circle cursor-pointer" src="{{current_card.share.user.avatarUrl}}" data-toggle="tooltip"
+                                                                <img alt="" class="user-avatar rounded-circle cursor-pointer" src="{{current_card.share.user.avatarUrl}}" data-toggle="tooltip"
                                                                      title="{{current_card.share.user.nickname}}">
                                                             </div>
             
@@ -2089,7 +2184,7 @@
                                                                         </div>
                                                                     </div>
                                                                     <!-- 【被转发的卡片】如果用户没有登录 -->
-                                                                    <div class="col-12 modal-footer justify-content-center p-3" ng-show="!user">
+                                                                    <div class="col-12 modal-footer justify-content-center p-3" ng-show="!(user && current_card.share.status === 'exist')">
                                                                         <!-- 【被转发的卡片】【用户未登录】关注作者按钮，不可用 -->
                                                                         <button class="btn btn-primary border-radius-0" disabled>
                                                                             <i class="fa fa-user-plus"></i>
@@ -2333,7 +2428,7 @@
                                             </a>
                                         </div>
                                         <!-- 如果用户没有登录 -->
-                                        <div class="col-12 modal-footer justify-content-center p-3" ng-show="!user">
+                                        <div class="col-12 modal-footer justify-content-center p-3" ng-show="!(user && current_card.status === 'exist')">
                                             <!-- 【用户未登录】【禁用的】关注作者按钮，不可用 -->
                                             <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
                                                 <i class="fa fa-user-plus"></i>
@@ -2346,16 +2441,16 @@
                                             <button class="btn btn-primary border-radius-0" onclick="login('./index.html');" disabled>
                                                 <i class="fa fa-share"></i>
                                             </button>
-                                            <!-- 【用户未登录】【可用的】选择卡片渲染引擎 (选择卡片显示方式) -->
-                                            <div class="dropdown" data-toggle="tooltip" title="选择卡片显示方式">
+                                            <!-- 【用户未登录】【可用的】select card renderer (set card type) -->
+                                            <div class="dropdown" data-toggle="tooltip" title="set card type">
                                                 <button class="btn btn-primary dropdown-toggle border-radius-0" data-toggle="dropdown">
                                                     <i class="fa fa-lg fa-file-text"></i>
                                                 </button>
                                                 <div class="dropdown-menu">
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'text'; ">无</div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'wcml'; ">WCML</div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'markdown'; ">Markdown</div>
-                                                    <div class="dropdown-item" ng-click="current_card.type = 'html'; ">HTML</div>
+                                                    <div class="dropdown-item" ng-repeat="cardType in allAvailableCardTypes track by $index" ng-click="current_card.type = cardType">
+                                                        <span ng-if="current_card.type === cardType">✅</span>
+                                                        <span class="button-capitalize" ng-bind="cardType"></span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <!-- 【用户未登录】【可用的】以单独页面形式查看卡片 -->
@@ -5520,37 +5615,109 @@
                         event.preventDefault();
                         event.target.innerHTML = "![card-img-" + picNum + "](card-img-" + picNum + ")";
                         activateImageLine(event, picNum);
-                        tools.insertNewLine("", event.target);
+                        tools.insertNewLine("", event.target).then((newline) => {
+                            newline.click();
+                        });
                     }
-                } else {
-                        event.preventDefault();
-                        event.target.innerHTML = "![" + picSrc + "](" + picSrc + ")";
-                        tools.insertNewLine("", event.target);
+                } else if (picSrc !== null && picSrc !== undefined) {
+                    event.preventDefault();
+                    event.target.innerHTML = "![" + picSrc + "](" + picSrc + ")";
+                    tools.insertNewLine("", event.target).then((newline) => {
+                        newline.click();
+                    });
                 }
             }
         }
 
 
         function insertIconLine(event, tools) {
-            var isInsertIcon = confirm("插入用户头像?");
+            const isInsertIcon = confirm("插入用户头像?");
             if (isInsertIcon) {
-                var msgs = [
+                const msgs = [
                     "您要插入哪位用户的头像?",
                     "请输入该用户的用户名",
                     "请确保您输入的用户名是有效的, 否则卡片渲染器将找不到对应的用户"
                 ];
-                var username = prompt(msgs.join("\n"));
+                let username = prompt(msgs.join("\n"));
                 if (username) {
                     username = username.trim();
                     if (username.length) {
                         event.preventDefault();
                         event.target.innerHTML = "@iconify(user,name," + username + ")";
                         activateIconLine(event, username);
-                        tools.insertNewLine("", event.target);
+                        tools.insertNewLine("", event.target).then((newline) => {
+                            newline.click();
+                        });
                     }
                 }
             }
         }
+
+
+        function insertTime (event, tools) {
+            if (confirm("Insert Time?")) {
+                event.preventDefault();
+                event.target.innerText += new Date().toString();
+                try {
+                    tools.setCursorPosition(event.target.innerText.length);
+                } catch {
+                    console.log("insertTime: setCursorPosition failed. use setCaretPosition instead.");
+                    tools.setCaretPosition(event.target, event.target.innerText.length);
+                }
+            }
+        }
+
+
+        function insertCounter (event, tools) {
+            if (confirm("Insert Counter?")) {
+                const counter = prompt("input a name for the counter.");
+                if (counter !== null && counter !== undefined) {
+                    event.preventDefault();
+                    event.target.innerText += "@counter(" + counter + ")";
+                    try {
+                        tools.setCursorPosition(event.target.innerText.length);
+                    } catch {
+                        console.log("insertCounter: setCursorPosition failed. use setCaretPosition instead.");
+                        tools.setCaretPosition(event.target, event.target.innerText.length);
+                    }
+                }
+            }
+        }
+
+
+        function insertAnchor (event, tools) {
+            if (confirm("Insert Anchor?")) {
+                const anchorId = prompt("input a name for the anchor.");
+                if (anchorId !== null && anchorId !== undefined) {
+                    event.preventDefault();
+                    event.target.innerText += "<div id=\"" + anchorId + "\"></div>";
+                    try {
+                        tools.setCursorPosition(event.target.innerText.length - "</div>".length);
+                    } catch {
+                        console.log("insertAnchor: setCursorPosition failed. use setCaretPosition instead.");
+                        tools.setCaretPosition(event.target, event.target.innerText.length - "</div>".length);
+                    }
+                }
+            }
+        }
+
+
+        function insertLink (event, tools) {
+            if (confirm("Insert Link?")) {
+                const href = prompt("input a href for the link.");
+                if (href !== null && href !== undefined) {
+                    event.preventDefault();
+                    event.target.innerText += "<a href=\"" + href + "\"></a>";
+                    try {
+                        tools.setCursorPosition(event.target.innerText.length - "</a>".length);
+                    } catch {
+                        console.log("insertLink: setCursorPosition failed. use setCaretPosition instead.");
+                        tools.setCaretPosition(event.target, event.target.innerText.length - "</a>".length);
+                    }
+                }
+            }
+        }
+
 
 
         var isComputerKeyboard = false;
@@ -5560,10 +5727,18 @@
         function keyPressListener(event, storage, tools, $scope) {
             // 16 是 Shift, 49 是 '1', Shift + '1' 是 '!'
             // 如果在一个空行的行首输入了 !, 就询问是否插入图片
-            if (storage.prevKeyCode === 16 && event.keyCode === 49 && tools.getCursorPosition() === 0 && !event.target.innerHTML) {
+            if (storage.prevKeyCode === 16 && event.keyCode === 49 && tools.getCursorPosition() === 0 && event.target.innerHTML === "") {
                 insertImageLine(event, tools);
-            } else if (storage.prevKeyCode === 16 && event.keyCode === 50 && tools.getCursorPosition() === 0 && !event.target.innerHTML) {
+            } else if (storage.prevKeyCode === 16 && event.keyCode === 50 && tools.getCursorPosition() === 0 && event.target.innerHTML === "") {
                 insertIconLine(event, tools);
+            } else if (event.key === "$" && storage.prevKeyCode === 16 && tools.getCursorPosition() === 0 && event.target.innerHTML === "") {
+                insertTime(event, tools);
+            } else if (event.key === "+") {
+                insertCounter(event, tools);
+            } else if (event.key === '&') {
+                insertAnchor(event, tools);
+            } else if (event.key === '*') {
+                insertLink(event, tools);
             }
             // 记录上次按下的键
             storage.prevKeyCode = event.keyCode;
@@ -5605,9 +5780,9 @@
                             linesApplied.push(lines[i]);
                             target = await v2_7.insertNewLine(lines[i], target);
                         }
+                        resolve(linesApplied);
                     });
                 }
-                resolve(linesApplied);
             });
         }
 
@@ -5856,6 +6031,7 @@
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.0.0/dist/purify.min.js" type="text/javascript"></script>
     <!-- Quill library -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="./js/init_quill.js"></script>
     <!-- Mock Data -->
     <script src="./mock/mock.js"></script>
 </body>

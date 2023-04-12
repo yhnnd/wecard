@@ -93,22 +93,24 @@ function createCard() {
 
 function getScopeAndCardToCreate() {
     const model = document.querySelector('[ng-controller="controller"]');
-    let $scope = angular.element(model).scope();
+    const $scope = angular.element(model).scope();
     if (!$scope) {
         console.log("[ERROR] getScopeAndCardToCreate(): 找不到 $scope, 请联系开发人员检查代码");
         return false;
-    } else {
-        let card = $scope.card_to_create;
-        if (!card) {
-            console.log("[ERROR] getScopeAndCardToCreate(): 找不到要上传的卡片, 请联系开发人员检查代码");
-            return false;
-        } else {
-            return {
-                "$scope": $scope,
-                "card": card
-            };
-        }
     }
+    const card = $scope.card_to_create;
+    if (!card) {
+        console.log("[ERROR] getScopeAndCardToCreate(): 找不到要上传的卡片, 请联系开发人员检查代码");
+        return false;
+    }
+    const clone = window.structuredClone ?
+    window.structuredClone : function (obj) {
+        return JSON.parse(JSON.stringify(obj));
+    };
+    return {
+        "$scope": $scope,
+        "card": clone(card)
+    };
 }
 
 
@@ -172,10 +174,10 @@ function saveDraftCardIds (ids) {
 }
 
 function getDraftCreateTime (draft) {
-    const time = draft["time"];
-    if (time) {
+    const createTime = draft["createTime"];
+    if (createTime !== undefined) {
         const date = new Date();
-        date.setTime(time);
+        date.setTime(parseInt(createTime));
         return date;
     } else {
         return "no record";
@@ -195,11 +197,15 @@ function getDraft (draftId) {
     }
 }
 
-function saveDraft (draftId, user, card) {
+function saveDraft (draftId, createTime, user, card) {
     return window.localStorage.setItem("draft_card_" + draftId, JSON.stringify({
-        "time": draftId,
+        "id": draftId,
+        "createTime": createTime,
         "user": {
-            "id": user.id
+            "id": user.id,
+            "username": user.username,
+            "nickname": user.nickname,
+            "avatarUrl": user.avatarUrl,
         },
         "card": card
     }));
@@ -210,13 +216,14 @@ function removeDraft (draftId) {
     window.localStorage.removeItem("draft_card_" + draftId);
 }
 
-function saveCardAsDraft(user, card, cardType) {
+function saveCardAsDraft(user, card, apiType) {
     if (user && user.id) {
-        card.type = cardType;
+        card.apiType = apiType;
         // generate draft id
-        const draftId = "" + Date.now();
+        const createTime = Date.now();
+        const draftId = window.getRandomString().substring(0,12) + "-" + createTime;
         // save draft
-        saveDraft(draftId, user, card);
+        saveDraft(draftId, createTime, user, card);
         // get draft id list
         let ids = getDraftCardIds();
         // push the id of current draft to draft id list

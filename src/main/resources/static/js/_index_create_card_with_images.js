@@ -22,7 +22,7 @@ function createImageCard($scope, card) {
     if (formData.has("files")) {
         // 暂时禁用上传卡片按钮
         let createCardBtn = $("[onclick=\"createCard()\"]");
-        let createCardBtnText = null;
+        let createCardBtnText = "";
         if (createCardBtn) {
             createCardBtnText = createCardBtn.text();
             createCardBtn.attr("disabled", true).text("卡片上传中...");
@@ -84,6 +84,10 @@ function createImageCard($scope, card) {
             error: function (result) {
                 bsAlert("[ERROR] createImageCard(): 与服务器连接失败 错误代码: " + result.status);
                 saveCardAsDraft($scope.user, card, "image");
+                // 恢复上传卡片按钮
+                if (createCardBtn && createCardBtnText) {
+                    createCardBtn.removeAttr("disabled").text(createCardBtnText);
+                }
             }
         });
 

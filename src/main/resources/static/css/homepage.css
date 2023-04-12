@@ -6,6 +6,14 @@ body {
   width: fit-content;
 }
 
+.font-size-larger {
+  font-size: larger;
+}
+
+.font-size-large {
+  font-size: large;
+}
+
 .container {
   background-color: white;
   border-radius: 5px;
@@ -165,7 +173,6 @@ textarea.card-comment-editor {
   }
 }
 
-.img-thumbnail,
 .user-avatar-xxs,
 .user-avatar-xs,
 .user-avatar-sm,
@@ -677,6 +684,26 @@ textarea.legacy-form-control {
   transition: height ease .3s;
 }
 
+pre.word,
+pre.word-sm {
+  display: inline-block;
+  margin-bottom: 0;
+}
+
+pre.word {
+  font-size: inherit;
+  overflow: visible;
+}
+
+pre.word-sm {
+  line-height: 1;
+}
+
+pre.word-sm.no-shrink {
+  min-height: 1.5rem;
+  overflow: hidden;
+}
+
 pre.line {
   width: 100%;
   border: none;
@@ -961,15 +988,15 @@ pre.line.dme.dme-i {
   transition: all ease 1s;
 }
 
-.modal#view-card.transition {
+.modal.transition {
   transition: transform ease-out .1s!important;
 }
 
-.modal#view-card.small {
+.modal.small {
   transform: scale(0.5)!important;
 }
 
-.modal#view-card.big {
+.modal.big {
   transform: scale(1)!important;
 }
 
@@ -1144,6 +1171,10 @@ pre.line.dme.dme-i {
   height: auto;
   max-height: 100%;
   max-width: 100%;
+}
+
+.card-image-select {
+  cursor: pointer;
 }
 
 .card-columns {
@@ -1335,4 +1366,13 @@ pre.line.dme.dme-i {
 
 #web-browser-logo {
   display: block;
+}
+
+.triangle-top-left {
+  left: 0;
+  top: -1rem;
+  border-left: 3rem solid yellowgreen;
+  border-top: 2rem solid yellowgreen;
+  border-right: 3rem solid transparent;
+  border-bottom: 2rem solid transparent;
 }

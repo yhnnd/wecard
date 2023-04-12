@@ -351,15 +351,24 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
     $scope.max = $window.max;
 
     $scope.card_to_create = {
-        title: "",
-        text: "",
-        type: "",
-        topics: [],//话题名
-        files: [],
-        file: null
+        "id": "",
+        "status": "",
+        "type": "text",
+        "title": "",
+        "text": "",
+        "topics": [],//话题名
+        "files": [],
+        "file": null
     };
 
     $scope.allAvailableCardTypes = ["text", "quill", "image", "video", "audio", "share", "markdown", "html", "wcml", "wordpress"];
+
+    $scope.writeCard_syncCardType = function() {
+        const tab = $("[href='#create-" + $scope.card_to_create.type + "-card']");
+        if (tab.length) {
+            tab.click();
+        }
+    };
 
 
 
@@ -490,62 +499,71 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             /** Record previous sub page location */
             $scope.prevSubPageLocation = oldValue;
         }
-
-        if (newValue === "write") {
-            checkDraftCard();
-        }
     });
 
 
+    $scope.typeof = function (a) {
+        return typeof (a);
+    };
+
+    $scope.isArray = function (a) {
+        return (a instanceof $window.Array);
+    };
+
     // check if there are drafts and ask for continue editing.
-    function checkDraftCard() {
-        if ($scope.card_to_create.title === ""
-        && $scope.card_to_create.text === ""
-        && JSON.stringify($scope.card_to_create.topics) === "[]") {
-            const ids = $window.getDraftCardIds();
-            if (ids instanceof Array) {
-                checkEachDraftCard(ids);
-            }
+    $scope.viewDraftCards = function () {
+        const modal = $(".modal#drafts");
+        const ids = $window.getDraftCardIds();
+        if (ids instanceof Array) {
+            $scope.drafts = getDrafts(ids, modal);
         }
+        // 关闭之前打开的 collapse
+        modal.find(".collapse.show").removeClass("show");
+        // Open Modal.
+        modal.addClass(["small","transition"]).modal("show");
+        modal.removeClass("small").addClass("big");
+        $timeout(() => {
+            modal.removeClass(["transition","small","big"]);
+        }, 100);
     }
 
-    function checkEachDraftCard(ids) {
-        const id = ids.pop();
-        if (id !== undefined) {
-            let draft = $window.getDraft(id);
-            if (draft !== undefined) {
-                const draftCard = draft.card;
-                const draftUser = draft.user;
-                if (_.isEmpty(draftCard) === false && $scope.user.id === draftUser.id) {
-                    /* Only the draft's author can view or delete the draft */
-                    const contentLines = [
-                        "draft info:",
-                        "create time: " + draft.getCreateTime(),
-                        "card title: " + draftCard.title,
-                        "card text:<br>" + draftCard.text.replaceAll("\n","<br>")
-                    ];
-                    $scope.confirm({
-                        "title": "<h2>Draft found. Continue editing?</h2>",
-                        "content": contentLines.join("<br><br>"),
-                        "alertClass": "alert-primary",
-                        "confirmCallback": function() {
-                            $scope.card_to_create.title  = draftCard.title;
-                            $scope.card_to_create.text   = draftCard.text;
-                            $scope.card_to_create.type   = draftCard.type;
-                            $scope.card_to_create.topics = draftCard.topics;
-                            $scope.$digest();
-                            $window.v2_7.reload();
-                        },
-                        "rejectCallback": function() {
-                            removeDraft(id);
-                            if (ids.length) {
-                                checkEachDraftCard(ids);
-                            }
-                        }
-                    });
-                }
+    function getDrafts(ids, modal) {
+        const draftItems = [];
+        for (const id of ids) {
+            const draft = $window.getDraft(id);
+            if (draft !== undefined && _.isEmpty(draft.card) === false && $scope.user && draft.user && $scope.user.id === draft.user.id) {
+                /* Only the draft's author can view or delete the draft */
+                const createTime = draft.getCreateTime();
+                const draftItem = {
+                    "draft id": id,
+                    "create time": typeof createTime === "string" ? createTime : createTime.toUTCString(),
+                    "author id": draft.user.id,
+                    "author username": JSON.stringify(draft.user.username),
+                    "author nickname": JSON.stringify(draft.user.nickname),
+                    "author avatar": draft.user.avatarUrl,
+                    "author": draft.user,
+                    "card": draft.card,
+                };
+                const edit = function() {
+                    $scope.card_to_create.title  = draft.card.title;
+                    $scope.card_to_create.text   = draft.card.text;
+                    $scope.card_to_create.type   = draft.card.type;
+                    $scope.card_to_create.topics = draft.card.topics;
+                    $window.v2_7.reload();
+                    modal.modal("hide");
+                    $scope.writeCard_syncCardType();
+                };
+                const remove = function () {
+                    $window.removeDraft(id);
+                    $scope.drafts = $scope.drafts.filter(e => e !== draftItem);
+                };
+                draftItem["keepAndEdit"] = edit;
+                draftItem["deleteAndEdit"] = function () { edit();remove(); };
+                draftItem["delete"] = remove;
+                draftItems.push(draftItem);
             }
         }
+        return draftItems;
     }
 
     // 跳转到指定页面
@@ -600,7 +618,9 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             } else {
                 $scope.subPageLocation = subPageName;
             }
-            $scope.refreshCards($scope.subPageLocation);
+            if ($scope.subPageLocation !== "write") {
+                $scope.refreshCards($scope.subPageLocation);
+            }
         } else if (["chat"].includes(pageName)) {
             if (['refresh'].includes(chatItemId)) {
                 setChatLocation($scope.currentChatItemId);
@@ -1452,12 +1472,14 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     $scope.addCardTopic = function () {
         if ($scope.my_topic) {
-            for (let i in $scope.my_topic.split(",")) {
-                let topic = $scope.my_topic.split(",")[i];
+            const my_topics = $scope.my_topic.split(",");
+            for (let topic of my_topics) {
                 if (topic) {
                     if ($scope.card_to_create.topics.length < $window.max.card.topics.length) {
                         $scope.my_topic_placeholder = "输入话题";
-                        $scope.card_to_create.topics.push(topic.trim());
+                        $scope.card_to_create.topics.push({
+                            "name": topic.trim()
+                        });
                     } else {
                         $scope.my_topic_placeholder = "话题数量太多了";
                     }
@@ -1635,7 +1657,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             <small>Card ID:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.id}</small>
+            <small>${card.id}</small>
         </div>
     </div>
     <!-- 卡片类型 -->
@@ -1644,7 +1666,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             <small>Card Type:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.type}</small>
+            <small>${card.type}</small>
         </div>
     </div>
     <!-- Card Status -->
@@ -1653,7 +1675,25 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             <small>Card Status:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.status}</small>
+            <small>${card.status}</small>
+        </div>
+    </div>
+    <!-- Card Title -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Card Title:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${card.title.length > 22 ? card.title.substring(0, 20) + "..." : card.title}</small>
+        </div>
+    </div>
+    <!-- Card Text -->
+    <div class="row">
+        <div class="col-6 text-right">
+            <small>Card Text:</small>
+        </div>
+        <div class="col-6 text-left">
+            <small>${card.text.length > 22 ? card.text.substring(0, 20) + "..." : card.text}</small>
         </div>
     </div>
     <!-- 正文字数 -->
@@ -1662,25 +1702,25 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             <small>Text Char Count:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.text.length}</small>
+            <small>${card.text.length}</small>
         </div>
     </div>
-    <!-- 正文行数 -->
-    <div class="row">
+    <!-- 正文行数 -->` + (card.contentLines !== undefined ?
+    `<div class="row">
         <div class="col-6 text-right">
             <small>Text Line Count:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.contentLines.length}</small>
+            <small>${card.contentLines.length}</small>
         </div>
-    </div>
-    <!-- 卡片热度 -->
+    </div>` : "") +
+    `<!-- 卡片热度 -->
     <div class="row">
         <div class="col-6 text-right">
             <small>Card Hot:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.cardHot}</small>
+            <small>${card.cardHot}</small>
         </div>
     </div>
     <!-- 评论数量 -->
@@ -1689,7 +1729,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             <small>Comment Count:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.commentNum}</small>
+            <small>${card.commentNum}</small>
         </div>
     </div>
     <!-- 转发数量 -->
@@ -1698,16 +1738,16 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             <small>Share Count:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.shareNum}</small>
+            <small>${card.shareNum}</small>
         </div>
     </div>
-    <!-- Author ID -->
-    <div class="row">
+    <!-- Author ID -->` + (card.user !== undefined ?
+    `<div class="row">
         <div class="col-6 text-right">
             <small>Author ID:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.user.id}</small>
+            <small>${card.user.id}</small>
         </div>
     </div>
     <!-- Author Username -->
@@ -1716,7 +1756,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             <small>Author Username:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.user.username}</small>
+            <small>${card.user.username}</small>
         </div>
     </div>
     <!-- Author Nickname -->
@@ -1725,8 +1765,13 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
             <small>Author Nickname:</small>
         </div>
         <div class="col-6 text-left">
-            <small>${$scope.current_card.user.nickname}</small>
+            <small>${card.user.nickname}</small>
         </div>
+    </div>` : "") +
+`</div>
+<div>
+    <div class="text-center mt-2 pb-2 mb-2">
+        <button class="button button-3d button-primary button-capitalize" onclick="editCurrentCard();">edit this card</button>
     </div>
 </div>`;
         return $sce.trustAsHtml(str);
@@ -1734,12 +1779,24 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
 
+    $window.editCurrentCard = function () {
+        const event = $window.event;
+        $(event.target).closest(".modal").modal("hide");
+        $scope.card_to_create = $scope.current_card;
+        $window.v2_7.reload();
+        $scope.gotoPage("cards", "write");
+        $scope.writeCard_syncCardType();
+        $scope.$digest();
+    };
+
+
+
     $scope.viewCard = function (card) {
-        if (!card || !card.id) {
+        if (card === undefined || card.id === undefined) {
             bsAlert("$scope.viewCard():","ERR-1 parameter 'card' was not provided","alert-danger");
             return false;
         }
-        if ($scope.is_view_card_in_external_web_page) {
+        if ($scope.is_view_card_in_external_web_page && card.status === "exist") {
             $window.open($scope.httpRoot + "/card-page.html?card-id=" + card.id, "_blank");
             return true;
         }
@@ -1994,16 +2051,26 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
 
     $scope.getUsers = function (user, callback, errorCallback) {
-        $http({
-            method: 'GET',
-            url: $scope.httpRoot + apis.search.users,
-            params: {
-                "username": user.username
-            },
-            crossDomain: true,
-            withCredentials: true
-        }).then(function (result) {
-            let data = result.data;
+        /* Mock Data (getUsers) */
+        const result = {
+            "data": {
+                "message": "Find success",
+                "users": [{
+                    "username": user.username,
+                    "avatarUrl": "https://cdn.discordapp.com/avatars/934427574594076682/1290ff12e31175db26ab1aa62f0ae0b9.webp?size=1280",
+                }]
+            }
+        };
+        // $http({
+        //     method: 'GET',
+        //     url: $scope.httpRoot + apis.search.users,
+        //     params: {
+        //         "username": user.username
+        //     },
+        //     crossDomain: true,
+        //     withCredentials: true
+        // }).then(function (result) {
+            const data = result.data;
             switch (data.message) {
                 case "Find success":
                     callback(data.users);
@@ -2012,9 +2079,9 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                     errorCallback && errorCallback(data.message);
                     break;
             }
-        }, function(err) {
-            errorCallback && errorCallback(err);
-        });
+        // }, function(err) {
+        //     errorCallback && errorCallback(err);
+        // });
     };
 
 
@@ -2031,7 +2098,7 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                 let scriptSet = {};
                 let isTableOpen = false;
                 let tableOpenLineNo = null;
-                for (let lineNo in lines) {
+                for (const lineNo in lines) {
                     let line = lines[lineNo];
                     let descEnd = line.indexOf("]");
                     let begin = line.indexOf("(");
@@ -2100,25 +2167,20 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                             "lineSubStrings": lineSubStrings,
                             "scriptPositions": [1],
                             "plainTextPositions": [0,2],
-                            "iconId": iconId
+                            "iconId": iconId,
+                            "showOriginalScript": true
                         };
                         let username = parameters[2];
                         let user = {
                             username: username
                         };
-                        $scope.getUsers(user, function(Users) {
-                            if (Users) {
-                                if (Users.length) {
-                                    let User = Users[0];
-                                    let icon = $(".iconify-user[data-icon-id='" + iconId + "']");
-                                    icon.find(".original-script").hide();
-                                    icon.find("img").attr("src", User.avatarUrl)
-                                        .show()
-                                        .attr("data-toggle", "popover")
-                                        .attr('title', $scope.getUserInfoTitle(User))
-                                        .attr("data-content", $scope.getUserInfoContent(User));
+                        $scope.getUsers(user, function(users) {
+                            $timeout(() => {
+                                if (users && users.length) {
+                                    $scope.current_card.scriptSet["line-" + lineNo].user = users[0];
+                                    $scope.$digest();
                                 }
-                            }
+                            }, 1000);
                         }, function (errMsg) {
                             let errMsgZHCN = "";
                             switch (errMsg) {
@@ -2186,7 +2248,6 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
                         console.log("$watch('current_card'): this line is plain text, lineNO: " + lineNo + ", line: \"" + line + "\"");
                         plainTextIndexList.push(parseInt(lineNo));
                     }
-                    lineNo ++;
                 }
                 // 将卡片文本以换行符切割，生成字符串数组，注入到卡片数据中
                 $scope.current_card.contentLines = lines;
@@ -2888,13 +2949,13 @@ app.controller("controller", function ($scope, $http, $timeout, $interval, $wind
 
     // 个人主页 - 标题
     $scope.getUserInfoTitle = function (friend) {
-        let wrapper = $("<div>");
+        const wrapper = $("<div>");
         wrapper.append("<span>" + friend.nickname +
             ($scope.debugMode.isEnabled ? "<small>(" + friend.username + ")</small>" : "") +
             " 的个人信息</span>");
-        let button = $("<i>").addClass("fa fa-lg fa-times-circle mb-1 text-muted float-right cursor-pointer").attr("onclick", "hidePopover($(this).closest('.popover'))").appendTo(wrapper);
-        return wrapper.html();
-    }
+        const button = $("<i>").addClass("fa fa-lg fa-times-circle mb-1 text-muted float-right cursor-pointer").attr("onclick", "hidePopover($(this).closest('.popover'))").appendTo(wrapper);
+        return $sce.trustAsHtml(wrapper.html());
+    };
 
 
     // 个人主页 - 内容

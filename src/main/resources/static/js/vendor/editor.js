@@ -10,6 +10,7 @@ var v2_7 = {
     DOWN: 40,
     lineNumberEnabled: true,
     createTimeEnabled: true,
+    historyCapacity: 1024,
     data: {
         prevKeyCode: false,
         helpTitle: "",
@@ -23,6 +24,12 @@ var v2_7 = {
         return {
             "insertNewLine": function (text, target) {
                 return self.insertNewLine(text, target);
+            },
+            "setCaretPosition": function (element, pos) {
+                return self.setCaretPosition(element, pos);
+            },
+            "setCursorPosition": function (pos) {
+                return self.setCursorPosition(pos);
             },
             "getCursorPosition": function () {
                 return self.getCursorPosition();
@@ -42,7 +49,7 @@ var v2_7 = {
             return false;
         }
     },
-    getAllLines: function () {
+    getAllLineElements: function () {
         return this.field.children();
     },
     getScope: function () {
@@ -75,7 +82,7 @@ var v2_7 = {
         } else {
             target = this.field.find(".text-editable").last();
         }
-        if (this.isLineElement(target)) {
+        if (this.isLineElement(target) || this.isEditableTextElement(target)) {
             // 新的文本行
             const newLine = this.getNewLine();
             if (text) {
@@ -161,7 +168,7 @@ var v2_7 = {
     focusLastLine: function () {
         console.log("v2.7 editor: focus last line.");
         const self = this;
-        const allLines = $(self.getAllLines());
+        const allLines = $(self.getAllLineElements());
         if (allLines.length > 0) {
             allLines.removeAttr("contenteditable");
             allLines.last().attr("contenteditable", true).focus();
@@ -169,10 +176,10 @@ var v2_7 = {
             self.setCursorPosition(lastLineTextLength);
         }
     },
-    focusField: function (target) {
+    focusField: function (target, cursorPosition) {
         console.log("v2.7 editor: focus field.");
         const self = this;
-        const allLines = $(self.getAllLines());
+        const allLines = $(self.getAllLineElements());
         if (allLines.length === 0) {
             self.empty();
             self.focusLastLine();
@@ -180,6 +187,9 @@ var v2_7 = {
             // If target is specific line
             allLines.removeAttr("contenteditable");
             target.attr({"contenteditable": true}).focus();
+            if (cursorPosition !== undefined) {
+                self.setCursorPosition(cursorPosition);
+            }
         } else if (self.field.text().length === 0 || self.field.hasClass("selecting") === false) {
             // If target is field not line
             self.focusLastLine();
@@ -188,11 +198,14 @@ var v2_7 = {
     },
     blurField: function() {
         console.log("v2.7 editor: field blurred.");
-        $(this.getAllLines()).blur().removeAttr("contenteditable");
+        $(this.getAllLineElements()).blur().removeAttr("contenteditable");
         this.field.removeClass("focus");
     },
     isLineElement: function (element) {
-        return element?.is(".line.text-editable");
+        return element !== undefined && element.is(".line.text-editable");
+    },
+    isEditableTextElement: function (element) {
+        return element !== undefined && element.is(".text-editable");
     },
     getLineElementFromTextNode: function (text) {
         return $(text).closest(".line.text-editable");
@@ -218,7 +231,7 @@ var v2_7 = {
         };
         // Computed Order
         const from = Math.min(base.index, extend.index), to = Math.max(base.index, extend.index);
-        const allLines = self.getAllLines();
+        const allLines = self.getAllLineElements();
         const linesSelected = [];
         const fromLine = from === base.index ? base : extend;
         const toLine = to === base.index ? base : extend;
@@ -493,7 +506,63 @@ var v2_7 = {
         // 此处加上 click 的原因是, 如果不加上 click, 用户通过鼠标移动光标, 将不会被 save 函数保存
         newLine.on("keydown", function (event) {
             newLine.data("keycode", event.keyCode);
-            self.edit(event);
+            function reFocus (event, lines) {
+                const lineIndex = $(event.target).index();
+                if (lineIndex >= 0 && lineIndex < lines.length) {
+                    const target = self.getAllLineElements().eq(lineIndex);
+                    self.focusField(target, target.text().length);
+                } else {
+                    self.focusField();
+                }
+            }
+            let prevendDefault = false;
+            let prevendSave = false;
+            if (event.ctrlKey || event.metaKey) {
+                prevendSave = true;
+                if (event.key === 'z') {
+                    prevendDefault = true;
+                    if (event.shiftKey) {
+                        // handle redo action
+                        self.redo().then(async (version) => {
+                            if (version.lineIndex !== undefined && version.cursorPosition !== undefined) {
+                                const lineElement = self.getAllLineElements().eq(version.lineIndex);
+                                if (lineElement.length === 1) {
+                                    self.focusField(lineElement, version.cursorPosition);
+                                } else {
+                                    reFocus(event, version.lines);
+                                }
+                            } else {
+                                reFocus(event, version.lines);
+                            }
+                        }).catch(error => {
+                            console.log("addEditListener: redo failed:", error);
+                        });
+                    } else {
+                        // handle undo action
+                        self.undo().then(async (version) => {
+                            if (version.lineIndex !== undefined && version.cursorPosition !== undefined) {
+                                const lineElement = self.getAllLineElements().eq(version.lineIndex);
+                                if (lineElement.length === 1) {
+                                    self.focusField(lineElement, version.cursorPosition);
+                                } else {
+                                    reFocus(event, version.lines);
+                                }
+                            } else {
+                                reFocus(event, version.lines);
+                            }
+                        }).catch(error => {
+                            console.log("addEditListener: undo failed:", error);
+                        });
+                    }
+                }
+            }
+            if (prevendDefault === true) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+            }
+            if (prevendSave === false) {
+                self.edit(event);
+            }
         });
         newLine.on("click", function (event) {
             self.handleLineClick(newLine, event);
@@ -750,13 +819,14 @@ var v2_7 = {
                 throw ("v2.7 editor: edit: cursor position not found.");
             }
         }
-        this.save();
+        this.save(target.index(), cursorPosition);
         this.keyPressListener(event, this.data, this.getTools(), this.getScope());
     },
     // 保存可编辑的文本行
-    save: function () {
+    save: async function (lineIndex, cursorPosition) {
+        const self = this;
         const lines = [];
-        const fieldLines = this.getAllLines();
+        const fieldLines = this.getAllLineElements();
         for(let i = 0; i < fieldLines.length; ++i) {
             const fieldLine = fieldLines.get(i);
             const line = fieldLine.innerText;
@@ -770,8 +840,144 @@ var v2_7 = {
             throw ("v2.7 editor: save: saveCallback undefined.");
         } else {
             this.saveCallback($scope, text);
-            console.log("v2.7 editor: save: saved. ", lines);
+            if (_.isEmpty(self.data.history)) {
+                self.data.history = [];
+                self.data.history.push({
+                    "lines": lines,
+                    "lineIndex": lineIndex,
+                    "cursorPosition": cursorPosition
+                });
+            } else if (self.data.history.length > 0) {
+                const clonedHistory = window.structuredClone(self.data.history);
+                const revertedHistory = [...clonedHistory].reverse();
+                const latestHistoryVersion = revertedHistory[0];
+                if (_.isEqual(latestHistoryVersion.lines, lines)) {
+                    console.log("v2.7 editor: save: already saved.");
+                } else {
+                    if (self.data.history.length >= this.historyCapacity) {
+                        self.data.history.shift();
+                    }
+                    self.data.history.push({
+                        "lines": lines,
+                        "lineIndex": lineIndex,
+                        "cursorPosition": cursorPosition
+                    });
+                    self.data.future = [];
+                    console.log("v2.7 editor: save: saved. currentLines", lines, "history", self.data.history, "future cleared.");
+                }
+            }
         }
-        return text;
+        return await text;
+    },
+    "_reload_": function (lines) {
+        const self = this;
+        const linesApplied = [];
+        return new Promise((resolve, reject) => {
+            if (lines && lines.length) {
+                self.empty().then(async (target) => {
+                    target.text(lines[0]);
+                    linesApplied.push(target.text());
+                    for (var i = 1; i < lines.length; ++i) {
+                        linesApplied.push(lines[i]);
+                        target = await self.insertNewLine(lines[i], target);
+                    }
+                    resolve(linesApplied);
+                });
+            }
+        });
+    },
+    "getCurrentLines": function () {
+        const lines = [];
+        const fieldLines = this.getAllLineElements();
+        for(let i = 0; i < fieldLines.length; ++i) {
+            const fieldLine = fieldLines.get(i);
+            const line = fieldLine.innerText;
+            lines.push(line);
+        }
+        return lines;
+    },
+    "getCurrentEditingLineElement": function () {
+        return this.field.children("[contenteditable='true']");
+    },
+    "undo": async function () {
+        const self = this;
+        if (self.data.history === undefined) {
+            return Promise.reject("no record yet");
+        }
+        const currentVersion = self.getCurrentLines();
+        const currentLineIndex = self.getCurrentEditingLineElement().index();
+        const currentCursorPosition = self.getCursorPosition();
+        let latestHistoryVersion;
+        do {
+            latestHistoryVersion = self.data.history.pop();
+            if (latestHistoryVersion === undefined) {
+                return Promise.reject("no valid record");
+            }
+        } while (_.isEqual(latestHistoryVersion.lines, currentVersion));
+        if (latestHistoryVersion !== undefined) {
+            if (_.isEmpty(self.data.future)) {
+                self.data.future = [];
+            }
+            return new Promise(async function(resolve, reject) {
+                const lines = await self["_reload_"](latestHistoryVersion.lines);
+                if (_.isEqual(latestHistoryVersion.lines, lines)) {
+                    setTimeout(() => {
+                        self.data.future.unshift({
+                            "lines": currentVersion,
+                            "lineIndex": currentLineIndex,
+                            "cursorPosition": currentCursorPosition,
+                        });
+                        console.log("v2.7 editor: undo success.", lines, "history", self.data.history, "future", self.data.future);
+                    }, 10);
+                    resolve(latestHistoryVersion);
+                } else {
+                    console.log("v2.7 editor: undo failed. linesBeforeAction", currentVersion, "latestHistoryVersion", latestHistoryVersion, "currentLines", lines, "history", self.data.history, "future", self.data.future);
+                    reject("undo failed");
+                }
+            });
+        } else {
+            console.log("v2.7 editor: undo: no record.");
+            return Promise.reject("no record");
+        }
+    },
+    "redo": async function () {
+        const self = this;
+        if (self.data.future === undefined) {
+            return Promise.reject("no record yet");
+        }
+        const currentVersion = self.getCurrentLines();
+        const currentLineIndex = self.getCurrentEditingLineElement().index();
+        const currentCursorPosition = self.getCursorPosition();
+        let nearestFutureVersion;
+        do {
+            nearestFutureVersion = self.data.future.shift();
+            if (nearestFutureVersion === undefined) {
+                throw Promise.reject("no valid record");
+            }
+        } while (_.isEqual(nearestFutureVersion.lines, currentVersion));
+        return new Promise(function(resolve, reject) {
+            if (nearestFutureVersion !== undefined) {
+                if (_.isEmpty(self.data.history)) {
+                    self.data.history = [];
+                }
+                self.data.history.push({
+                    "lines": currentVersion,
+                    "lineIndex": currentLineIndex,
+                    "cursorPosition": currentCursorPosition,
+                });
+                self["_reload_"](nearestFutureVersion.lines).then((lines) => {
+                    if (_.isEqual(nearestFutureVersion.lines, lines)) {
+                        console.log("v2.7 editor: redo success.", lines, "history", self.data.history, "future", self.data.future);
+                        resolve(nearestFutureVersion);
+                    } else {
+                        console.log("v2.7 editor: redo failed. linesBeforeAction", currentVersion, "nearestFutureVersion", nearestFutureVersion, "currentLines", lines, "history", self.data.history, "future", self.data.future);
+                        reject("redo failed");
+                    }
+                });
+            } else {
+                console.log("v2.7 editor: redo: no record.");
+                reject("no record");
+            }
+        });
     }
 };
